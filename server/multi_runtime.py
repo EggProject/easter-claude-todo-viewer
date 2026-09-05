@@ -24,7 +24,7 @@ class DaemonConfig:
     agy_bin: str = 'agy'
     initial_status: str = 'all'
     initial_sort: str = 'dependency'
-    version: str = '4.1.1'
+    version: str = '4.1.2'
     log_file: bool = False
     log_output: bool = False
     client_origins: list = field(default_factory=lambda:['http://127.0.0.1:8766','http://localhost:8766'])

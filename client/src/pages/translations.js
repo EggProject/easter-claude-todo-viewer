@@ -1,10 +1,16 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import { flexRender, getCoreRowModel, getFilteredRowModel, getSortedRowModel, useReactTable } from '@tanstack/react-table';
+import {
+  flexRender,
+  getCoreRowModel,
+  getExpandedRowModel,
+  getFilteredRowModel,
+  getSortedRowModel,
+  useReactTable,
+} from '@tanstack/react-table';
 import { useApp } from '../app-context.js';
 import { postJSON } from '../api.js';
 import { parseSorting, serializeSorting, usePersistentPageFilters } from '../filter-state.js';
-import { TaskLanguageBadge } from '../components/language-badge.js';
 
 const h = React.createElement;
 const TERMINAL = new Set(['success', 'validation_failed', 'error', 'canceled', 'interrupted']);
@@ -15,48 +21,64 @@ export default function TranslationsPage() {
   const app = useApp();
   const navigate = useNavigate();
   const { sessionId: routeSessionId, jobId } = useParams();
-  const [filters, setFilter] = usePersistentPageFilters('translations', { q: '', session: 'all', sort: 'queuedAt:desc' });
+  const [filters, setFilter] = usePersistentPageFilters('translations', { q: '', session: 'all', sort: 'taskId:asc' });
   const globalFilter = filters.q || '';
   const sessionFilter = routeSessionId || filters.session || 'all';
-  const sorting = useMemo(() => parseSorting(filters.sort, [{ id: 'queuedAt', desc: true }]), [filters.sort]);
+  const sorting = useMemo(() => parseSorting(filters.sort, [{ id: 'taskId', desc: false }]), [filters.sort]);
   const setSorting = updater => {
     const next = typeof updater === 'function' ? updater(sorting) : updater;
     setFilter('sort', serializeSorting(next));
   };
+  const [expanded, setExpanded] = useState({});
   const [rowSelection, setRowSelection] = useState({});
   const [bulkBusy, setBulkBusy] = useState(false);
 
-  const sessionMap = useMemo(() => new Map((app.sessionsState.sessions || []).map(session => [session.id, session])), [app.sessionsState.sessions]);
-  const taskMap = useMemo(() => new Map((app.translationCatalog || []).map(task => [`${task.sessionId}:${task.uid}`, task])), [app.translationCatalog]);
-  const allData = useMemo(() => (app.jobs || []).map(job => ({ ...job, session: sessionMap.get(job.sessionId) || null, task: taskMap.get(`${job.sessionId}:${job.uid}`) || null })), [app.jobs, sessionMap, taskMap]);
-  const data = useMemo(() => sessionFilter === 'all' ? allData : allData.filter(job => job.sessionId === sessionFilter), [allData, sessionFilter]);
-  const sessionOptions = useMemo(() => (app.sessionsState.sessions || []).filter(session => allData.some(job => job.sessionId === session.id)), [app.sessionsState.sessions, allData]);
-  const columns = useMemo(() => buildFlatColumns(app, navigate), [app, navigate]);
+  const allData = app.translationCatalog || [];
+  const data = useMemo(() => sessionFilter === 'all' ? allData : allData.filter(row => row.sessionId === sessionFilter), [allData, sessionFilter]);
+  const sessionOptions = useMemo(() => app.sessionsState.sessions.filter(session => allData.some(row => row.sessionId === session.id)), [app.sessionsState.sessions, allData]);
+  const columns = useMemo(() => buildColumns(app, navigate), [app, navigate]);
 
   const table = useReactTable({
     data,
     columns,
-    getRowId: row => `job:${row.sessionId}:${row.id}`,
-    state: { sorting, rowSelection, globalFilter },
+    getSubRows: row => row.children || [],
+    getRowId: row => row.kind === 'task' ? `task:${row.sessionId}:${row.uid}` : `job:${row.sessionId}:${row.id}`,
+    state: { expanded, sorting, rowSelection, globalFilter },
+    onExpandedChange: setExpanded,
     onSortingChange: setSorting,
     onRowSelectionChange: setRowSelection,
+    onGlobalFilterChange: updater => { const next = typeof updater === 'function' ? updater(globalFilter) : updater; setFilter('q', next); },
     globalFilterFn: (row, _columnId, filterValue) => searchableText(row.original).includes(String(filterValue || '').toLowerCase()),
+    filterFromLeafRows: true,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    getExpandedRowModel: getExpandedRowModel(),
+    enableSubRowSelection: true,
   });
 
   useEffect(() => {
-    const valid = new Set((app.jobs || []).map(job => `job:${job.sessionId}:${job.id}`));
-    setRowSelection(current => Object.fromEntries(Object.entries(current).filter(([id, selected]) => selected && valid.has(id))));
-  }, [app.jobs]);
+    if (!jobId) return;
+    const parent = data.find(task => (!routeSessionId || task.sessionId === routeSessionId) && (task.children || []).some(child => child.id === jobId));
+    if (parent) setExpanded(current => ({ ...current, [`task:${parent.sessionId}:${parent.uid}`]: true }));
+  }, [routeSessionId, jobId, data]);
 
-  const selectedJobs = useMemo(() => table.getSelectedRowModel().flatRows.map(row => row.original), [table, rowSelection, data]);
+  useEffect(() => {
+    const valid = new Set(app.jobs.map(job => `job:${job.sessionId}:${job.id}`));
+    const parentIds = new Set(data.map(task => `task:${task.sessionId}:${task.uid}`));
+    setRowSelection(current => Object.fromEntries(Object.entries(current).filter(([id, selected]) => selected && (valid.has(id) || parentIds.has(id)))));
+  }, [app.jobs, data]);
+
+  const selectedJobs = useMemo(() => table.getSelectedRowModel().flatRows
+    .filter(row => row.original.kind === 'version')
+    .map(row => row.original), [table, rowSelection, data]);
+
   const eligibleSelectedJobs = useMemo(() => ({
     stop: selectedJobs.filter(job => ACTIVE.has(job.status)),
     retry: selectedJobs.filter(job => RETRYABLE.has(job.status)),
     delete: selectedJobs.filter(job => TERMINAL.has(job.status)),
   }), [selectedJobs]);
+
   const activeAll = app.jobs.filter(job => ACTIVE.has(job.status));
   const retryAll = app.jobs.filter(job => RETRYABLE.has(job.status));
 
@@ -72,67 +94,126 @@ export default function TranslationsPage() {
       await Promise.all([app.refreshJobs(), app.refreshCatalog(), app.refreshState()]);
     } catch (error) {
       app.showModal({ kind: 'error', title: 'Bulk translation action failed', message: error.message });
-    } finally { setBulkBusy(false); }
+    } finally {
+      setBulkBusy(false);
+    }
   };
 
-  const body = [];
-  for (const row of table.getRowModel().rows) {
-    const job = row.original;
-    body.push(h('tr', { key: row.id, className: jobId === job.id && (!routeSessionId || routeSessionId === job.sessionId) ? 'selected' : '' },
-      ...row.getVisibleCells().map(cell => h('td', { key: cell.id, className: cell.column.id === 'select' ? 'select-cell' : '' }, flexRender(cell.column.columnDef.cell, cell.getContext()))),
-    ));
-    if (jobId === job.id && (!routeSessionId || routeSessionId === job.sessionId)) {
-      body.push(h('tr', { className: 'translation-detail-row', key: `${row.id}-detail` },
-        h('td', { colSpan: row.getVisibleCells().length }, h(JobDetail, { job, onClose: () => navigate('/translations') }))));
-    }
-  }
+  const visibleLeafCount = table.getRowModel().flatRows.filter(row => row.original.kind === 'version').length;
+  const selectedCount = selectedJobs.length;
 
   return h('div', { className: 'page' },
     h('div', { className: 'page-heading' }, h('div', null,
       h('div', { className: 'eyebrow' }, '🌍 TRANSLATIONS'),
-      h('h1', null, 'Translation runs'),
-      h('p', { className: 'muted' }, 'One row per translation lifecycle. Use View to inspect run history and exact diagnostics.'))),
+      h('h1', null, 'Task translation history'),
+      h('p', { className: 'muted' }, 'One parent row per task; expand it to inspect every text-version translation lifecycle.'))),
     h('div', { className: 'page-controls' },
-      h('input', { className: 'search-input', value: globalFilter, onChange: event => setFilter('q', event.target.value), placeholder: 'Filter every translation field…' }),
+      h('input', {
+        className: 'search-input', value: globalFilter,
+        onChange: event => setFilter('q', event.target.value),
+        placeholder: 'Filter every translation field…',
+      }),
       h('select', { value: sessionFilter, onChange: event => setFilter('session', event.target.value), 'aria-label': 'Filter translations by session', disabled: Boolean(routeSessionId) },
         h('option', { value: 'all' }, 'Sessions · All'),
         ...sessionOptions.map(session => h('option', { value: session.id, key: session.id }, session.label || session.summary || session.id))),
     ),
     h('div', { className: 'translation-bulk-toolbar' },
-      h('div', { className: 'selection-summary' }, h('strong', null, `☑ ${selectedJobs.length} lifecycle(s) selected`), h('span', { className: 'muted' }, `${table.getRowModel().rows.length} visible lifecycle(s)`)),
+      h('div', { className: 'selection-summary' }, h('strong', null, `☑ ${selectedCount} lifecycle(s) selected`), h('span', { className: 'muted' }, `${visibleLeafCount} visible lifecycle(s)`)),
       h('div', { className: 'bulk-actions' },
         h('button', { className: 'mini danger', disabled: !eligibleSelectedJobs.stop.length || bulkBusy, onClick: () => runBulk('stop', eligibleSelectedJobs.stop, '■ Stop started') }, '■ Stop'),
         h('button', { className: 'mini', disabled: !eligibleSelectedJobs.retry.length || bulkBusy, onClick: () => runBulk('retry', eligibleSelectedJobs.retry, '↻ Retry started') }, '↻ Retry'),
-        h('button', { className: 'mini danger ghost', disabled: !eligibleSelectedJobs.delete.length || bulkBusy, onClick: () => runBulk('delete', eligibleSelectedJobs.delete, '🗑 Delete completed') }, '🗑 Delete')),
+        h('button', { className: 'mini danger ghost', disabled: !eligibleSelectedJobs.delete.length || bulkBusy, onClick: () => runBulk('delete', eligibleSelectedJobs.delete, '🗑 Delete completed') }, '🗑 Delete'),
+      ),
       h('div', { className: 'bulk-actions global-bulk-actions' },
         h('button', { className: 'mini danger', disabled: !activeAll.length || bulkBusy, onClick: () => runBulk('stop_all', activeAll, '■ Stop all started') }, '■ Stop all'),
-        h('button', { className: 'mini', disabled: !retryAll.length || bulkBusy, onClick: () => runBulk('retry_all_failed', retryAll, '↻ Retry all failed started') }, '↻ Retry all failed'))),
-    h('div', { className: 'table-wrap' }, h('table', { className: 'data-table translations-table' },
+        h('button', { className: 'mini', disabled: !retryAll.length || bulkBusy, onClick: () => runBulk('retry_all_failed', retryAll, '↻ Retry all failed started') }, '↻ Retry all failed'),
+      ),
+    ),
+    h('div', { className: 'table-wrap' }, h('table', { className: 'data-table translations-table tree-table' },
       h('thead', null, ...table.getHeaderGroups().map(group => h('tr', { key: group.id }, ...group.headers.map(header => h('th', { key: header.id, className: header.column.id === 'select' ? 'select-cell' : '' },
         header.isPlaceholder ? null : h('button', {
           className: `th-btn${header.column.getCanSort() ? ' sortable' : ''}`,
-          disabled: !header.column.getCanSort(), onClick: header.column.getToggleSortingHandler(),
+          disabled: !header.column.getCanSort(),
+          onClick: header.column.getToggleSortingHandler(),
           title: header.column.getCanSort() ? 'Click to sort. Shift+click adds another sort column.' : undefined,
         }, flexRender(header.column.columnDef.header, header.getContext()), sortIndicator(header.column.getIsSorted()))))))),
-      h('tbody', null, ...body))),
+      h('tbody', null, ...renderRows(table.getRowModel().rows, routeSessionId, jobId, navigate)),
+    )),
   );
 }
 
-function buildFlatColumns(app, navigate) {
+function buildColumns(app, navigate) {
   return [
-    { id: 'select', enableSorting: false, size: 38, header: ({ table }) => h('input', { type: 'checkbox', checked: table.getIsAllRowsSelected(), 'aria-label': 'Select all visible translation rows', onChange: table.getToggleAllRowsSelectedHandler() }), cell: ({ row }) => h('input', { type: 'checkbox', checked: row.getIsSelected(), 'aria-label': `Select task ${row.original.taskId}`, onChange: row.getToggleSelectedHandler() }) },
-    { id: 'queuedAt', header: 'Started', accessorFn: row => Date.parse(row.queuedAt || '') || 0, cell: ({ row }) => formatDate(row.original.queuedAt) },
-    { id: 'session', header: 'Session', accessorFn: row => row.session?.label || row.sessionId || '', cell: ({ row }) => h('span', { className: 'session-badge translation-session-badge', title: `${row.original.session?.label || row.original.sessionId || ''}\n${row.original.sessionId || ''}` }, `🧵 ${compactSession(row.original.session?.label || row.original.sessionId)}`) },
-    { id: 'taskId', header: 'Task', accessorFn: row => Number(row.taskId) || row.taskId || '', cell: ({ row }) => h('div', { className: 'translation-task-id-cell' }, h('span', null, `#${row.original.taskId}`), row.original.task ? h(TaskLanguageBadge, { task: { ...row.original.task, subject: row.original.task.title || row.original.task.subject }, compact: true }) : null) },
-    { id: 'trigger', header: 'Trigger', accessorFn: row => row.trigger || '', cell: ({ row }) => row.original.trigger || '—' },
-    { id: 'provider', header: 'Provider', accessorFn: row => row.provider || '', cell: ({ row }) => row.original.provider || 'agy' },
-    { id: 'model', header: 'Model', accessorFn: row => row.model || '', cell: ({ row }) => row.original.model || '—' },
-    { id: 'attempt', header: 'Attempt', accessorFn: row => Number(row.attempt || 0), cell: ({ row }) => `${row.original.attempt || 0}/${row.original.maxAttempts || 2}` },
-    { id: 'status', header: 'Status', accessorFn: row => row.status || '', cell: ({ row }) => h('span', { className: `status ${row.original.status}` }, statusLabel(row.original.status)) },
-    { id: 'duration', header: 'Duration', accessorFn: row => durationSeconds(row), cell: ({ row }) => duration(row.original) },
-    { id: 'tokens', header: 'Tokens', accessorFn: row => tokenCount(row), cell: ({ row }) => tokens(row.original) },
-    { id: 'action', header: 'Action', enableSorting: false, cell: ({ row }) => actionButtons(row.original, app, navigate) },
+    {
+      id: 'select', enableSorting: false, size: 38,
+      header: ({ table }) => h('input', {
+        type: 'checkbox', checked: table.getIsAllRowsSelected(),
+        'aria-label': 'Select all visible task translation rows', onChange: table.getToggleAllRowsSelectedHandler(),
+      }),
+      cell: ({ row }) => h('input', {
+        type: 'checkbox', checked: row.getIsSelected(),
+        'aria-label': row.original.kind === 'task' ? `Select task ${row.original.taskId}` : `Select translation version ${row.original.versionNumber || ''}`,
+        onChange: row.getToggleSelectedHandler(),
+      }),
+    },
+    {
+      id: 'session', header: 'Session', accessorFn: row => row.session?.label || row.sessionId || '',
+      cell: ({ row }) => h('span', { className: 'session-badge translation-session-badge', title: `${row.original.session?.label || row.original.sessionId || ''}\n${row.original.sessionId || ''}` }, `🧵 ${compactSession(row.original.session?.label || row.original.sessionId)}`),
+    },
+    {
+      id: 'taskId', header: 'Task / version', accessorFn: row => row.kind === 'task' ? Number(row.taskId) || row.taskId : Number(row.versionNumber || 0),
+      cell: ({ row }) => row.original.kind === 'task' ? taskCell(row) : versionCell(row),
+    },
+    { id: 'wanted', header: 'Wanted', accessorFn: row => row.kind === 'task' ? row.viewLanguage : '', cell: ({ row }) => row.original.kind === 'task' ? languageBadge(row.original.viewLanguage) : '—' },
+    { id: 'shown', header: 'Shown', accessorFn: row => row.kind === 'task' ? row.effectiveLanguage : '', cell: ({ row }) => row.original.kind === 'task' ? languageBadge(row.original.effectiveLanguage) : '—' },
+    { id: 'trigger', header: 'Trigger', accessorFn: row => row.kind === 'version' ? row.trigger || '' : '', cell: ({ row }) => row.original.kind === 'version' ? row.original.trigger || '—' : '—' },
+    { id: 'provider', header: 'Provider', accessorFn: row => row.kind === 'version' ? row.provider || '' : '', cell: ({ row }) => row.original.kind === 'version' ? row.original.provider || 'agy' : '—' },
+    { id: 'model', header: 'Model', accessorFn: row => row.kind === 'version' ? row.model || '' : '', cell: ({ row }) => row.original.kind === 'version' ? row.original.model || '—' : '—' },
+    { id: 'attempt', header: 'Attempt', accessorFn: row => row.kind === 'version' ? Number(row.attempt || 0) : 0, cell: ({ row }) => row.original.kind === 'version' ? `${row.original.attempt || 0}/${row.original.maxAttempts || 2}` : `${row.original.versionCount || 0} version(s)` },
+    { id: 'status', header: 'Status', accessorFn: row => row.kind === 'task' ? row.translationState || '' : row.status || '', cell: ({ row }) => row.original.kind === 'task' ? currentStateLabel(row.original.translationState) : statusLabel(row.original.status) },
+    { id: 'queuedAt', header: 'Queued', accessorFn: row => row.kind === 'version' ? row.queuedAt || '' : '', cell: ({ row }) => row.original.kind === 'version' ? formatDate(row.original.queuedAt) : '—' },
+    { id: 'duration', header: 'Duration', accessorFn: row => row.kind === 'version' ? durationSeconds(row.original) : 0, cell: ({ row }) => row.original.kind === 'version' ? duration(row.original) : '—' },
+    { id: 'tokens', header: 'Tokens', accessorFn: row => row.kind === 'version' ? tokenCount(row.original) : 0, cell: ({ row }) => row.original.kind === 'version' ? tokens(row.original) : '—' },
+    { id: 'action', header: 'Action', enableSorting: false, cell: ({ row }) => row.original.kind === 'version' ? actionButtons(row.original, app, navigate) : null },
   ];
+}
+
+function renderRows(rows, routeSessionId, jobId, navigate) {
+  const body = [];
+  for (const row of rows) {
+    const original = row.original;
+    body.push(h('tr', { key: row.id, className: `${original.kind === 'task' ? 'translation-task-row' : 'translation-version-row'}${jobId === original.id && (!routeSessionId || routeSessionId === original.sessionId) ? ' selected' : ''}` },
+      ...row.getVisibleCells().map(cell => h('td', {
+        key: cell.id,
+        className: `${cell.column.id === 'select' ? 'select-cell ' : ''}${original.kind === 'version' && cell.column.id === 'taskId' ? 'tree-indent' : ''}`,
+      }, flexRender(cell.column.columnDef.cell, cell.getContext()))),
+    ));
+    if (original.kind === 'version' && jobId === original.id && (!routeSessionId || routeSessionId === original.sessionId)) {
+      body.push(h('tr', { className: 'translation-detail-row', key: `${original.id}-detail` },
+        h('td', { colSpan: row.getVisibleCells().length }, h(JobDetail, { job: original, onClose: () => navigate('/translations') }))));
+    }
+  }
+  return body;
+}
+
+function taskCell(row) {
+  const task = row.original;
+  const canExpand = row.getCanExpand();
+  return h('div', { className: 'translation-task-cell' },
+    h('button', { className: 'tree-toggle', disabled: !canExpand, onClick: row.getToggleExpandedHandler(), 'aria-label': canExpand ? `${row.getIsExpanded() ? 'Collapse' : 'Expand'} task ${task.taskId}` : `Task ${task.taskId} has no translation versions` }, canExpand ? (row.getIsExpanded() ? '▾' : '▸') : '•'),
+    h('div', null, h('strong', null, `#${task.taskId} ${task.title || ''}`), h('div', { className: 'muted small' }, `${task.versionCount || 0} translation version(s)${task.present === false ? ' · deleted task' : ''}`)),
+  );
+}
+
+function versionCell(row) {
+  const job = row.original;
+  return h('div', { className: 'translation-version-cell' },
+    h('span', { className: 'tree-branch', 'aria-hidden': true }, '└─'),
+    h('div', null,
+      h('strong', null, `v${job.versionNumber || '?'}${job.current ? ' · current' : ''}`),
+      h('div', { className: 'mono small muted' }, String(job.textFingerprint || '').slice(0, 12)),
+    ),
+  );
 }
 
 function actionButtons(job, app, navigate) {

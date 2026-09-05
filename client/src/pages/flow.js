@@ -253,6 +253,7 @@ function sortTasks(tasks, sort, graph) {
   return list;
 }
 function numericId(task) { const n = Number(task?.id); return Number.isFinite(n) ? n : Number.MAX_SAFE_INTEGER; }
+function numericNodeId(node) { const n = Number(node?.data?.taskId); return Number.isFinite(n) ? n : Number.MAX_SAFE_INTEGER; }
 
 async function layoutWithElk(nodes, edges, canvasWidth = 1600) {
   const connectedTaskIds = new Set();

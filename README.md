@@ -1,4 +1,4 @@
-# Claude Todos v4.1.1
+# Claude Todos v4.1.2
 
 Multi-session Claude Code Task/Todo inspector with a persistent Python backend daemon and a separate React SPA client.
 
@@ -414,7 +414,7 @@ Persistent logs remain under:
 
 No Claude Agent SDK is required or used.
 
-## v4.1.1 targeted UI fixes
+## v4.1.2 targeted UI fixes
 
 - Flow **Auto arrange** no longer places every disconnected task in one unbounded horizontal tail. Disconnected tasks remain numeric-ID ordered but are packed into a responsive shelf (4–8 columns depending on the Flow canvas width), while real dependency components still use ELK.
 - The Translations page is back to the flat **one row = one translation lifecycle** table. Multi-session data, Session filter/column, checkbox selection, bulk actions, disabled-action eligibility, inline View details and all-session aggregation remain unchanged. Every sortable column header is clickable again, including Shift+click multi-sort through TanStack Table.

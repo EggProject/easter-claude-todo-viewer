@@ -149,10 +149,11 @@ console.log(JSON.stringify({{revSame:rev1===rev2,pos:out[0].position,label:out[0
         self.assertIn("className:'spacer'", top)
         self.assertIn('clamp(280px,30vw,620px)', css.replace(' ', ''))
 
-    def test_task_language_badge_is_used_on_translation_and_notification_surfaces(self):
+    def test_task_language_state_is_visible_on_translation_and_notification_surfaces(self):
         translations=(ROOT/'client/src/pages/translations.js').read_text()
         overlays=(ROOT/'client/src/components/overlays.js').read_text()
-        self.assertIn('TaskLanguageBadge',translations)
+        self.assertIn("header: 'Wanted'",translations)
+        self.assertIn("header: 'Shown'",translations)
         self.assertIn('TaskLanguageBadge',overlays)
         self.assertIn('taskSnapshot',overlays)
 
@@ -160,7 +161,7 @@ console.log(JSON.stringify({{revSame:rev1===rev2,pos:out[0].position,label:out[0
         files=['server/main.py','server/session_core.py','client/package.json','client/serve.py','README.md']
         for rel in files:
             text=(ROOT/rel).read_text()
-            self.assertIn('4.1.1',text,rel)
+            self.assertIn('4.1.2',text,rel)
 
     def test_shared_task_language_badge_is_used_on_task_and_flow_surfaces(self):
         badge = (ROOT/'client/src/components/language-badge.js').read_text()

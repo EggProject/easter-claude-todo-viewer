@@ -274,15 +274,16 @@ class V34FrontendContractTests(unittest.TestCase):
         self.assertIn("task.viewLanguage === 'hu'", drawer)
         self.assertIn('Showing current English source until the Hungarian translation is ready', drawer)
 
-    def test_translations_page_uses_flat_tanstack_table_and_child_based_bulk_eligibility(self):
+    def test_translations_page_uses_subrow_tanstack_table_and_child_based_bulk_eligibility(self):
         page = (ROOT/'client/src/pages/translations.js').read_text()
         html = (ROOT/'client/index.html').read_text()
         self.assertIn('@tanstack/react-table', page)
-        self.assertNotIn('getSubRows', page)
-        self.assertNotIn('getExpandedRowModel', page)
+        self.assertIn('getSubRows', page)
+        self.assertIn('getExpandedRowModel', page)
         self.assertIn('getSortedRowModel', page)
         self.assertIn('getToggleSortingHandler', page)
         self.assertIn('eligibleSelectedJobs', page)
+        self.assertIn('tree-table', page)
         self.assertIn('@tanstack/react-table', html)
 
     def test_flow_has_spacious_layout_disconnected_lane_and_no_singleton_current(self):

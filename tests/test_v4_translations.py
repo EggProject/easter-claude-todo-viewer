@@ -12,9 +12,9 @@ class TranslationV4Tests(unittest.TestCase):
         self.assertIn('getSortedRowModel',s)
         self.assertIn('getToggleSortingHandler',s)
         self.assertIn('Shift+click',s)
-    def test_flat_job_row_ids_include_session(self):
+    def test_task_and_job_row_ids_include_session(self):
         s=(ROOT/'client/src/pages/translations.js').read_text()
-        self.assertNotIn('task:${row.sessionId}:${row.uid}',s)
+        self.assertIn('task:${row.sessionId}:${row.uid}',s)
         self.assertIn('job:${row.sessionId}:${row.id}',s)
     def test_bulk_and_single_actions_use_session_qualified_refs(self):
         s=(ROOT/'client/src/pages/translations.js').read_text()

@@ -19,13 +19,12 @@ class V411FlowTests(unittest.TestCase):
         self.assertIn('layoutWithElk(sessionNodes, sessionEdges, canvasWidth)',src)
 
 class V411TranslationsTests(unittest.TestCase):
-    def test_translations_table_is_flat_lifecycle_table_not_tree(self):
+    def test_translations_table_restores_task_version_subrows_with_sorting(self):
         src=(ROOT/'client/src/pages/translations.js').read_text()
-        self.assertNotIn('getSubRows',src)
-        self.assertNotIn('getExpandedRowModel',src)
-        self.assertNotIn('translation-task-row',src)
-        self.assertNotIn('tree-table',src)
-        self.assertIn("id: 'queuedAt'",src)
+        self.assertIn('getSubRows',src)
+        self.assertIn('getExpandedRowModel',src)
+        self.assertIn('translation-task-row',src)
+        self.assertIn('tree-table',src)
         self.assertIn("id: 'session'",src)
         self.assertIn("id: 'taskId'",src)
         self.assertIn('getToggleSortingHandler',src)
