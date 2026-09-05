@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useApp } from '../app-context.js';
 import { TaskLanguageBadge } from './language-badge.js';
+import { usePersistentLocalState } from '../filter-state.js';
 
 const h = React.createElement;
 
@@ -22,10 +23,12 @@ function notificationBlocks(events = []) {
 
 export function NotificationSidebar() {
   const app = useApp();
-  const [historyQuery, setHistoryQuery] = useState('');
-  const [historySessionFilter, setHistorySessionFilter] = useState('all');
-  const [historyTypeFilter, setHistoryTypeFilter] = useState('all');
-  const [historySort, setHistorySort] = useState('newest');
+  const [historyFilters, setHistoryFilters] = usePersistentLocalState('claude-todos:history-filters', { q: '', session: 'all', type: 'all', sort: 'newest' });
+  const historyQuery = historyFilters.q || '';
+  const historySessionFilter = historyFilters.session || 'all';
+  const historyTypeFilter = historyFilters.type || 'all';
+  const historySort = historyFilters.sort || 'newest';
+  const setHistoryFilter = (key, value) => setHistoryFilters(current => ({ ...current, [key]: value }));
   useEffect(() => {
     if (!app.sidebar) return undefined;
     const onKeyDown = event => { if (event.key === 'Escape') app.setSidebar(false); };
@@ -52,14 +55,14 @@ export function NotificationSidebar() {
     h('aside', { className: 'sidebar open common-history-sidebar' },
       h('div', { className: 'side-head' }, h('div', null, h('h3', null, '🔔 Session history'), h('div', { className: 'muted small' }, `${events.length} matching event(s)`)), h('button', { className: 'icon-btn', onClick: () => app.setSidebar(false) }, '✕')),
       h('div', { className: 'history-sidebar-controls' },
-        h('input', { className: 'history-filter', value: historyQuery, onChange: event => setHistoryQuery(event.target.value), placeholder: 'Filter history…' }),
-        h('select', { value: historySessionFilter, onChange: event => setHistorySessionFilter(event.target.value), 'aria-label': 'Filter history session' },
+        h('input', { className: 'history-filter', value: historyQuery, onChange: event => setHistoryFilter('q', event.target.value), placeholder: 'Filter history…' }),
+        h('select', { value: historySessionFilter, onChange: event => setHistoryFilter('session', event.target.value), 'aria-label': 'Filter history session' },
           h('option', { value: 'all' }, 'All watched sessions'),
           ...watched.map(session => h('option', { value: session.id, key: session.id }, session.label || session.summary || session.id))),
-        h('select', { value: historyTypeFilter, onChange: event => setHistoryTypeFilter(event.target.value), 'aria-label': 'Filter history event type' },
+        h('select', { value: historyTypeFilter, onChange: event => setHistoryFilter('type', event.target.value), 'aria-label': 'Filter history event type' },
           h('option', { value: 'all' }, 'All event types'),
           h('option', { value: 'translation' }, '🌐 Translation'), h('option', { value: 'lifecycle' }, '✨ Lifecycle'), h('option', { value: 'status' }, '📌 Status'), h('option', { value: 'text' }, '✍️ Text'), h('option', { value: 'dependency' }, '🔒 Dependency'), h('option', { value: 'owner' }, '👤 Owner'), h('option', { value: 'other' }, '🧩 Other')),
-        h('select', { value: historySort, onChange: event => setHistorySort(event.target.value), 'aria-label': 'Sort history' }, h('option', { value: 'newest' }, 'Newest first'), h('option', { value: 'oldest' }, 'Oldest first'))),
+        h('select', { value: historySort, onChange: event => setHistoryFilter('sort', event.target.value), 'aria-label': 'Sort history' }, h('option', { value: 'newest' }, 'Newest first'), h('option', { value: 'oldest' }, 'Oldest first'))),
       h('div', { className: 'side-body common-history-list' },
         ...(events.length
           ? events.map((event, index) => h(HistoryCard, { event, key: `${event.sessionId || 'session'}:${event.id || index}` }))

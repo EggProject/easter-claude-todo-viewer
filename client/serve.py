@@ -30,7 +30,7 @@ def make_server(host,port,root,api_base): return ClientServer((host,int(port)),r
 def main(argv=None):
     p=argparse.ArgumentParser(description='Claude Todos v4 React client server'); p.add_argument('--port',type=int,default=8766);p.add_argument('--server-url',default='http://127.0.0.1:8765');p.add_argument('--no-open',action='store_true');args=p.parse_args(argv)
     root=pathlib.Path(__file__).resolve().parent; httpd=make_server('127.0.0.1',args.port,root,args.server_url); url=f'http://127.0.0.1:{httpd.server_port}'
-    print(f'\n🖥️  Claude Todos Client v4.1.0\n🌐 {url}\n🔌 API: {args.server_url}\n⌨️  Ctrl+C to stop\n',flush=True)
+    print(f'\n🖥️  Claude Todos Client v4.1.1\n🌐 {url}\n🔌 API: {args.server_url}\n⌨️  Ctrl+C to stop\n',flush=True)
     if not args.no_open: threading.Timer(.2,lambda:webbrowser.open(url)).start()
     try: httpd.serve_forever(poll_interval=.25)
     except KeyboardInterrupt: pass

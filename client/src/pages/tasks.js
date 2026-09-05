@@ -6,6 +6,7 @@ import { TaskDrawer } from '../components/task-drawer.js';
 import { StatusMultiSelect, normalizeStatusSelection } from '../components/status-multiselect.js';
 import { SessionScopeSelect, useSessionScope } from '../components/session-select.js';
 import { TaskLanguageBadge } from '../components/language-badge.js';
+import { usePersistentPageFilters } from '../filter-state.js';
 
 const h = React.createElement;
 const icon = status => ({ in_progress: '🚀', pending: '⏳', completed: '✅', deleted: '🗑️' }[status] || '❔');
@@ -16,9 +17,9 @@ export default function TasksPage() {
   const location = useLocation();
   const { selectedSessionIds, setSelectedSessionIds } = useSessionScope();
   const [scopedState, setScopedState] = useState(null);
-  const [query, setQuery] = useState('');
-  const [statusOverride, setStatus] = useState(null);
-  const [sortOverride, setSort] = useState(null);
+  const [filters, setFilter] = usePersistentPageFilters('tasks', {
+    q: '', status: scopedState?.initialStatus ?? 'in_progress', sort: scopedState?.initialSort ?? 'dependency',
+  });
 
   useEffect(() => {
     let alive = true;
@@ -26,9 +27,10 @@ export default function TasksPage() {
     return () => { alive = false; };
   }, [selectedSessionIds.join(','), app.revision]);
 
-  const initialStatuses = useMemo(() => normalizeStatusSelection(scopedState?.initialStatus ?? 'in_progress'), [scopedState?.initialStatus]);
-  const statuses = statusOverride ?? initialStatuses;
-  const sort = sortOverride ?? scopedState?.initialSort ?? 'dependency';
+  const query = filters.q || '';
+  const statuses = useMemo(() => normalizeStatusSelection(filters.status), [filters.status]);
+  const sort = filters.sort || scopedState?.initialSort || 'dependency';
+  const setStatus = next => setFilter('status', next.size === 4 || next.size === 0 ? 'all' : [...next].join(','));
   const tasks = scopedState?.tasks || [];
   const sessionRank = useMemo(() => new Map(selectedSessionIds.map((id, index) => [id, index])), [selectedSessionIds.join(',')]);
   const graphs = useMemo(() => {
@@ -61,10 +63,10 @@ export default function TasksPage() {
 
   return h('div', { className: 'page' },
     h('div', { className: 'page-controls' },
-      h('input', { className: 'search-input', value: query, onChange: event => setQuery(event.target.value), placeholder: 'Search task id, title, description, owner, session…' }),
+      h('input', { className: 'search-input', value: query, onChange: event => setFilter('q', event.target.value), placeholder: 'Search task id, title, description, owner, session…' }),
       h(SessionScopeSelect, { selectedSessionIds, setSelectedSessionIds }),
       h(StatusMultiSelect, { value: statuses, onChange: setStatus }),
-      h('select', { value: sort, onChange: event => setSort(event.target.value) },
+      h('select', { value: sort, onChange: event => setFilter('sort', event.target.value) },
         ...[['dependency', 'Dependency'], ['id', 'ID'], ['subject', 'Title'], ['status', 'Status']].map(([value, label]) => h('option', { value, key: value }, label))),
     ),
     h('div', { className: 'task-list' },

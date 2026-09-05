@@ -1,13 +1,19 @@
 import React, { useMemo, useRef, useState } from 'react';
 import { flexRender, getCoreRowModel, getSortedRowModel, useReactTable } from '@tanstack/react-table';
 import { useApp } from '../app-context.js';
+import { parseSorting, serializeSorting, usePersistentPageFilters } from '../filter-state.js';
 
 const h = React.createElement;
 
 export default function SessionsPage() {
   const app = useApp();
-  const [query, setQuery] = useState('');
-  const [sorting, setSorting] = useState([{ id: 'lastActivity', desc: true }]);
+  const [filters, setFilter] = usePersistentPageFilters('sessions', { q: '', sort: 'lastActivity:desc' });
+  const query = filters.q || '';
+  const sorting = useMemo(() => parseSorting(filters.sort, [{ id: 'lastActivity', desc: true }]), [filters.sort]);
+  const setSorting = updater => {
+    const next = typeof updater === 'function' ? updater(sorting) : updater;
+    setFilter('sort', serializeSorting(next));
+  };
   const [switching, setSwitching] = useState(null);
   const switchingRef = useRef(null);
 
@@ -68,7 +74,7 @@ export default function SessionsPage() {
     h('div', { className: 'page-heading' },
       h('div', null, h('div', { className: 'eyebrow' }, '🧵 SESSIONS'), h('h1', null, 'Claude sessions'), h('p', { className: 'muted' }, 'Choose one current session and any number of watched sessions. Session language is controlled here; Settings remain global.')),
       h('button', { className: 'mini', onClick: app.refreshSessions }, '↻ Refresh discovery')),
-    h('div', { className: 'page-controls' }, h('input', { className: 'search-input', value: query, onChange: event => setQuery(event.target.value), placeholder: 'Search name, session id, project, branch, first prompt…' })),
+    h('div', { className: 'page-controls' }, h('input', { className: 'search-input', value: query, onChange: event => setFilter('q', event.target.value), placeholder: 'Search name, session id, project, branch, first prompt…' })),
     h('div', { className: 'table-wrap sessions-table-wrap' },
       h('table', { className: 'data-table sessions-table' },
         h('thead', null, ...table.getHeaderGroups().map(group => h('tr', { key: group.id }, ...group.headers.map(header => h('th', { key: header.id, className: columnClass(header.column.id) }, header.isPlaceholder ? null : h('button', { className: `th-btn${header.column.getCanSort() ? ' sortable' : ''}`, onClick: header.column.getToggleSortingHandler() }, flexRender(header.column.columnDef.header, header.getContext()), sortMark(header.column))))))),

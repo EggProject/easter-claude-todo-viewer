@@ -32,7 +32,7 @@ class V32FrontendTests(unittest.TestCase):
         self.assertIn('Auto arrange', flow)
         self.assertIn('ELK', flow)
         self.assertIn("'elk.algorithm': 'layered'", flow)
-        self.assertIn('sortOverride', flow)
+        self.assertIn("usePersistentPageFilters('flow'", flow)
         self.assertIn('query', flow)
         self.assertIn('elkjs/lib/elk.bundled.js', html)
 

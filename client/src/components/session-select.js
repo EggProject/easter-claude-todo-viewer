@@ -1,28 +1,36 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useSearchParams } from 'react-router';
+import { useLocation, useSearchParams } from 'react-router';
 import { useApp } from '../app-context.js';
 
 const h = React.createElement;
 
 export function useSessionScope() {
   const app = useApp();
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
+  const pageKey = String(location.pathname || '/').split('/').filter(Boolean)[0] || 'tasks';
+  const storageKey = `claude-todos:session-scope:${pageKey}`;
   const watchedIds = app.sessionsState?.watchedSessionIds || [];
   const current = app.currentSessionId;
   const selectedSessionIds = useMemo(() => {
-    const wanted = String(searchParams.get('sessions') || '').split(',').map(x => x.trim()).filter(Boolean);
+    const fromUrl = String(searchParams.get('sessions') || '').split(',').map(x => x.trim()).filter(Boolean);
+    let wanted = fromUrl;
+    if (!wanted.length && typeof window !== 'undefined') {
+      try { wanted = JSON.parse(window.localStorage.getItem(storageKey) || '[]'); } catch { wanted = []; }
+    }
     const watched = new Set(watchedIds);
-    const valid = wanted.filter(id => watched.has(id));
+    const valid = (Array.isArray(wanted) ? wanted : []).filter(id => watched.has(id));
     if (valid.length) return [...new Set(valid)];
     if (current && watched.has(current)) return [current];
     return watchedIds.length ? [watchedIds[0]] : [];
-  }, [searchParams, watchedIds.join(','), current]);
+  }, [searchParams, watchedIds.join(','), current, storageKey]);
 
   const setSelectedSessionIds = ids => {
     const watched = new Set(watchedIds);
     const nextIds = [...new Set((ids || []).filter(id => watched.has(id)))];
     const fallback = current && watched.has(current) ? [current] : watchedIds.slice(0, 1);
     const resolved = nextIds.length ? nextIds : fallback;
+    if (typeof window !== 'undefined') window.localStorage.setItem(storageKey, JSON.stringify(resolved));
     const next = new URLSearchParams(searchParams);
     if (resolved.length === 1 && resolved[0] === current) next.delete('sessions');
     else next.set('sessions', resolved.join(','));

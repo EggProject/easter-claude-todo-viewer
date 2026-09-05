@@ -14,7 +14,7 @@ class TranslationUiTests(unittest.TestCase):
             self.assertIn(text,st)
     def test_translation_table_exposes_provider_sort_filter_retry_delete(self):
         s=(ROOT/'client/src/pages/translations.js').read_text()
-        for text in ['Filter tasks, versions, provider, model, status','provider','↻ Retry','🗑 Delete','getSortedRowModel','getToggleSortingHandler']:
+        for text in ['Filter every translation field','provider','↻ Retry','🗑 Delete','getSortedRowModel','getToggleSortingHandler']:
             self.assertIn(text,s)
 if __name__=='__main__':unittest.main()
 

@@ -10,6 +10,8 @@ import { StatusMultiSelect, normalizeStatusSelection } from '../components/statu
 import { SessionScopeSelect, useSessionScope } from '../components/session-select.js';
 import { TaskLanguageBadge } from '../components/language-badge.js';
 import { semanticGraphRevision, reconcileSemanticNodes } from '../flow-state.js';
+import { packDisconnectedNodes } from '../flow-layout.js';
+import { usePersistentPageFilters } from '../filter-state.js';
 
 const h = React.createElement;
 const elk = new ELK();
@@ -32,10 +34,13 @@ export default function FlowPage() {
   const { selectedSessionIds, setSelectedSessionIds } = useSessionScope();
   const [scopedState, setScopedState] = useState(null);
   const tasks = scopedState?.tasks || [];
-  const [query, setQuery] = useState('');
-  const [statuses, setStatuses] = useState(() => normalizeStatusSelection('all'));
-  const [sortOverride, setSort] = useState(null);
-  const sort = sortOverride ?? scopedState?.initialSort ?? 'dependency';
+  const [filters, setFilter] = usePersistentPageFilters('flow', {
+    q: '', status: 'all', sort: scopedState?.initialSort ?? 'dependency',
+  });
+  const query = filters.q || '';
+  const statuses = useMemo(() => normalizeStatusSelection(filters.status), [filters.status]);
+  const setStatuses = next => setFilter('status', next.size === 4 || next.size === 0 ? 'all' : [...next].join(','));
+  const sort = filters.sort || scopedState?.initialSort || 'dependency';
   const [nodes, setNodes] = useState([]);
   const savedLayouts = useRef({});
   const [layoutRevision, setLayoutRevision] = useState(0);
@@ -155,10 +160,11 @@ export default function FlowPage() {
       let offsetY = 0;
       const arranged = [];
       const persistence = [];
+      const canvasWidth = flowContainer.current?.clientWidth || (typeof window !== 'undefined' ? window.innerWidth : 1600) || 1600;
       for (const sessionId of selectedSessionIds) {
         const sessionNodes = nodes.filter(node => node.data?.sessionId === sessionId && node.data?.uid).map(node => ({ ...node, position: { x: 0, y: 0 } }));
         const sessionEdges = automatic.edges.filter(edge => edge.data?.sessionId === sessionId);
-        const layouted = await layoutWithElk(sessionNodes, sessionEdges);
+        const layouted = await layoutWithElk(sessionNodes, sessionEdges, canvasWidth);
         const maxY = layouted.length ? Math.max(...layouted.map(node => Number(node.position.y || 0) + NODE_HEIGHT)) : NODE_HEIGHT;
         const laneOffset = offsetY + 80;
         arranged.push(sessionHeaderNode(sessionId, visibleGroups.get(sessionId)?.session, offsetY));
@@ -193,10 +199,10 @@ export default function FlowPage() {
       h('div', null, h('div', { className: 'eyebrow' }, '🔀 MULTI-SESSION TASK FLOW'), h('h1', null, 'Task graph'), h('p', { className: 'muted' }, 'Each selected session is a separate lane. Dependency edges never cross sessions.')),
       h('div', { className: 'flow-actions' }, h('button', { className: 'mini', disabled: arranging || !nodes.some(node => node.data?.uid), onClick: autoArrange }, arranging ? '⟳ Arranging…' : '✨ Auto arrange'), h('button', { className: 'mini', onClick: resetLayout }, '↺ Reset layout'))),
     h('div', { className: 'flow-toolbar page-controls' },
-      h('input', { className: 'search-input', value: query, onChange: event => setQuery(event.target.value), placeholder: 'Search task id, title, description, owner, session…' }),
+      h('input', { className: 'search-input', value: query, onChange: event => setFilter('q', event.target.value), placeholder: 'Search task id, title, description, owner, session…' }),
       h(SessionScopeSelect, { selectedSessionIds, setSelectedSessionIds }),
       h(StatusMultiSelect, { value: statuses, onChange: setStatuses }),
-      h('select', { value: sort, onChange: event => setSort(event.target.value) }, ...[['dependency', 'Dependency'], ['id', 'ID'], ['subject', 'Title'], ['status', 'Status']].map(([value, label]) => h('option', { value, key: value }, `Sort: ${label}`)))),
+      h('select', { value: sort, onChange: event => setFilter('sort', event.target.value) }, ...[['dependency', 'Dependency'], ['id', 'ID'], ['subject', 'Title'], ['status', 'Status']].map(([value, label]) => h('option', { value, key: value }, `Sort: ${label}`)))),
     h('div', { ref: flowContainer, className: `flow-wrap${fallbackFullscreen ? ' flow-maximized' : ''}` }, h(ReactFlow, {
       nodes, edges: automatic.edges, nodesDraggable: true, nodesConnectable: false, elementsSelectable: true,
       onNodesChange, onNodeDragStop: persistNode, onMoveEnd: persistViewport,
@@ -248,7 +254,7 @@ function sortTasks(tasks, sort, graph) {
 }
 function numericId(task) { const n = Number(task?.id); return Number.isFinite(n) ? n : Number.MAX_SAFE_INTEGER; }
 
-async function layoutWithElk(nodes, edges) {
+async function layoutWithElk(nodes, edges, canvasWidth = 1600) {
   const connectedTaskIds = new Set();
   edges.forEach(edge => { connectedTaskIds.add(edge.source); connectedTaskIds.add(edge.target); });
   const connected = nodes.filter(node => connectedTaskIds.has(node.id));
@@ -261,16 +267,8 @@ async function layoutWithElk(nodes, edges) {
     const positions = new Map((result.children || []).map(node => [node.id, { x: Number(node.x || 0), y: Number(node.y || 0) }]));
     connectedLayout = connected.map(node => ({ ...node, position: positions.get(node.id) || node.position }));
   }
-  return placeDisconnectedNodes(connectedLayout, disconnected);
+  return packDisconnectedNodes(connectedLayout, disconnected, canvasWidth, { nodeWidth: NODE_WIDTH, nodeHeight: NODE_HEIGHT, columnGap: 100, rowGap: 140 });
 }
-function placeDisconnectedNodes(connectedNodes, disconnectedNodes) {
-  if (!disconnectedNodes.length) return connectedNodes;
-  const rightEdge = connectedNodes.length ? Math.max(...connectedNodes.map(node => Number(node.position?.x || 0) + NODE_WIDTH)) : -440;
-  const startX = rightEdge + 260;
-  const baseY = connectedNodes.length ? Math.min(...connectedNodes.map(node => Number(node.position?.y || 0))) : 0;
-  return [...connectedNodes, ...disconnectedNodes.map((node, index) => ({ ...node, position: { x: startX + index * 440, y: baseY } }))];
-}
-function numericNodeId(node) { const n = Number(node?.data?.taskId); return Number.isFinite(n) ? n : Number.MAX_SAFE_INTEGER; }
 function timelineGroupKey(task, index) { const lifecycle = task?.lifecycle || {}; const raw = lifecycle.startedAt || lifecycle.completedAt || lifecycle.deletedAt || ''; if (!raw) return `unstarted:${index}`; const parsed = Date.parse(raw); if (!Number.isFinite(parsed)) return `activity:${raw}`; return `activity:${new Date(Math.floor(parsed / 1000) * 1000).toISOString()}`; }
 
 function buildFlow(tasks, graph, sessionId, session) {
@@ -283,7 +281,11 @@ function buildFlow(tasks, graph, sessionId, session) {
   orderedConnected.forEach((task, index) => { const key = timelineGroupKey(task, index); if (!groupMap.has(key)) { groupMap.set(key, []); groups.push(groupMap.get(key)); } groupMap.get(key).push(task); });
   groups.forEach((items, column) => items.forEach((task, row) => positionByUid.set(task.uid, { x: column * 620, y: row * 290 })));
   const disconnectedStart = groups.length ? groups.length * 620 : 0;
-  disconnected.forEach((task, index) => positionByUid.set(task.uid, { x: disconnectedStart + index * 500, y: 0 }));
+  const disconnectedColumns = Math.max(1, Math.min(5, disconnected.length));
+  disconnected.forEach((task, index) => positionByUid.set(task.uid, {
+    x: disconnectedStart + (index % disconnectedColumns) * 500,
+    y: Math.floor(index / disconnectedColumns) * 260,
+  }));
   for (const task of [...connected, ...disconnected]) {
     const ready = graph.ready(task), cls = flowNodeClass(task, ready), lifecycle = task.lifecycle || {};
     const statusText = task.status === 'deleted' ? '🗑️ deleted' : task.status === 'pending' && !ready ? '🔒 blocked' : task.status === 'in_progress' ? '🚀 in progress' : task.status === 'completed' ? '✅ completed' : '▶ ready';

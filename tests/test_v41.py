@@ -48,7 +48,7 @@ class RuntimePerformanceTests(unittest.TestCase):
         for sid, ts in [('A','2026-09-05T10:00:00Z'),('B','2026-09-05T11:00:00Z'),('C','2026-09-05T12:00:00Z')]:
             p = projects/f'-{sid}'; p.mkdir(parents=True)
             (p/f'{sid}.jsonl').write_text(json.dumps({'timestamp':ts,'cwd':f'/work/{sid.lower()}','type':'user','message':{'content':sid}})+'\n')
-        self.cfg = DaemonConfig(claude_home=self.ch, cache_root=b/'cache', settings_file=b/'config.json', app_state_file=b/'app-state.json', log_root=b/'logs', client_origins=['http://127.0.0.1:8766'], version='4.1.0')
+        self.cfg = DaemonConfig(claude_home=self.ch, cache_root=b/'cache', settings_file=b/'config.json', app_state_file=b/'app-state.json', log_root=b/'logs', client_origins=['http://127.0.0.1:8766'], version='4.1.1')
         self.rt = MultiSessionRuntime(self.cfg, start_background=False)
     def tearDown(self):
         self.rt.close(); self.tmp.cleanup()
@@ -160,7 +160,7 @@ console.log(JSON.stringify({{revSame:rev1===rev2,pos:out[0].position,label:out[0
         files=['server/main.py','server/session_core.py','client/package.json','client/serve.py','README.md']
         for rel in files:
             text=(ROOT/rel).read_text()
-            self.assertIn('4.1.0',text,rel)
+            self.assertIn('4.1.1',text,rel)
 
     def test_shared_task_language_badge_is_used_on_task_and_flow_surfaces(self):
         badge = (ROOT/'client/src/components/language-badge.js').read_text()

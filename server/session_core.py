@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Single-session state/translation core used by Claude Todos v4.1.0.
+"""Single-session state/translation core used by Claude Todos v4.1.1.
 
 The supported v4 HTTP entrypoint is ``server.main`` / ``server.http_api`` and
 the React client is served separately from ``client/``. This module retains the
@@ -191,7 +191,7 @@ class Config:
     candidate_ids: list
     initial_status: str = "all"
     initial_sort: str = "dependency"
-    version: str = "4.1.0"
+    version: str = "4.1.1"
     cache_root: pathlib.Path = pathlib.Path("~/.claude-todos/cache")
     ui_dir: pathlib.Path = pathlib.Path("ui")
     agy_bin: str = "agy"
@@ -3247,7 +3247,7 @@ def config_from_env():
         candidate_ids=candidates,
         initial_status=os.environ.get("CLAUDE_TODOS_INITIAL_STATUS", "all"),
         initial_sort=os.environ.get("CLAUDE_TODOS_INITIAL_SORT", "dependency"),
-        version=os.environ.get("CLAUDE_TODOS_VERSION", "4.1.0"),
+        version=os.environ.get("CLAUDE_TODOS_VERSION", "4.1.1"),
         cache_root=pathlib.Path(os.environ.get("CLAUDE_TODOS_CACHE_ROOT", "~/.claude-todos/cache")).expanduser(),
         ui_dir=pathlib.Path(os.environ.get("CLAUDE_TODOS_UI_DIR", str(script_dir / "ui"))),
         agy_bin=os.environ.get("CLAUDE_TODOS_AGY_BIN", "agy"),

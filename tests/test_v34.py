@@ -274,14 +274,14 @@ class V34FrontendContractTests(unittest.TestCase):
         self.assertIn("task.viewLanguage === 'hu'", drawer)
         self.assertIn('Showing current English source until the Hungarian translation is ready', drawer)
 
-    def test_translations_page_uses_tanstack_subrows_and_child_based_bulk_eligibility(self):
+    def test_translations_page_uses_flat_tanstack_table_and_child_based_bulk_eligibility(self):
         page = (ROOT/'client/src/pages/translations.js').read_text()
         html = (ROOT/'client/index.html').read_text()
         self.assertIn('@tanstack/react-table', page)
-        self.assertIn('getSubRows', page)
-        self.assertIn('getExpandedRowModel', page)
+        self.assertNotIn('getSubRows', page)
+        self.assertNotIn('getExpandedRowModel', page)
         self.assertIn('getSortedRowModel', page)
-        self.assertIn('filterFromLeafRows', page)
+        self.assertIn('getToggleSortingHandler', page)
         self.assertIn('eligibleSelectedJobs', page)
         self.assertIn('@tanstack/react-table', html)
 
@@ -290,8 +290,9 @@ class V34FrontendContractTests(unittest.TestCase):
         self.assertIn("'elk.spacing.nodeNode': '180'", flow)
         self.assertIn("'elk.layered.spacing.nodeNodeBetweenLayers': '320'", flow)
         self.assertIn("'elk.layered.spacing.edgeNodeBetweenLayers': '120'", flow)
-        self.assertIn('placeDisconnectedNodes', flow)
+        self.assertIn('packDisconnectedNodes', flow)
         self.assertIn('connectedTaskIds', flow)
+        self.assertIn('flowContainer.current?.clientWidth', flow)
         self.assertNotIn('find(task => task.status === \'in_progress\')', flow)
 
     def test_import_map_and_package_include_v34_dependencies(self):
