@@ -3,13 +3,24 @@
   "private": true,
   "version": "4.1.2",
   "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage"
+  },
   "dependencies": {
-    "@xyflow/react": "12.11.6",
-    "react": "19.2.4",
-    "react-dom": "19.2.4",
-    "react-router": "8.3.1",
-    "elkjs": "0.12.0",
     "@tanstack/react-table": "8.21.3",
-    "react-diff-viewer-continued": "4.4.0"
+    "@xyflow/react": "12.11.6",
+    "elkjs": "0.12.0",
+    "react": "19.2.4",
+    "react-diff-viewer-continued": "4.4.0",
+    "react-dom": "19.2.4",
+    "react-router": "8.3.1"
+  },
+  "devDependencies": {
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.7",
+    "@vitest/coverage-v8": "^5.0.0",
+    "jsdom": "^30.0.1",
+    "vitest": "^5.0.0"
   }
 }

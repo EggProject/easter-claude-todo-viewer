@@ -1,0 +1,8 @@
+[run]
+branch = True
+source =
+    server
+    claude_todos
+    client/serve.py
+omit =
+    tests/*
