@@ -1,8 +1,14 @@
 [run]
 branch = True
+core = ctrace
 source =
     server
     claude_todos
     client/serve.py
 omit =
     tests/*
+    client/src/*
+
+[report]
+show_missing = True
+skip_covered = False

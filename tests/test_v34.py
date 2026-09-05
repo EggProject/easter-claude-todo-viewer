@@ -7,6 +7,7 @@ import threading
 import urllib.request
 import time
 import unittest
+from unittest import mock
 
 import server
 
@@ -15,6 +16,8 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 
 class V34RuntimeCase(unittest.TestCase):
     def setUp(self):
+        self.agy_patcher = mock.patch("server.session_core.run_agy", return_value=({"title": "HU title", "description": "HU desc"}, {"status": "SUCCESS"}))
+        self.agy_patcher.start()
         self.tmp = tempfile.TemporaryDirectory()
         base = pathlib.Path(self.tmp.name)
         self.base = base
@@ -31,6 +34,7 @@ class V34RuntimeCase(unittest.TestCase):
 
     def tearDown(self):
         self.runtime.close()
+        self.agy_patcher.stop()
         self.tmp.cleanup()
 
     def write_task(self, task_id='1', subject=None, description='Desc', status='pending'):
@@ -336,6 +340,8 @@ class V34FlowLogicTests(unittest.TestCase):
 
 class V34HttpTests(unittest.TestCase):
     def setUp(self):
+        self.agy_patcher = mock.patch("server.session_core.run_agy", return_value=({"title": "HU title", "description": "HU desc"}, {"status": "SUCCESS"}))
+        self.agy_patcher.start()
         self.tmp = tempfile.TemporaryDirectory()
         base = pathlib.Path(self.tmp.name)
         self.task_root = base/'tasks'; self.store_id='sess'; (self.task_root/self.store_id).mkdir(parents=True)
@@ -348,7 +354,7 @@ class V34HttpTests(unittest.TestCase):
         self.base = f'http://127.0.0.1:{self.http.server_port}'
 
     def tearDown(self):
-        self.runtime.close(); self.http.shutdown(); self.http.server_close(); self.tmp.cleanup()
+        self.runtime.close(); self.http.shutdown(); self.http.server_close(); self.agy_patcher.stop(); self.tmp.cleanup()
 
     def get(self, path):
         with urllib.request.urlopen(self.base+path, timeout=5) as response:

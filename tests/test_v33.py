@@ -4,6 +4,7 @@ import tempfile
 import threading
 import time
 import unittest
+from unittest import mock
 
 import server
 from claude_todos.settings import AppSettingsStore
@@ -70,6 +71,8 @@ class V33LifecycleTests(unittest.TestCase):
 
 class V33RuntimeTests(unittest.TestCase):
     def setUp(self):
+        self.agy_patcher = mock.patch("server.session_core.run_agy", return_value=({"title": "HU", "description": "HU"}, {"status": "SUCCESS"}))
+        self.agy_patcher.start()
         self.tmp = tempfile.TemporaryDirectory()
         base = pathlib.Path(self.tmp.name)
         self.base = base
@@ -85,6 +88,7 @@ class V33RuntimeTests(unittest.TestCase):
 
     def tearDown(self):
         self.runtime.close()
+        self.agy_patcher.stop()
         self.tmp.cleanup()
 
     def write_task(self, task_id):
