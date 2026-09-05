@@ -25,10 +25,13 @@ class HttpTests(unittest.TestCase):
         st,data,_=self.request('POST','/api/sessions/S/language',{'language':'en'}); self.assertEqual(202,st); self.assertEqual('en',data['globalLanguage'])
         st,data,_=self.request('POST','/api/sessions/S/flow-layout',{'nodes':{'x':{'x':1,'y':2}}}); self.assertEqual(200,st)
         st,data,_=self.request('GET','/api/sessions/S/flow-layout'); self.assertEqual(1.0,data['nodes']['x']['x'])
-    def test_sessions_endpoint_refreshes_discovery_for_new_transcript(self):
+    def test_sessions_snapshot_is_fast_and_explicit_refresh_discovers_new_transcript(self):
         p=(pathlib.Path(self.rt.claude_home)/'projects'/'p'/'NEW.jsonl')
         p.write_text(json.dumps({'timestamp':'2026-09-05T13:00:00Z','cwd':'/work/new','type':'user','message':{'content':'New prompt'}})+'\n')
         st,data,_=self.request('GET','/api/sessions')
+        self.assertEqual(200,st)
+        self.assertNotIn('NEW',{row['id'] for row in data['sessions']})
+        st,data,_=self.request('POST','/api/sessions/refresh',{})
         self.assertEqual(200,st)
         self.assertIn('NEW',{row['id'] for row in data['sessions']})
 

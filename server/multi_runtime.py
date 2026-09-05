@@ -24,7 +24,7 @@ class DaemonConfig:
     agy_bin: str = 'agy'
     initial_status: str = 'all'
     initial_sort: str = 'dependency'
-    version: str = '4.0.0'
+    version: str = '4.1.0'
     log_file: bool = False
     log_output: bool = False
     client_origins: list = field(default_factory=lambda:['http://127.0.0.1:8766','http://localhost:8766'])
@@ -60,6 +60,7 @@ class MultiSessionRuntime:
             'anthropic': max(1,min(32,int((tr.get('anthropic') or {}).get('maxConcurrency',2) or 2))),
         }
         self.watch_state={}
+        self._stats_cache={}
         self.next_registry_refresh=time.monotonic()+5.0
         self.translation_thread=None
         self.watcher_thread=None
@@ -72,8 +73,8 @@ class MultiSessionRuntime:
         if current:
             self.get_runtime(current)
 
-    def _discover_sessions(self):
-        discovered=self.registry.discover()
+    def _discover_sessions(self, force=False):
+        discovered=self.registry.discover(force=force)
         by_id={item['id']:dict(item) for item in discovered}
         # Preserve cached sessions even after Claude's transcript retention removes JSONL.
         cache_root=pathlib.Path(self.config.cache_root).expanduser()
@@ -97,9 +98,10 @@ class MultiSessionRuntime:
         result.sort(key=lambda item:(str(item.get('lastActivity') or ''),item['id']),reverse=True)
         return result
 
-    def refresh_sessions(self):
+    def refresh_sessions(self, force=False):
         previous={(item.get('id'),item.get('lastActivity'),item.get('fileSize')) for item in getattr(self,'sessions',[]) or []}
-        self.sessions=self._discover_sessions(); self._session_map={x['id']:x for x in self.sessions}
+        self.sessions=self._discover_sessions(force=force); self._session_map={x['id']:x for x in self.sessions}
+        if force: self.invalidate_session_stats()
         self.app_state_store.load(self.sessions)
         current={(item.get('id'),item.get('lastActivity'),item.get('fileSize')) for item in self.sessions}
         if previous!=current and hasattr(self,'hub'):
@@ -110,8 +112,6 @@ class MultiSessionRuntime:
 
     def session_info(self,session_id):
         info=self._session_map.get(session_id)
-        if not info:
-            self.refresh_sessions(); info=self._session_map.get(session_id)
         return copy.deepcopy(info) if info else None
 
     def session_brief(self,session_id):
@@ -141,6 +141,7 @@ class MultiSessionRuntime:
             child.store.provider_concurrency_limits=self.provider_concurrency_limits
             child.store.configure_provider_concurrency(self.provider_concurrency_limits)
             self.children[session_id]=child
+            self.invalidate_session_stats(session_id)
             return child
 
     def switch_session(self,session_id):
@@ -160,7 +161,7 @@ class MultiSessionRuntime:
         key=info.get('projectKey') if info.get('cachedOnly') and info.get('projectKey') else core.project_key(info.get('cwd') or '')
         return pathlib.Path(self.config.cache_root).expanduser()/'projects'/key/'sessions'/core.safe_component(info['id'])
 
-    def _cache_stats(self,info):
+    def _compute_cache_stats(self,info):
         session_dir=self._cache_session_dir(info)
         tasks=list(session_dir.glob('tasks/*/*/task.json')) if session_dir.is_dir() else []
         deleted=0
@@ -172,17 +173,38 @@ class MultiSessionRuntime:
         jobs=list((session_dir/'translation-jobs').glob('*.json')) if (session_dir/'translation-jobs').is_dir() else []
         return {'taskCount':len(tasks),'deletedTaskCount':deleted,'translationCount':len(jobs)}
 
+    def invalidate_session_stats(self,session_id=None):
+        if session_id is None:
+            self._stats_cache.clear()
+        else:
+            self._stats_cache.pop(str(session_id),None)
+
+    def _cache_stats(self,info):
+        key=info['id']; cached=self._stats_cache.get(key)
+        if cached is not None: return dict(cached)
+        value=self._compute_cache_stats(info)
+        self._stats_cache[key]=dict(value)
+        return dict(value)
+
     def sessions_state(self):
         state=self.app_state(); watched=set(state.get('watchedSessionIds') or []); current=state.get('currentSessionId')
         rows=[]
         for info in self.sessions:
             row=dict(info); row.update(self._cache_stats(info)); row['watched']=info['id'] in watched; row['current']=info['id']==current
             child=self.get_runtime(info['id'],create=False)
-            if child: row['globalLanguage']=child.store.session_meta.get('globalLanguage','en')
+            if child:
+                language=child.store.session_meta.get('globalLanguage','en')
+                row['globalLanguage']=language
+                with child.language_lock:
+                    pending=bool(child.pending_global_request)
+                if not pending and language=='hu':
+                    pending=any(job.get('status') in core.TranslationJobManager.ACTIVE for job in child.store.job_manager.list())
+                row['globalTranslationPending']=bool(pending)
             else:
                 try: cached=json.loads((self._cache_session_dir(info)/'session.json').read_text(encoding='utf-8'))
                 except Exception: cached={}
                 row['globalLanguage']=cached.get('globalLanguage','en')
+                row['globalTranslationPending']=False
             rows.append(row)
         return {'sessions':rows,'currentSessionId':current,'watchedSessionIds':list(watched)}
 
@@ -248,7 +270,7 @@ class MultiSessionRuntime:
             sub=child.api_state(); brief=self.session_brief(sid)
             session_states.append({'session':brief,'globalLanguage':sub.get('globalLanguage','en'),'globalTranslationPending':sub.get('globalTranslationPending',False)})
             for task in sub.get('tasks') or []:
-                item=copy.deepcopy(task); item['sessionId']=sid; item['session']=brief; tasks.append(item)
+                item=copy.deepcopy(task); item['sessionId']=sid; item['session']=brief; item['sessionGlobalLanguage']=sub.get('globalLanguage','en'); tasks.append(item)
         current=state.get('currentSessionId'); current_child=self.get_runtime(current) if current else None
         current_state=current_child.api_state() if current_child else {}
         return {
@@ -262,31 +284,77 @@ class MultiSessionRuntime:
         ids=list(session_ids or self.app_state().get('watchedSessionIds') or [])
         rows=[]
         for sid in ids:
-            child=self.get_runtime(sid); brief=self.session_brief(sid)
+            child=self.get_runtime(sid); brief=self.session_brief(sid); sub=child.api_state(); task_by_uid={task.get('uid'):task for task in (sub.get('tasks') or [])}
             for event in child.store.history():
-                item=copy.deepcopy(event); item['sessionId']=sid; item['session']=brief; rows.append(item)
+                item=copy.deepcopy(event); item['sessionId']=sid; item['session']=brief
+                task=task_by_uid.get(item.get('uid'))
+                if task:
+                    item['taskSnapshot']={
+                        'uid':task.get('uid'),'id':task.get('id'),'subject':task.get('subject'),'viewLanguage':task.get('viewLanguage'),
+                        'effectiveLanguage':task.get('effectiveLanguage'),'translationState':task.get('translationState'),
+                        'sessionGlobalLanguage':sub.get('globalLanguage','en'),
+                    }
+                rows.append(item)
         rows.sort(key=lambda e:str(e.get('detectedAt') or ''),reverse=True)
+        return rows
+
+    def _read_persisted_jobs(self,info):
+        child=self.get_runtime(info['id'],create=False)
+        if child: return child.translation_jobs()
+        directory=self._cache_session_dir(info)/'translation-jobs'
+        rows=[]
+        if directory.is_dir():
+            for path in directory.glob('*.json'):
+                try:
+                    value=json.loads(path.read_text(encoding='utf-8'))
+                    if isinstance(value,dict): rows.append(value)
+                except Exception: pass
+        rows.sort(key=lambda j:str(j.get('queuedAt') or ''),reverse=True)
         return rows
 
     def translations(self):
         rows=[]
-        # Instantiate discovered/cached sessions lazily so persisted jobs can be aggregated/actioned.
         for info in self.sessions:
-            child=self.get_runtime(info['id']); brief=self.session_brief(info['id'])
-            for job in child.translation_jobs():
+            brief=self.session_brief(info['id'])
+            for job in self._read_persisted_jobs(info):
                 item=copy.deepcopy(job); item['sessionId']=info['id']; item['session']=brief; rows.append(item)
         rows.sort(key=lambda j:str(j.get('queuedAt') or ''),reverse=True)
         return rows
 
+    def _cached_translation_catalog(self,info):
+        child=self.get_runtime(info['id'],create=False)
+        if child: return child.translation_catalog().get('tasks') or []
+        session_dir=self._cache_session_dir(info); jobs=self._read_persisted_jobs(info); jobs_by_uid={}
+        for job in jobs: jobs_by_uid.setdefault(job.get('uid'),[]).append(job)
+        parents=[]
+        for path in session_dir.glob('tasks/*/*/task.json') if session_dir.is_dir() else []:
+            try: rec=json.loads(path.read_text(encoding='utf-8'))
+            except Exception: continue
+            uid=rec.get('uid'); versions=rec.get('sourceVersions') or {}; current=rec.get('current') or {}; tfp=current.get('textFingerprint')
+            current_task=current.get('task') or {}; view=rec.get('viewLanguage') or rec.get('languagePreference') or 'en'
+            tr=(((rec.get('translations') or {}).get('hu') or {}).get(tfp)) or {}
+            ready=bool(tr.get('validated'))
+            title=tr.get('title') if view=='hu' and ready else current_task.get('subject')
+            children=[]
+            ordered=sorted(versions.items(), key=lambda item:((item[1] or {}).get('firstObservedAt') or '',item[0]))
+            nums={key:i+1 for i,(key,_v) in enumerate(ordered)}
+            for job in jobs_by_uid.get(uid,[]):
+                item=copy.deepcopy(job); jfp=item.get('textFingerprint'); src=versions.get(jfp) or {}
+                item.update({'kind':'version','versionNumber':nums.get(jfp),'current':jfp==tfp,'sourceObservedAt':src.get('firstObservedAt'),'sourceTitle':src.get('subject',''),'sourceDescription':src.get('description','')}); children.append(item)
+            children.sort(key=lambda c:(int(c.get('versionNumber') or 0),c.get('queuedAt') or ''),reverse=True)
+            status=children[0].get('status') if children else ('ready' if ready else 'missing')
+            parents.append({'kind':'task','uid':uid,'taskId':rec.get('taskId'),'title':title or f"Task #{rec.get('taskId')}",'viewLanguage':view,'effectiveLanguage':'hu' if view=='hu' and ready else 'en','translationState':'ready' if ready else status,'status':current_task.get('status'),'present':bool(rec.get('present',True)),'currentFingerprint':tfp,'versionCount':len(children),'children':children})
+        parents.sort(key=lambda item:(int(item.get('taskId')) if str(item.get('taskId','')).isdigit() else 10**12,str(item.get('taskId') or '')))
+        return parents
+
     def translation_catalog(self):
         rows=[]
+        session_rows={row['id']:row for row in self.sessions_state().get('sessions') or []}
         for info in self.sessions:
-            child=self.get_runtime(info['id']); brief=self.session_brief(info['id'])
-            catalog=child.translation_catalog().get('tasks') or []
-            for item in catalog:
-                rec=copy.deepcopy(item); rec['sessionId']=info['id']; rec['session']=brief
-                for child in rec.get('children') or []:
-                    child['sessionId']=info['id']; child['session']=brief
+            brief=self.session_brief(info['id']); session_language=(session_rows.get(info['id']) or {}).get('globalLanguage','en')
+            for item in self._cached_translation_catalog(info):
+                rec=copy.deepcopy(item); rec['sessionId']=info['id']; rec['session']=brief; rec['sessionGlobalLanguage']=session_language
+                for child in rec.get('children') or []: child['sessionId']=info['id']; child['session']=brief
                 rows.append(rec)
         return {'tasks':rows}
 
@@ -294,15 +362,20 @@ class MultiSessionRuntime:
     def save_flow_layout(self,session_id,payload): return self.get_runtime(session_id).save_flow_layout(payload)
     def reset_flow_layout(self,session_id): return self.get_runtime(session_id).reset_flow_layout()
 
-    def request_global_language(self,session_id,language): return self.get_runtime(session_id).request_global_language(language)
+    def request_global_language(self,session_id,language):
+        if language=='hu' and session_id not in set(self.app_state().get('watchedSessionIds') or []): self.set_watched(session_id,True)
+        result=self.get_runtime(session_id).request_global_language(language); self.invalidate_session_stats(session_id); return result
     def cancel_global_translation(self,session_id): return self.get_runtime(session_id).cancel_global_translation()
-    def request_task_language(self,session_id,uid,language): return self.get_runtime(session_id).request_task_language(uid,language)
+    def request_task_language(self,session_id,uid,language):
+        result=self.get_runtime(session_id).request_task_language(uid,language); self.invalidate_session_stats(session_id); return result
     def cancel_task_translation(self,session_id,uid): return self.get_runtime(session_id).cancel_task_translation(uid)
 
     def translation_job(self,session_id,job_id): return self.get_runtime(session_id).store.job_manager.get(job_id)
-    def retry_translation_job(self,session_id,job_id): return self.get_runtime(session_id).retry_translation_job(job_id)
+    def retry_translation_job(self,session_id,job_id):
+        result=self.get_runtime(session_id).retry_translation_job(job_id); self.invalidate_session_stats(session_id); return result
     def cancel_translation_job(self,session_id,job_id): return self.get_runtime(session_id).cancel_translation_job(job_id)
-    def delete_translation_job(self,session_id,job_id): return self.get_runtime(session_id).delete_translation_job(job_id)
+    def delete_translation_job(self,session_id,job_id):
+        result=self.get_runtime(session_id).delete_translation_job(job_id); self.invalidate_session_stats(session_id); return result
 
     def bulk_translation_action(self,action,job_refs):
         by_session={}
@@ -335,9 +408,19 @@ class MultiSessionRuntime:
         child=self.get_runtime(session_id)
         events=child.store.poll_once(source='live')
         if not events: return []
+        self.invalidate_session_stats(session_id)
         brief=self.session_brief(session_id)
         self.hub.publish('state-invalidated',{'reason':'tasks-updated','session':brief,'timestamp':core.now_iso()})
         localized=child._localize_specific(copy.deepcopy(events))
+        sub_state=child.api_state(); task_by_uid={task.get('uid'):task for task in (sub_state.get('tasks') or [])}
+        for event in localized:
+            task=task_by_uid.get(event.get('uid'))
+            if task:
+                event['taskSnapshot']={
+                    'uid':task.get('uid'),'id':task.get('id'),'subject':task.get('subject'),'viewLanguage':task.get('viewLanguage'),
+                    'effectiveLanguage':task.get('effectiveLanguage'),'translationState':task.get('translationState'),
+                    'sessionGlobalLanguage':sub_state.get('globalLanguage','en'),
+                }
         self.hub.publish('notification',{'timestamp':core.now_iso(),'changes':localized,'session':brief})
         prepared=child.store.prepare_event_translations(events,trigger='tasks-updated',scope='retranslation')
         if prepared: child.schedule_prepared_translations(prepared,'tasks-updated')

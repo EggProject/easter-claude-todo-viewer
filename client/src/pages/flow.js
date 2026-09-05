@@ -8,6 +8,8 @@ import { buildGraph, flowNodeClass, partitionFlowTasks, timelineOrder } from '..
 import { TaskDrawer } from '../components/task-drawer.js';
 import { StatusMultiSelect, normalizeStatusSelection } from '../components/status-multiselect.js';
 import { SessionScopeSelect, useSessionScope } from '../components/session-select.js';
+import { TaskLanguageBadge } from '../components/language-badge.js';
+import { semanticGraphRevision, reconcileSemanticNodes } from '../flow-state.js';
 
 const h = React.createElement;
 const elk = new ELK();
@@ -35,8 +37,10 @@ export default function FlowPage() {
   const [sortOverride, setSort] = useState(null);
   const sort = sortOverride ?? scopedState?.initialSort ?? 'dependency';
   const [nodes, setNodes] = useState([]);
-  const [layouts, setLayouts] = useState({});
+  const savedLayouts = useRef({});
+  const [layoutRevision, setLayoutRevision] = useState(0);
   const [layoutReady, setLayoutReady] = useState(false);
+  const restoringViewport = useRef(false);
   const [arranging, setArranging] = useState(false);
   const [fallbackFullscreen, setFallbackFullscreen] = useState(false);
   const [nativeFullscreen, setNativeFullscreen] = useState(false);
@@ -63,6 +67,7 @@ export default function FlowPage() {
   }, [grouped, selectedSessionIds.join(','), query, statuses, sort, app.sessionsState.sessions]);
 
   const automatic = useMemo(() => buildMultiSessionFlow(visibleGroups, selectedSessionIds), [visibleGroups, selectedSessionIds.join(',')]);
+  const graphRevision = useMemo(() => semanticGraphRevision(visibleGroups, selectedSessionIds, sort), [visibleGroups, selectedSessionIds.join(','), sort]);
 
   useEffect(() => {
     let alive = true;
@@ -72,46 +77,46 @@ export default function FlowPage() {
       return [sessionId, value || { nodes: {}, viewport: null }];
     })).then(entries => {
       if (!alive) return;
-      setLayouts(Object.fromEntries(entries));
+      savedLayouts.current = Object.fromEntries(entries);
+      setLayoutRevision(value => value + 1);
       setLayoutReady(true);
     }).catch(() => { if (alive) setLayoutReady(true); });
     return () => { alive = false; };
   }, [selectedSessionIds.join(',')]);
 
   useEffect(() => {
-    setNodes(previous => {
-      const previousPositions = new Map(previous.map(node => [node.id, node.position]));
-      return automatic.nodes.map(node => {
-        if (!node.data?.uid) return node;
-        const saved = layouts[node.data.sessionId]?.nodes?.[node.data.uid];
-        const savedPosition = saved ? { x: Number(saved.x), y: Number(saved.y) + Number(node.data.laneOffset || 0) } : null;
-        return { ...node, position: savedPosition || previousPositions.get(node.id) || node.position };
-      });
-    });
-  }, [automatic.nodes, layouts]);
+    if (!layoutReady) return;
+    setNodes(previous => reconcileSemanticNodes(previous, automatic.nodes, savedLayouts.current));
+  }, [graphRevision, layoutRevision, layoutReady]);
 
-  useEffect(() => {
-    if (!layoutReady || !rf.current) return;
+  const restoreViewport = useCallback((instance = rf.current) => {
+    if (!layoutReady || !instance) return;
+    restoringViewport.current = true;
     if (selectedSessionIds.length === 1) {
-      const viewport = layouts[selectedSessionIds[0]]?.viewport;
-      if (viewport) rf.current.setViewport(viewport, { duration: 0 });
-      else if (nodes.length) rf.current.fitView({ padding: 0.18, duration: 0 });
-    } else if (nodes.length) rf.current.fitView({ padding: 0.18, duration: 0 });
-  }, [layoutReady, selectedSessionIds.join(',')]);
+      const viewport = savedLayouts.current[selectedSessionIds[0]]?.viewport;
+      if (viewport) instance.setViewport(viewport, { duration: 0 });
+      else if (automatic.nodes.length) instance.fitView({ padding: 0.18, duration: 0 });
+    } else if (automatic.nodes.length) instance.fitView({ padding: 0.18, duration: 0 });
+    requestAnimationFrame(() => requestAnimationFrame(() => { restoringViewport.current = false; }));
+  }, [layoutReady, selectedSessionIds.join(','), graphRevision]);
+
+  useEffect(() => { restoreViewport(); }, [layoutRevision, selectedSessionIds.join(','), restoreViewport]);
 
   const onNodesChange = useCallback(changes => setNodes(current => applyNodeChanges(changes, current)), []);
   const persistNode = useCallback((_, node) => {
     if (!node.data?.uid || !node.data?.sessionId) return;
     const sessionId = node.data.sessionId;
     const position = { x: Number(node.position.x), y: Number(node.position.y) - Number(node.data.laneOffset || 0) };
-    setLayouts(current => ({ ...current, [sessionId]: { ...(current[sessionId] || {}), nodes: { ...(current[sessionId]?.nodes || {}), [node.data.uid]: position } } }));
+    const current = savedLayouts.current[sessionId] || { nodes: {}, viewport: null };
+    savedLayouts.current = { ...savedLayouts.current, [sessionId]: { ...current, nodes: { ...(current.nodes || {}), [node.data.uid]: position } } };
     postJSON(`/api/sessions/${encodeURIComponent(sessionId)}/flow-layout`, { nodes: { [node.data.uid]: position } }).catch(() => {});
   }, []);
   const persistViewport = useCallback((_, viewport) => {
-    if (!viewport || selectedSessionIds.length !== 1) return;
+    if (!viewport || selectedSessionIds.length !== 1 || restoringViewport.current) return;
     const sessionId = selectedSessionIds[0];
     const clean = { x: Number(viewport.x), y: Number(viewport.y), zoom: Number(viewport.zoom) };
-    setLayouts(current => ({ ...current, [sessionId]: { ...(current[sessionId] || {}), viewport: clean } }));
+    const current = savedLayouts.current[sessionId] || { nodes: {}, viewport: null };
+    savedLayouts.current = { ...savedLayouts.current, [sessionId]: { ...current, viewport: clean } };
     postJSON(`/api/sessions/${encodeURIComponent(sessionId)}/flow-layout`, { viewport: clean }).catch(() => {});
   }, [selectedSessionIds.join(',')]);
 
@@ -162,6 +167,8 @@ export default function FlowPage() {
           positions[node.data.uid] = { x: Number(node.position.x), y: Number(node.position.y) };
           arranged.push({ ...node, data: { ...node.data, laneOffset }, position: { x: node.position.x, y: node.position.y + laneOffset } });
         }
+        const currentLayout = savedLayouts.current[sessionId] || { nodes: {}, viewport: null };
+        savedLayouts.current = { ...savedLayouts.current, [sessionId]: { ...currentLayout, nodes: positions } };
         persistence.push(postJSON(`/api/sessions/${encodeURIComponent(sessionId)}/flow-layout`, { nodes: positions }));
         offsetY += Math.max(maxY + SESSION_GAP, 420);
       }
@@ -173,7 +180,8 @@ export default function FlowPage() {
 
   const resetLayout = useCallback(async () => {
     await Promise.all(selectedSessionIds.map(sessionId => deleteJSON(`/api/sessions/${encodeURIComponent(sessionId)}/flow-layout`)));
-    setLayouts({});
+    savedLayouts.current = {};
+    setLayoutRevision(value => value + 1);
     setNodes(automatic.nodes);
     requestAnimationFrame(() => rf.current?.fitView({ padding: 0.18, duration: 250 }));
   }, [automatic.nodes, selectedSessionIds.join(',')]);
@@ -192,7 +200,7 @@ export default function FlowPage() {
     h('div', { ref: flowContainer, className: `flow-wrap${fallbackFullscreen ? ' flow-maximized' : ''}` }, h(ReactFlow, {
       nodes, edges: automatic.edges, nodesDraggable: true, nodesConnectable: false, elementsSelectable: true,
       onNodesChange, onNodeDragStop: persistNode, onMoveEnd: persistViewport,
-      onInit: instance => { rf.current = instance; if (layoutReady && nodes.length) instance.fitView({ padding: 0.18 }); },
+      onInit: instance => { rf.current = instance; restoreViewport(instance); },
       onNodeClick: (_, node) => openTask(node), minZoom: 0.05, maxZoom: 1.8,
     }, h(Background, { gap: 28, size: 1 }), h(Controls, null, h(ControlButton, { onClick: toggleFullscreen, title: nativeFullscreen || fallbackFullscreen ? 'Exit full screen' : 'Full screen', 'aria-label': nativeFullscreen || fallbackFullscreen ? 'Exit full screen' : 'Full screen' }, nativeFullscreen || fallbackFullscreen ? '🗗' : '⛶')), h(MiniMap, { pannable: true, zoomable: true }))),
     h(TaskDrawer, { base: 'flow', tasks }));
@@ -279,7 +287,7 @@ function buildFlow(tasks, graph, sessionId, session) {
   for (const task of [...connected, ...disconnected]) {
     const ready = graph.ready(task), cls = flowNodeClass(task, ready), lifecycle = task.lifecycle || {};
     const statusText = task.status === 'deleted' ? '🗑️ deleted' : task.status === 'pending' && !ready ? '🔒 blocked' : task.status === 'in_progress' ? '🚀 in progress' : task.status === 'completed' ? '✅ completed' : '▶ ready';
-    nodes.push({ id: nodeId(task), position: positionByUid.get(task.uid) || { x: 0, y: 0 }, data: { uid: task.uid, taskId: task.id, sessionId, session, label: h('div', { className: `flow-node ${cls}` }, h('div', { className: 'flow-node-top' }, h('span', { className: 'mono' }, `#${task.id}`), h('span', { className: 'session-badge flow-session-badge', title: sessionId }, `🧵 ${compactLabel(session?.label || sessionId)}`), lifecycle.startedAt && h('span', { className: 'timeline-time', title: lifecycle.startedAt }, shortTime(lifecycle.startedAt))), h('strong', null, task.subject), h('small', null, statusText), task.status === 'deleted' && task.deletedAt ? h('span', { className: 'deleted-at', title: task.deletedAt }, `removed ${shortTime(task.deletedAt)}`) : null) }, style: { width: NODE_WIDTH, padding: 0, border: 'none', background: 'transparent' } });
+    nodes.push({ id: nodeId(task), position: positionByUid.get(task.uid) || { x: 0, y: 0 }, data: { uid: task.uid, taskId: task.id, sessionId, session, label: h('div', { className: `flow-node ${cls}` }, h('div', { className: 'flow-node-top' }, h('span', { className: 'mono' }, `#${task.id}`), h('span', { className: 'session-badge flow-session-badge', title: sessionId }, `🧵 ${compactLabel(session?.label || sessionId)}`), lifecycle.startedAt && h('span', { className: 'timeline-time', title: lifecycle.startedAt }, shortTime(lifecycle.startedAt))), h('strong', null, task.subject), h(TaskLanguageBadge, { task, compact: true }), h('small', null, statusText), task.status === 'deleted' && task.deletedAt ? h('span', { className: 'deleted-at', title: task.deletedAt }, `removed ${shortTime(task.deletedAt)}`) : null) }, style: { width: NODE_WIDTH, padding: 0, border: 'none', background: 'transparent' } });
   }
   for (const [source, targets] of graph.children.entries()) {
     if (!visible.has(source)) continue;

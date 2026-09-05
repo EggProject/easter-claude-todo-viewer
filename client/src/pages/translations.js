@@ -10,6 +10,7 @@ import {
 } from '@tanstack/react-table';
 import { useApp } from '../app-context.js';
 import { postJSON } from '../api.js';
+import { TaskLanguageBadge } from '../components/language-badge.js';
 
 const h = React.createElement;
 const TERMINAL = new Set(['success', 'validation_failed', 'error', 'canceled', 'interrupted']);
@@ -195,7 +196,9 @@ function taskCell(row) {
   const canExpand = row.getCanExpand();
   return h('div', { className: 'translation-task-cell' },
     h('button', { className: 'tree-toggle', disabled: !canExpand, onClick: row.getToggleExpandedHandler(), 'aria-label': canExpand ? `${row.getIsExpanded() ? 'Collapse' : 'Expand'} task ${task.taskId}` : `Task ${task.taskId} has no translation versions` }, canExpand ? (row.getIsExpanded() ? '▾' : '▸') : '•'),
-    h('div', null, h('strong', null, `#${task.taskId} ${task.title || ''}`), h('div', { className: 'muted small' }, `${task.versionCount || 0} translation version(s)${task.present === false ? ' · deleted task' : ''}`)),
+    h('div', null,
+      h('div',{className:'translation-task-title'},h('strong', null, `#${task.taskId} ${task.title || ''}`),h(TaskLanguageBadge,{task:{...task,subject:task.title},compact:true})),
+      h('div', { className: 'muted small' }, `${task.versionCount || 0} translation version(s)${task.present === false ? ' · deleted task' : ''}`)),
   );
 }
 

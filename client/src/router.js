@@ -1,9 +1,9 @@
-import React,{Suspense,lazy}from'react';
+import React,{lazy}from'react';
 import{BrowserRouter,Navigate,Route,Routes,useParams}from'react-router';
 import{Topbar}from'./components/topbar.js';import{NotificationSidebar,RequiredModal}from'./components/overlays.js';
 const h=React.createElement;
 const Sessions=lazy(()=>import('./pages/sessions.js')),Tasks=lazy(()=>import('./pages/tasks.js')),Flow=lazy(()=>import('./pages/flow.js')),Translations=lazy(()=>import('./pages/translations.js')),Prompts=lazy(()=>import('./pages/prompts.js')),Settings=lazy(()=>import('./pages/settings.js'));
-function Shell({children}){return h(React.Fragment,null,h(Topbar),h('main',{className:'shell'},h(Suspense,{fallback:h('div',{className:'boot'},'✨ Loading page…')},children)),h(NotificationSidebar),h(RequiredModal))}
+function Shell({children}){return h(React.Fragment,null,h(Topbar),h('main',{className:'shell'},children),h(NotificationSidebar),h(RequiredModal))}
 const page=C=>h(Shell,null,h(C));
 function ExecutionRedirect(){const{uid}=useParams();return h(Navigate,{to:uid?`/flow/${encodeURIComponent(uid)}`:'/flow',replace:true})}
 export default function Router(){return h(BrowserRouter,null,h(Routes,null,

@@ -1,4 +1,4 @@
-# Claude Todos v4.0.0
+# Claude Todos v4.1.0
 
 Multi-session Claude Code Task/Todo inspector with a persistent Python backend daemon and a separate React SPA client.
 
@@ -112,8 +112,9 @@ v4 uses two independent concepts.
 Exactly one session is current. It controls:
 
 - the topbar session button;
-- the topbar global EN/HU control;
 - the default Tasks/Flow page scope.
+
+Session language is **not** controlled in the header anymore; every session row on `/sessions` owns its EN/HU control.
 
 The current session is always watched. Switching to an unwatched session automatically adds it to the watched set.
 
@@ -177,13 +178,15 @@ Route:
 The Sessions table supports search and clickable column sorting. It shows available metadata such as:
 
 ```text
-Watch | Current | Name / Summary | Session ID | Project | Branch
-Created | Last activity | Messages | File size | Tasks | Deleted | Translations | Action
+Watch | Current | Action | Language | Name / Summary | Session ID | Project | Branch
+Created | Last activity | Messages | File size | Tasks | Deleted | Translations
 ```
 
-`Switch` changes the current session. The current session's watch checkbox is disabled because current always implies watched.
+`⇄ Switch` changes the current session with one click. The Action column is sticky next to Watch/Current so it remains visible without scrolling to the far-right edge. Switching is optimistic in the client and rolls back only if the backend rejects the change. The current session's watch checkbox is disabled because current always implies watched.
 
-The topbar session label is a button that opens `/sessions`. Its tooltip includes the session id, project, branch, created/last activity timestamps, current session language and watched state.
+Each row also owns the session EN/HU control. Setting an unwatched session to HU automatically makes it watched first so future task changes can continue to auto-translate.
+
+The topbar session label is a wider responsive button that opens `/sessions`. Its tooltip includes the session id, project, branch, created/last activity timestamps, session language and watched state. Navigation is right-aligned and there is no header-level language switch.
 
 ## Session language isolation
 
@@ -196,7 +199,7 @@ Session A globalLanguage = HU
 Session B globalLanguage = EN
 ```
 
-Switching current A → B changes the topbar control to B's value. A never-used session starts EN.
+A never-used session starts EN. Switching current A → B changes the session context, while language remains controlled from the corresponding Sessions table row.
 
 Task `viewLanguage`, translation cache, history and Flow layout also stay session-specific.
 
@@ -301,6 +304,32 @@ Translation completion is a separate history event, e.g.:
 
 Task drawer history remains restricted to that exact `(sessionId, task uid)`.
 
+## v4.1 stability and loading behavior
+
+### Flow render-loop fix
+
+React Flow keeps a single mutable node state. Backend semantic updates reconcile into that state only when task/edge semantics change; saved positions live in a stable ref rather than a layout object that re-triggers node reconciliation. Programmatic `fitView` / viewport restore is guarded so `onMoveEnd` cannot feed a restore/persist loop. This removes the v4.0 maximum-update-depth feedback path while preserving drag persistence.
+
+### Fast session snapshots
+
+Session JSONL discovery is cached by transcript path plus `(mtime_ns, size)`. Unchanged transcripts are not reparsed. Normal `GET /api/sessions` is snapshot-only; `↻ Refresh discovery` explicitly calls `POST /api/sessions/refresh`. Session task/deleted/translation counters are cached and invalidated only by relevant session mutations or explicit refresh, avoiding repeated filesystem walks while navigating the Sessions table.
+
+Inactive sessions are not instantiated as child runtimes merely to render the Sessions/Translations pages. Their translation/catalog data is read from persisted cache files when needed.
+
+### Startup splash
+
+The client HTML contains a branded splash immediately, before React modules finish loading. App bootstrap keeps the splash visible while the session snapshot, current-session state, global Settings and prompts are loaded; React `Suspense` keeps the same experience while the requested route module loads. History and all-session translation catalogs continue in the background after the shell is usable. Bootstrap failures show the concrete error and a Retry action.
+
+### Task language badges
+
+Session EN/HU control lives on `/sessions`. Task references use a shared badge on Tasks, Flow, drawer/dependencies, notifications/history and Translation task rows:
+
+- `🌐 HU` — HU requested and shown;
+- `⏳ HU` — HU requested but current translation is not ready;
+- `⚠ HU` — current HU translation failed;
+- `✓ HU cached` — task currently shows EN but current HU is cached;
+- `EN override` — task explicitly shows EN while its session is HU.
+
 ## Per-session cache reuse
 
 Existing v3.4 cache remains in place:
@@ -317,6 +346,7 @@ The new `app-state.json` is independent from these caches.
 
 ```text
 GET    /api/sessions
+POST   /api/sessions/refresh
 GET    /api/app-state
 PATCH  /api/app-state
 

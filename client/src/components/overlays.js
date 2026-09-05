@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useApp } from '../app-context.js';
+import { TaskLanguageBadge } from './language-badge.js';
 
 const h = React.createElement;
 
@@ -15,7 +16,7 @@ function changeRows(changes = []) {
 }
 function notificationBlocks(events = []) {
   return events.map((event, index) => h('section', { className: 'modal-task-event', key: event.id || `${event.taskId || 'task'}-${index}` },
-    h('div', { className: 'modal-task-title' }, `${historyEventIcon(event)} #${event.taskId || '—'} ${event.title || event.subject || ''}`.trim()),
+    h('div', { className: 'modal-task-title' }, h('span',null,`${historyEventIcon(event)} #${event.taskId || '—'} ${event.title || event.subject || ''}`.trim()), event.taskSnapshot ? h(TaskLanguageBadge,{task:event.taskSnapshot,compact:true}) : null),
     ...changeRows(event.changes || [])));
 }
 
@@ -71,7 +72,7 @@ function HistoryCard({ event }) {
   return h('details', { className: `history-card history-event ${event.kind || ''}` },
     h('summary', null,
       h('span', { className: 'history-event-icon' }, historyEventIcon(event)),
-      h('span', { className: 'history-event-main' }, h('strong', null, `🧵 ${compact(sessionLabel)} · #${event.taskId || '—'} · ${historyEventTitle(event)}`), h('small', null, formatDate(event.detectedAt))),
+      h('span', { className: 'history-event-main' }, h('div',{className:'history-title-with-badge'},h('strong', null, `🧵 ${compact(sessionLabel)} · #${event.taskId || '—'} · ${historyEventTitle(event)}`),event.taskSnapshot?h(TaskLanguageBadge,{task:event.taskSnapshot,compact:true}):null), h('small', null, formatDate(event.detectedAt))),
       h('span', { className: 'history-event-source' }, event.source === 'translation' ? 'HU' : 'EN')),
     h('div', { className: 'history-event-body' },
       h('div', { className: `history-language-note ${event.source === 'translation' ? 'hu' : 'en'}` }, event.source === 'translation' ? '🌐 Translation completed — EN → HU' : '🇬🇧 Original task event'),

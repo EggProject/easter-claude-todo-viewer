@@ -5,6 +5,7 @@ import { buildGraph } from '../task-graph.js';
 import { TaskDrawer } from '../components/task-drawer.js';
 import { StatusMultiSelect, normalizeStatusSelection } from '../components/status-multiselect.js';
 import { SessionScopeSelect, useSessionScope } from '../components/session-select.js';
+import { TaskLanguageBadge } from '../components/language-badge.js';
 
 const h = React.createElement;
 const icon = status => ({ in_progress: '🚀', pending: '⏳', completed: '✅', deleted: '🗑️' }[status] || '❔');
@@ -73,7 +74,7 @@ export default function TasksPage() {
       },
       h('div', { className: 'task-num' }, `#${task.id}`),
       h('div', { className: 'task-main' },
-        h('div', { className: 'task-title-row' }, h('strong', null, task.subject), h(SessionBadge, { task })),
+        h('div', { className: 'task-title-row' }, h('strong', null, task.subject), h('div',{className:'task-badges'},h(TaskLanguageBadge,{task,compact:true}),h(SessionBadge, { task }))),
         h('div', { className: 'task-meta' }, `${icon(task.status)} ${task.status}${task.effectiveLanguage === 'hu' ? ' · 🇭🇺' : ''}`)),
       )),
       !list.length ? h('div', { className: 'empty' }, 'No tasks match the current session/status filters.') : null,

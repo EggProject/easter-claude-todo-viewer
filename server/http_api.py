@@ -53,7 +53,7 @@ def make_handler(runtime):
             if not self._guard(): return
             parsed=urlparse(self.path); path=parsed.path; query=parse_qs(parsed.query)
             try:
-                if path=='/api/sessions': self.send_json(200,runtime.refresh_sessions()); return
+                if path=='/api/sessions': self.send_json(200,runtime.sessions_state()); return
                 if path=='/api/app-state': self.send_json(200,runtime.app_state()); return
                 if path=='/api/state': self.send_json(200,runtime.api_state(_session_ids(query) or None)); return
                 if path=='/api/history': self.send_json(200,{'history':runtime.history(_session_ids(query) or None)}); return
@@ -97,6 +97,7 @@ def make_handler(runtime):
             path=urlparse(self.path).path
             try:
                 data=self.read_body_json()
+                if path=='/api/sessions/refresh': self.send_json(200,runtime.refresh_sessions(force=True)); return
                 if path=='/api/settings': self.send_json(200,runtime.update_settings(data)); return
                 if path=='/api/prompts/migrate': self.send_json(200,{'prompts':runtime.migrate_prompts()}); return
                 if path=='/api/providers/anthropic/test': self.send_json(200,runtime.anthropic_test(data)); return
