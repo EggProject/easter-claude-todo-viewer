@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>EggProject — Kbd</title>
+  <script src="../../../eggproject-design/preview/_theme.js" defer></script>
+  <meta name="viewport" content="width=720" />
+  <link rel="stylesheet" href="kbd.css" />
+  <link rel="icon" href="../../../eggproject-design/assets/logo-mark.svg" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--ep-bg); color: var(--ep-fg); font-family: var(--ep-font-sans); padding: 40px; display: flex; flex-direction: column; gap: 18px; }
+    .label { font: var(--ep-text-overline); letter-spacing: var(--ep-track-overline); text-transform: uppercase; color: var(--ep-fg-subtle); margin-top: 8px; }
+    .row { display: flex; gap: 18px; align-items: center; flex-wrap: wrap; }
+    h1 { font: 400 36px/1.1 var(--ep-font-display); letter-spacing: -0.02em; color: var(--ep-fg); }
+ h1 em { font-weight: 700; }
+    p { font: var(--ep-text-body); color: var(--ep-fg-muted); }
+    .ink-frame { background: var(--ep-ink-900); padding: 16px 20px; border-radius: 8px; color: var(--ep-paper-100); display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+  </style>
+</head>
+<body>
+  <h1>Kbd · <em>keyboard chips</em></h1>
+
+  <span class="label">Sizes</span>
+  <div class="row">
+    <kbd class="kbd kbd--sm">⌘</kbd>
+    <kbd class="kbd">⌘</kbd>
+    <kbd class="kbd kbd--lg">⌘</kbd>
+  </div>
+
+  <span class="label">Combos</span>
+  <div class="row">
+    <span class="kbd-combo"><kbd class="kbd">⌘</kbd><kbd class="kbd">K</kbd></span>
+    <span class="kbd-combo"><kbd class="kbd">⌘</kbd><kbd class="kbd">⇧</kbd><kbd class="kbd">P</kbd></span>
+    <span class="kbd-combo"><kbd class="kbd">Ctrl</kbd><span class="kbd-combo__sep">+</span><kbd class="kbd">Enter</kbd></span>
+  </div>
+
+  <span class="label">Inline in text</span>
+  <p>Press <kbd class="kbd kbd--sm">⌘</kbd> <kbd class="kbd kbd--sm">K</kbd> to open the command palette, or <kbd class="kbd kbd--sm">N</kbd> to start a new project.</p>
+
+  <span class="label">Ink — for dark surfaces</span>
+  <div class="ink-frame">
+    <span style="font: 500 13px var(--ep-font-sans);">Quick search</span>
+    <span class="kbd-combo"><kbd class="kbd kbd--ink">⌘</kbd><kbd class="kbd kbd--ink">K</kbd></span>
+  </div>
+</body>
+</html>

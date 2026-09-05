@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>EggProject — Button</title>
+  <script src="../../../eggproject-design/preview/_theme.js" defer></script>
+  <meta name="viewport" content="width=720" />
+  <link rel="stylesheet" href="button.css" />
+  <script src="button.js" defer></script>
+  <link rel="icon" href="../../../eggproject-design/assets/logo-mark.svg" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--ep-bg); color: var(--ep-fg); font-family: var(--ep-font-sans); padding: 40px; display: flex; flex-direction: column; gap: 18px; }
+    .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .label { font: var(--ep-text-overline); letter-spacing: var(--ep-track-overline); text-transform: uppercase; color: var(--ep-fg-subtle); }
+  </style>
+</head>
+<body>
+  <div class="row">
+    <button type="button" class="btn btn--primary">Start a project</button>
+    <button type="button" class="btn btn--secondary">Learn more</button>
+    <button type="button" class="btn btn--ghost">Cancel</button>
+    <button type="button" class="btn btn--ink">Continue <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg></button>
+    <button type="button" class="btn btn--danger">Delete</button>
+  </div>
+  <div class="row">
+    <button type="button" class="btn btn--primary btn--sm">Small</button>
+    <button type="button" class="btn btn--primary">Default</button>
+    <button type="button" class="btn btn--primary btn--lg">Large</button>
+  </div>
+  <span class="label">Buttons — primary · secondary · ghost · ink · danger</span>
+
+  <span class="label">Loading — all variants</span>
+  <div class="row">
+    <button type="button" class="btn btn--primary is-loading" aria-busy="true" aria-disabled="true"><span class="btn__content">Saving…</span><span class="btn__loader" aria-hidden="true"><span></span><span></span><span></span></span></button>
+    <button type="button" class="btn btn--secondary is-loading" aria-busy="true" aria-disabled="true"><span class="btn__content">Loading</span><span class="btn__loader" aria-hidden="true"><span></span><span></span><span></span></span></button>
+    <button type="button" class="btn btn--ghost is-loading" aria-busy="true" aria-disabled="true"><span class="btn__content">Working</span><span class="btn__loader" aria-hidden="true"><span></span><span></span><span></span></span></button>
+    <button type="button" class="btn btn--ink is-loading" aria-busy="true" aria-disabled="true"><span class="btn__content">Processing</span><span class="btn__loader" aria-hidden="true"><span></span><span></span><span></span></span></button>
+    <button type="button" class="btn btn--danger is-loading" aria-busy="true" aria-disabled="true"><span class="btn__content">Deleting…</span><span class="btn__loader" aria-hidden="true"><span></span><span></span><span></span></span></button>
+  </div>
+  <div class="row">
+    <button type="button" class="btn btn--primary btn--sm is-loading" aria-busy="true" aria-disabled="true"><span class="btn__content">Small</span><span class="btn__loader" aria-hidden="true"><span></span><span></span><span></span></span></button>
+    <button type="button" class="btn btn--primary is-loading" aria-busy="true" aria-disabled="true"><span class="btn__content">Default</span><span class="btn__loader" aria-hidden="true"><span></span><span></span><span></span></span></button>
+    <button type="button" class="btn btn--primary btn--lg is-loading" aria-busy="true" aria-disabled="true"><span class="btn__content">Large</span><span class="btn__loader" aria-hidden="true"><span></span><span></span><span></span></span></button>
+  </div>
+  <span class="label">Interactive — click to load (auto-resets)</span>
+  <div class="row">
+    <button type="button" class="btn btn--primary" id="demo-load"><span class="btn__content">Save changes</span><span class="btn__loader" aria-hidden="true"><span></span><span></span><span></span></span></button>
+  </div>
+
+  <span class="label">Icon-only — all variants (md)</span>
+  <div class="row">
+    <button type="button" class="btn btn--primary btn--icon" aria-label="Add item"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3v10M3 8h10"/></svg></button>
+    <button type="button" class="btn btn--secondary btn--icon" aria-label="Search"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="7" cy="7" r="4.5"/><path d="M11 11l3 3"/></svg></button>
+    <button type="button" class="btn btn--ghost btn--icon" aria-label="Edit"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M11 2l3 3L6 13H3v-3z"/></svg></button>
+    <button type="button" class="btn btn--ink btn--icon" aria-label="More options"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 6l5 5 5-5"/></svg></button>
+    <button type="button" class="btn btn--danger btn--icon" aria-label="Delete"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2 4h12M5 4V2h6v2M6 7v4M10 7v4M3 4l1 9h8l1-9"/></svg></button>
+  </div>
+  <span class="label">Icon-only — sizes (sm · md · lg)</span>
+  <div class="row">
+    <button type="button" class="btn btn--primary btn--icon btn--sm" aria-label="Add (small)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3v10M3 8h10"/></svg></button>
+    <button type="button" class="btn btn--primary btn--icon" aria-label="Add"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3v10M3 8h10"/></svg></button>
+    <button type="button" class="btn btn--primary btn--icon btn--lg" aria-label="Add (large)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3v10M3 8h10"/></svg></button>
+  </div>
+  <span class="label">Icon-only — disabled · aria-disabled · loading</span>
+  <div class="row">
+    <button type="button" class="btn btn--secondary btn--icon" disabled aria-label="Download (unavailable)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 2v7M5 6.5l3 3 3-3M3 13h10"/></svg></button>
+    <button type="button" class="btn btn--secondary btn--icon" aria-disabled="true" aria-label="Confirm (disabled)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 8.5l3.5 3.5L13 5"/></svg></button>
+    <button type="button" class="btn btn--primary btn--icon is-loading" aria-busy="true" aria-disabled="true" aria-label="Saving"><span class="btn__content"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3v10M3 8h10"/></svg></span><span class="btn__loader" aria-hidden="true"><span></span><span></span><span></span></span></button>
+  </div>
+
+  <span class="label">Pressed / toggle — primary (aria-pressed)</span>
+  <div class="row">
+    <button type="button" class="btn btn--primary" aria-pressed="false">Grid view</button>
+    <button type="button" class="btn btn--primary" aria-pressed="true">Grid view</button>
+    <button type="button" class="btn btn--primary btn--icon" aria-pressed="false" aria-label="Bookmark"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 2h8v12l-4-3-4 3z"/></svg></button>
+    <button type="button" class="btn btn--primary btn--icon" aria-pressed="true" aria-label="Bookmark"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 2h8v12l-4-3-4 3z"/></svg></button>
+  </div>
+  <span class="label">Pressed — disabled · aria-disabled · loading</span>
+  <div class="row">
+    <button type="button" class="btn btn--primary" aria-pressed="true" disabled>Grid view</button>
+    <button type="button" class="btn btn--primary" aria-pressed="true" aria-disabled="true">Grid view</button>
+    <button type="button" class="btn btn--primary is-loading" aria-pressed="true" aria-busy="true" aria-disabled="true"><span class="btn__content">Grid view</span><span class="btn__loader" aria-hidden="true"><span></span><span></span><span></span></span></button>
+  </div>
+
+  <span class="label">Pressed / toggle — secondary (aria-pressed)</span>
+  <div class="row">
+    <button type="button" class="btn btn--secondary" aria-pressed="false">List view</button>
+    <button type="button" class="btn btn--secondary" aria-pressed="true">List view</button>
+    <button type="button" class="btn btn--secondary btn--icon" aria-pressed="false" aria-label="Filter"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2 4h12M4 8h8M6 12h4"/></svg></button>
+    <button type="button" class="btn btn--secondary btn--icon" aria-pressed="true" aria-label="Filter"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M2 4h12M4 8h8M6 12h4"/></svg></button>
+  </div>
+  <span class="label">Pressed (secondary) — disabled · aria-disabled · loading</span>
+  <div class="row">
+    <button type="button" class="btn btn--secondary" aria-pressed="true" disabled>List view</button>
+    <button type="button" class="btn btn--secondary" aria-pressed="true" aria-disabled="true">List view</button>
+    <button type="button" class="btn btn--secondary is-loading" aria-pressed="true" aria-busy="true" aria-disabled="true"><span class="btn__content">List view</span><span class="btn__loader" aria-hidden="true"><span></span><span></span><span></span></span></button>
+  </div>
+
+  <span class="label">Pressed / toggle — ghost (aria-pressed)</span>
+  <div class="row">
+    <button type="button" class="btn btn--ghost" aria-pressed="false">Notifications</button>
+    <button type="button" class="btn btn--ghost" aria-pressed="true">Notifications</button>
+    <button type="button" class="btn btn--ghost btn--icon" aria-pressed="false" aria-label="Mute"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 6h2l3-2.5v9L6 10H4z"/><path d="M11 6l3 3M14 6l-3 3"/></svg></button>
+    <button type="button" class="btn btn--ghost btn--icon" aria-pressed="true" aria-label="Mute"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 6h2l3-2.5v9L6 10H4z"/><path d="M11 6l3 3M14 6l-3 3"/></svg></button>
+  </div>
+  <span class="label">Pressed (ghost) — disabled · aria-disabled · loading</span>
+  <div class="row">
+    <button type="button" class="btn btn--ghost" aria-pressed="true" disabled>Notifications</button>
+    <button type="button" class="btn btn--ghost" aria-pressed="true" aria-disabled="true">Notifications</button>
+    <button type="button" class="btn btn--ghost is-loading" aria-pressed="true" aria-busy="true" aria-disabled="true"><span class="btn__content">Notifications</span><span class="btn__loader" aria-hidden="true"><span></span><span></span><span></span></span></button>
+  </div>
+
+  <span class="label">Pressed / toggle — ink (aria-pressed)</span>
+  <div class="row">
+    <button type="button" class="btn btn--ink" aria-pressed="false">Focus mode</button>
+    <button type="button" class="btn btn--ink" aria-pressed="true">Focus mode</button>
+    <button type="button" class="btn btn--ink btn--icon" aria-pressed="false" aria-label="Pin"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 2l5 5-2 1-1 4-2-2-3 3v-3l-2-2 4-1z"/></svg></button>
+    <button type="button" class="btn btn--ink btn--icon" aria-pressed="true" aria-label="Pin"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 2l5 5-2 1-1 4-2-2-3 3v-3l-2-2 4-1z"/></svg></button>
+  </div>
+  <span class="label">Pressed (ink) — disabled · aria-disabled · loading</span>
+  <div class="row">
+    <button type="button" class="btn btn--ink" aria-pressed="true" disabled>Focus mode</button>
+    <button type="button" class="btn btn--ink" aria-pressed="true" aria-disabled="true">Focus mode</button>
+    <button type="button" class="btn btn--ink is-loading" aria-pressed="true" aria-busy="true" aria-disabled="true"><span class="btn__content">Focus mode</span><span class="btn__loader" aria-hidden="true"><span></span><span></span><span></span></span></button>
+  </div>
+
+  <span class="label">Danger — normal (hover to verify text contrast)</span>
+  <div class="row">
+    <button type="button" class="btn btn--danger">Delete account</button>
+  </div>
+
+  <span class="label">Pressed / toggle — danger (aria-pressed)</span>
+  <div class="row">
+    <button type="button" class="btn btn--danger" aria-pressed="false">Delete mode</button>
+    <button type="button" class="btn btn--danger" aria-pressed="true">Delete mode</button>
+    <button type="button" class="btn btn--danger btn--icon" aria-pressed="false" aria-label="Block"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6"/><path d="M4 4l8 8"/></svg></button>
+    <button type="button" class="btn btn--danger btn--icon" aria-pressed="true" aria-label="Block"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6"/><path d="M4 4l8 8"/></svg></button>
+  </div>
+  <span class="label">Pressed (danger) — disabled · aria-disabled · loading</span>
+  <div class="row">
+    <button type="button" class="btn btn--danger" aria-pressed="true" disabled>Delete mode</button>
+    <button type="button" class="btn btn--danger" aria-pressed="true" aria-disabled="true">Delete mode</button>
+    <button type="button" class="btn btn--danger is-loading" aria-pressed="true" aria-busy="true" aria-disabled="true"><span class="btn__content">Delete mode</span><span class="btn__loader" aria-hidden="true"><span></span><span></span><span></span></span></button>
+  </div>
+
+  <script>
+    document.getElementById('demo-load').addEventListener('click', function () {
+      var btn = this;
+      window.setButtonLoading(btn, true);
+      setTimeout(function () { window.setButtonLoading(btn, false); }, 1800);
+    });
+  </script>
+</body>
+</html>

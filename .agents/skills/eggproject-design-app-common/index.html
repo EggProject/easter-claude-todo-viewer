@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<!-- @dsCard group="Brand" name="Demo · index" -->
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>EggProject — Demo pages</title>
+  <script src="../eggproject-design/preview/_theme.js" defer></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" href="../eggproject-design/assets/logo-mark.svg" />
+  <link rel="stylesheet" href="../eggproject-design/colors_and_type.css" />
+  <link rel="stylesheet" href="_shell.css" />
+  <style>
+    body { background: var(--ep-bg-sunken); }
+
+    .wrap { max-width: 1240px; margin: 0 auto; padding: 64px 32px 96px; }
+
+    .head { display: flex; flex-direction: column; gap: 18px; padding-bottom: 32px; border-bottom: 1px solid var(--ep-divider); margin-bottom: 36px; }
+    .head .eyebrow {
+      font: 500 12px var(--ep-font-sans);
+      letter-spacing: var(--ep-track-overline);
+      text-transform: uppercase;
+      color: var(--ep-fg-subtle);
+    }
+    .head h1 {
+      font: 400 64px/1 var(--ep-font-display);
+      letter-spacing: var(--ep-track-tight);
+      color: var(--ep-fg);
+    }
+    .head h1 em { font-weight: 700; }
+    .head p {
+      font: 400 18px/1.55 var(--ep-font-sans);
+      color: var(--ep-fg-muted);
+      max-width: 60ch;
+    }
+    .head .meta { display: flex; gap: 18px; font: var(--ep-text-meta); font-family: var(--ep-font-mono); color: var(--ep-fg-subtle); }
+    .head .meta b { color: var(--ep-fg); font-weight: 500; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 14px;
+    }
+
+    .demo-card {
+      background: var(--ep-bg-elevated);
+      border: 1px solid var(--ep-border-subtle);
+      border-radius: var(--ep-radius-lg);
+      padding: 0;
+      overflow: hidden;
+      text-decoration: none;
+      color: inherit;
+      display: flex; flex-direction: column;
+      transition: transform var(--ep-dur-fast) var(--ep-ease-out),
+                  border-color var(--ep-dur-fast) var(--ep-ease-out),
+                  box-shadow var(--ep-dur-fast) var(--ep-ease-out);
+    }
+    .demo-card:hover { transform: translateY(-2px); border-color: var(--ep-fg); box-shadow: var(--ep-shadow-md); }
+
+    .demo-card__art {
+      height: 160px;
+      background: var(--ep-bg-sunken);
+      border-bottom: 1px solid var(--ep-divider);
+      position: relative;
+      overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .demo-card__body { padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 6px; }
+    .demo-card__number {
+      font: 500 11px var(--ep-font-mono);
+      color: var(--ep-fg-subtle);
+      letter-spacing: 0.04em;
+    }
+    .demo-card__title {
+      font: 600 16px var(--ep-font-sans);
+      color: var(--ep-fg);
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    }
+    .demo-card__title em { font-family: var(--ep-font-display); font-weight: 700; color: var(--ep-accent); }
+    .demo-card__title svg { width: 16px; height: 16px; color: var(--ep-fg-faint); transition: color var(--ep-dur-fast) var(--ep-ease-out), transform var(--ep-dur-fast) var(--ep-ease-out); }
+    .demo-card:hover .demo-card__title svg { color: var(--ep-accent); transform: translate(2px, -2px); }
+    .demo-card__subtitle { font: 400 13px/1.5 var(--ep-font-sans); color: var(--ep-fg-muted); }
+    .demo-card__tags {
+      display: flex; flex-wrap: wrap; gap: 4px;
+      margin-top: 6px;
+      font: 500 10px var(--ep-font-mono);
+      color: var(--ep-fg-subtle);
+    }
+    .demo-card__tags span {
+      padding: 2px 6px;
+      background: var(--ep-bg-hover);
+      border-radius: 4px;
+    }
+
+    .art--paper { background: var(--ep-bg-hover); }
+    .art--ink   { background: var(--ep-ink-900); color: var(--ep-paper-100); }
+    .art--blue  { background: linear-gradient(135deg, var(--ep-accent-bg), var(--ep-accent-bg)); }
+    .art--slate { background: var(--ep-bg-sunken); }
+
+    .mini { width: 80%; height: 70%; border-radius: 8px; background: var(--ep-bg-elevated); box-shadow: var(--ep-shadow-md); border: 1px solid var(--ep-border-subtle); display: flex; flex-direction: column; padding: 10px; gap: 6px; }
+    .mini-row { height: 8px; border-radius: 3px; background: var(--ep-bg-pressed); }
+    .mini-row.thin { height: 4px; width: 60%; }
+    .mini-row.blue { background: var(--ep-accent); width: 40%; }
+    .mini-row.yolk { background: var(--ep-yolk-500); width: 30%; }
+    .mini-circle { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--ep-accent), var(--ep-blue-400)); }
+    .mini-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; flex: 1; }
+    .mini-grid > div { background: var(--ep-bg-hover); border-radius: 3px; }
+
+    .section + .section { margin-top: 48px; }
+    .section h2 {
+      font: 400 22px/1 var(--ep-font-display);
+      letter-spacing: var(--ep-track-tight);
+      color: var(--ep-fg);
+      margin-bottom: 14px;
+    }
+    .section h2 em { font-weight: 700; }
+
+    .shells-banner {
+      display: flex; align-items: center; gap: 16px;
+      margin: 0 0 36px;
+      padding: 18px 22px;
+      background: var(--ep-ink-900); color: var(--ep-paper-100);
+      border-radius: var(--ep-radius-lg);
+      text-decoration: none;
+      position: relative; overflow: hidden;
+      transition: transform var(--ep-dur-fast) var(--ep-ease-out), box-shadow var(--ep-dur-fast) var(--ep-ease-out);
+    }
+    .shells-banner:hover { transform: translateY(-2px); box-shadow: var(--ep-shadow-lg); }
+    .shells-banner::before { content: ""; position: absolute; inset: 0; background: radial-gradient(50% 90% at 100% 0%, rgba(46,91,224,0.30), transparent 60%); pointer-events: none; }
+    .shells-banner > * { position: relative; }
+    .shells-banner__icon { width: 40px; height: 40px; border-radius: var(--ep-radius-md); background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; color: var(--ep-yolk-400); flex-shrink: 0; }
+    .shells-banner__icon svg { width: 20px; height: 20px; }
+    .shells-banner__copy b { font: 600 15px var(--ep-font-sans); color: var(--ep-paper-50); display: block; }
+    .shells-banner__copy span { font: 400 13px/1.5 var(--ep-font-sans); color: var(--ep-slate-300); }
+    .shells-banner__cta { margin-left: auto; font: 500 13px var(--ep-font-sans); color: var(--ep-paper-50); display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+    .shells-banner__cta svg { width: 14px; height: 14px; }
+
+    .demo-card__tags .shell-tag { background: var(--ep-accent-bg); color: var(--ep-accent-fg); font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="head">
+      <span class="eyebrow">EggProject · Design system</span>
+      <h1>Demo <em>pages</em></h1>
+      <p>Fifteen finished surfaces built from the <a href="../eggproject-design-components/components/index.html" style="color: var(--ep-blue-700);">component library</a>. Each demo composes existing primitives into a recognisable page type, and sits on exactly one of <a href="shells.html" style="color: var(--ep-blue-700);">five canonical page shells</a>.</p>
+      <div class="meta">
+        <span><b>15</b> demos</span>
+        <span><b>5</b> page shells</span>
+        <span><b>30+</b> components used</span>
+      </div>
+    </header>
+
+    <a class="shells-banner" href="shells.html">
+      <span class="shells-banner__icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+      </span>
+      <span class="shells-banner__copy">
+        <b>Page shells — the five frames every demo is built on</b>
+        <span>Sidebar &amp; top-nav (product) · marketing &amp; docs (public) · focus. All defined once in <code style="font-family:var(--ep-font-mono);">_shell.css</code>.</span>
+      </span>
+      <span class="shells-banner__cta">Browse shells
+        <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h8m-3-3 3 3-3 3"/></svg>
+      </span>
+    </a>
+
+    <section class="section">
+      <h2>Marketing &amp; <em>onboarding</em></h2>
+      <div class="grid">
+
+        <a class="demo-card" href="../eggproject-design-web-app-examples/signin.html">
+          <div class="demo-card__art art--paper">
+            <div class="mini" style="width:72%;height:78%;">
+              <div class="mini-row thin" style="background: var(--ep-ink-900); width:30%;"></div>
+              <div class="mini-row" style="background: var(--ep-paper-200); width: 80%; height: 14px;"></div>
+              <div class="mini-row" style="background: var(--ep-paper-200); width: 80%; height: 14px;"></div>
+              <div class="mini-row blue" style="width: 100%; height: 12px;"></div>
+              <div class="mini-row thin" style="width: 50%;"></div>
+            </div>
+          </div>
+          <div class="demo-card__body">
+            <span class="demo-card__number">01 · auth</span>
+            <span class="demo-card__title">Sign in <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12 12 6M6 6h6v6"/></svg></span>
+            <span class="demo-card__subtitle">Split layout, editorial left + form right.</span>
+            <div class="demo-card__tags"><span class="shell-tag">Focus · split</span><span>input</span><span>button</span><span>form-controls</span><span>divider</span></div>
+          </div>
+        </a>
+
+        <a class="demo-card" href="../eggproject-design-web-app-examples/pricing.html">
+          <div class="demo-card__art art--paper">
+            <div style="display:flex;gap:6px;align-items:flex-end;">
+              <div style="width: 70px; height: 110px; background: var(--ep-bg-elevated); border:1px solid var(--ep-border-subtle); border-radius:6px;"></div>
+              <div style="width: 70px; height: 130px; background: var(--ep-ink-900); border-radius:6px;"></div>
+              <div style="width: 70px; height: 110px; background: var(--ep-bg-elevated); border:1px solid var(--ep-border-subtle); border-radius:6px;"></div>
+            </div>
+          </div>
+          <div class="demo-card__body">
+            <span class="demo-card__number">02 · marketing</span>
+            <span class="demo-card__title">Pricing <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12 12 6M6 6h6v6"/></svg></span>
+            <span class="demo-card__subtitle">Three tiers, featured plan, FAQ accordion.</span>
+            <div class="demo-card__tags"><span class="shell-tag">Marketing</span><span>card</span><span>button</span><span>badge</span><span>accordion</span></div>
+          </div>
+        </a>
+
+        <a class="demo-card" href="../eggproject-design-web-app-examples/onboarding.html">
+          <div class="demo-card__art art--blue">
+            <div class="mini" style="width: 80%; height: 70%;">
+              <div style="display:flex; gap:4px;">
+                <span style="width:14px;height:14px;border-radius:50%;background:var(--ep-blue-600);"></span>
+                <span style="flex:1; height:1.5px; background: var(--ep-blue-600); margin-top:6px;"></span>
+                <span style="width:14px;height:14px;border-radius:50%;background:var(--ep-bg-elevated); border:2px solid var(--ep-blue-600);"></span>
+                <span style="flex:1; height:1.5px; background: var(--ep-border); margin-top:6px;"></span>
+                <span style="width:14px;height:14px;border-radius:50%;background:var(--ep-bg-elevated); border:2px solid var(--ep-border);"></span>
+              </div>
+              <div class="mini-row" style="margin-top: 8px; height: 12px; width: 70%;"></div>
+              <div class="mini-row thin"></div>
+              <div class="mini-row" style="height: 18px; background: var(--ep-paper-100); width: 100%;"></div>
+            </div>
+          </div>
+          <div class="demo-card__body">
+            <span class="demo-card__number">03 · onboarding</span>
+            <span class="demo-card__title">Onboarding <em>wizard</em> <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12 12 6M6 6h6v6"/></svg></span>
+            <span class="demo-card__subtitle">Stepper-driven, four-step new-project flow.</span>
+            <div class="demo-card__tags"><span class="shell-tag">Focus</span><span>stepper</span><span>input</span><span>form-controls</span><span>file-upload</span></div>
+          </div>
+        </a>
+
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Product &amp; <em>workflow</em></h2>
+      <div class="grid">
+
+        <a class="demo-card" href="../eggproject-design-admin-app-examples/analytics.html">
+          <div class="demo-card__art art--slate">
+            <div class="mini" style="width: 82%; height: 78%; gap: 4px;">
+              <div style="display:flex; gap: 4px;">
+                <div style="flex:1; height: 22px; background: var(--ep-paper-100); border-radius:3px;"></div>
+                <div style="flex:1; height: 22px; background: var(--ep-paper-100); border-radius:3px;"></div>
+                <div style="flex:1; height: 22px; background: var(--ep-ink-900); border-radius:3px;"></div>
+              </div>
+              <div style="flex:1; background: linear-gradient(180deg, var(--ep-blue-50), transparent); position: relative; border-radius: 3px;">
+                <svg viewBox="0 0 100 40" preserveAspectRatio="none" style="width:100%; height:100%;"><path d="M0 30 L20 22 L40 26 L55 14 L70 18 L85 8 L100 12" fill="none" stroke="var(--ep-blue-600)" stroke-width="1.5"/></svg>
+              </div>
+            </div>
+          </div>
+          <div class="demo-card__body">
+            <span class="demo-card__number">04 · dashboard</span>
+            <span class="demo-card__title">Analytics <em>dashboard</em> <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12 12 6M6 6h6v6"/></svg></span>
+            <span class="demo-card__subtitle">Stat grid, line + bar charts, top-performers table.</span>
+            <div class="demo-card__tags"><span class="shell-tag">Sidebar</span><span>stat</span><span>charts</span><span>data-table</span><span>segmented</span></div>
+          </div>
+        </a>
+
+        <a class="demo-card" href="../eggproject-design-admin-app-examples/inbox.html">
+          <div class="demo-card__art art--slate">
+            <div class="mini" style="width: 86%; height: 80%; flex-direction: row; padding: 6px; gap: 6px;">
+              <div style="width: 34%; display: flex; flex-direction: column; gap: 5px;">
+                <div class="mini-row thin" style="background: var(--ep-ink-900); height: 6px;"></div>
+                <div class="mini-row" style="height: 10px; width: 100%;"></div>
+                <div class="mini-row" style="height: 10px; width: 100%; background: var(--ep-blue-100);"></div>
+                <div class="mini-row" style="height: 10px; width: 100%;"></div>
+                <div class="mini-row" style="height: 10px; width: 100%;"></div>
+              </div>
+              <div style="flex:1; display:flex; flex-direction:column; gap:4px;">
+                <div class="mini-row" style="height: 8px; width: 60%; background: var(--ep-ink-900);"></div>
+                <div class="mini-row thin"></div>
+                <div class="mini-row" style="height:4px;"></div>
+                <div class="mini-row" style="height:4px;"></div>
+                <div class="mini-row" style="height:4px; width: 70%;"></div>
+              </div>
+            </div>
+          </div>
+          <div class="demo-card__body">
+            <span class="demo-card__number">05 · workflow</span>
+            <span class="demo-card__title">Inbox <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12 12 6M6 6h6v6"/></svg></span>
+            <span class="demo-card__subtitle">Thread list + reading pane, avatar group, tags.</span>
+            <div class="demo-card__tags"><span class="shell-tag">Sidebar</span><span>avatar</span><span>badge</span><span>tag-input</span><span>menu</span></div>
+          </div>
+        </a>
+
+        <a class="demo-card" href="../eggproject-design-admin-app-examples/billing.html">
+          <div class="demo-card__art art--slate">
+            <div class="mini" style="width: 82%; height: 78%; gap: 3px;">
+              <div style="display:flex; gap: 4px;">
+                <div class="mini-row" style="flex:1; height: 22px; background: var(--ep-paper-100); border-radius:3px;"></div>
+                <div class="mini-row" style="flex:1; height: 22px; background: var(--ep-yolk-100); border-radius:3px;"></div>
+              </div>
+              <div class="mini-row thin" style="background: var(--ep-paper-200); width:100%; height: 6px;"></div>
+              <div class="mini-row" style="height: 8px; width: 100%;"></div>
+              <div class="mini-row" style="height: 8px; width: 100%; background: var(--ep-blue-100);"></div>
+              <div class="mini-row" style="height: 8px; width: 100%;"></div>
+              <div class="mini-row" style="height: 8px; width: 80%;"></div>
+            </div>
+          </div>
+          <div class="demo-card__body">
+            <span class="demo-card__number">06 · billing</span>
+            <span class="demo-card__title">Billing &amp; invoices <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12 12 6M6 6h6v6"/></svg></span>
+            <span class="demo-card__subtitle">Outstanding totals, invoice table, payment method.</span>
+            <div class="demo-card__tags"><span class="shell-tag">Sidebar</span><span>stat</span><span>data-table</span><span>badge</span><span>alert</span></div>
+          </div>
+        </a>
+
+        <a class="demo-card" href="../eggproject-design-admin-app-examples/settings.html">
+          <div class="demo-card__art art--slate">
+            <div class="mini" style="width: 78%; height: 78%; gap: 5px;">
+              <div style="display:flex; gap: 8px; border-bottom: 1px solid var(--ep-divider); padding-bottom: 4px;">
+                <span style="font: 500 8px var(--ep-font-sans); color: var(--ep-ink-900); border-bottom: 1.5px solid var(--ep-blue-600); padding-bottom: 2px;">General</span>
+                <span style="font: 500 8px var(--ep-font-sans); color: var(--ep-fg-faint);">Team</span>
+                <span style="font: 500 8px var(--ep-font-sans); color: var(--ep-fg-faint);">Billing</span>
+              </div>
+              <div class="mini-row" style="height: 8px; width: 30%; background: var(--ep-ink-900);"></div>
+              <div class="mini-row" style="height: 14px; width: 100%; background: var(--ep-paper-100); border:1px solid var(--ep-border-subtle); border-radius: 3px;"></div>
+              <div class="mini-row" style="height: 14px; width: 100%; background: var(--ep-paper-100); border:1px solid var(--ep-border-subtle); border-radius: 3px;"></div>
+            </div>
+          </div>
+          <div class="demo-card__body">
+            <span class="demo-card__number">07 · settings</span>
+            <span class="demo-card__title">Settings <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12 12 6M6 6h6v6"/></svg></span>
+            <span class="demo-card__subtitle">Tabbed sections, form controls, danger zone.</span>
+            <div class="demo-card__tags"><span class="shell-tag">Top-nav</span><span>tabs</span><span>select</span><span>switch</span><span>alert</span></div>
+          </div>
+        </a>
+
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Editorial &amp; <em>support</em></h2>
+      <div class="grid">
+
+        <a class="demo-card" href="../eggproject-design-web-app-examples/docs.html">
+          <div class="demo-card__art art--paper">
+            <div class="mini" style="width: 82%; height: 80%; flex-direction: row; padding: 6px; gap: 6px;">
+              <div style="width: 30%; display: flex; flex-direction: column; gap: 3px;">
+                <div class="mini-row thin" style="background: var(--ep-paper-200); height: 4px;"></div>
+                <div class="mini-row" style="height: 4px; width: 80%;"></div>
+                <div class="mini-row" style="height: 4px; width: 70%; background: var(--ep-blue-100);"></div>
+                <div class="mini-row" style="height: 4px; width: 70%;"></div>
+              </div>
+              <div style="flex:1; display:flex; flex-direction:column; gap:4px;">
+                <div class="mini-row" style="height: 10px; width: 60%; background: var(--ep-ink-900);"></div>
+                <div class="mini-row thin"></div>
+                <div class="mini-row" style="height: 24px; background: var(--ep-ink-900); border-radius: 3px;"></div>
+              </div>
+            </div>
+          </div>
+          <div class="demo-card__body">
+            <span class="demo-card__number">08 · editorial</span>
+            <span class="demo-card__title">Documentation <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12 12 6M6 6h6v6"/></svg></span>
+            <span class="demo-card__subtitle">Docs page with code blocks, callouts, version pin.</span>
+            <div class="demo-card__tags"><span class="shell-tag">Docs</span><span>code-block</span><span>kbd</span><span>breadcrumb</span><span>alert</span></div>
+          </div>
+        </a>
+
+        <a class="demo-card" href="../eggproject-design-web-app-examples/status.html">
+          <div class="demo-card__art art--paper">
+            <div class="mini" style="width: 82%; height: 78%; gap: 6px;">
+              <div style="display:flex;align-items:center;gap:6px;">
+                <span style="width: 8px; height: 8px; border-radius:50%; background: var(--ep-success);"></span>
+                <span class="mini-row thin" style="background: var(--ep-paper-200); margin: 0;"></span>
+              </div>
+            </div>
+          </div>
+          <div class="demo-card__body">
+            <span class="demo-card__number">09 · public</span>
+            <span class="demo-card__title">Status page <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12 12 6M6 6h6v6"/></svg></span>
+            <span class="demo-card__subtitle">All systems, 90-day uptime, recent incidents.</span>
+            <div class="demo-card__tags"><span class="shell-tag">Marketing</span><span>alert</span><span>badge</span><span>divider</span><span>stat</span></div>
+          </div>
+        </a>
+
+        <a class="demo-card" href="../eggproject-design-web-app-examples/not-found.html">
+          <div class="demo-card__art art--ink" style="background: var(--ep-ink-900); color: var(--ep-paper-50); position: relative; overflow: hidden;">
+            <div style="position: absolute; inset: 0; background: radial-gradient(40% 50% at 30% 30%, rgba(46,91,224,0.35), transparent 60%);"></div>
+            <div style="position: relative; font: 400 64px/1 var(--ep-font-display); color: var(--ep-paper-50); letter-spacing: -0.04em;">404<em style="font-weight: 700; color: var(--ep-yolk-400);">.</em></div>
+          </div>
+          <div class="demo-card__body">
+            <span class="demo-card__number">10 · edge</span>
+            <span class="demo-card__title">Not found <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12 12 6M6 6h6v6"/></svg></span>
+            <span class="demo-card__subtitle">Dark editorial 404 — empty state composition.</span>
+            <div class="demo-card__tags"><span class="shell-tag">Focus · ink</span><span>empty</span><span>button</span><span>divider</span></div>
+          </div>
+        </a>
+
+      </div>
+    </section>
+
+    <footer class="design-mark-footer">
+      <span>EggProject · Demo gallery · 2026</span>
+      <a href="../eggproject-design-components/components/index.html">Components index →</a>
+    </footer>
+  </div>
+</body>
+</html>

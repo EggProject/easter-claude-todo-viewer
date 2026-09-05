@@ -1,0 +1,286 @@
+@import url('../../../eggproject-design/colors_and_type.css');
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: var(--ep-bg-sunken); color: var(--ep-fg); font-family: var(--ep-font-sans); -webkit-font-smoothing: antialiased; }
+h1, h2 { font-weight: inherit; }
+
+#root { padding: 40px; min-height: 100vh; display: flex; justify-content: center; }
+
+/* ============ Demo chrome ============ */
+.demo { width: 100%; max-width: 880px; }
+.demo__header { display: flex; flex-direction: column; gap: 8px; margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid var(--ep-divider); }
+.demo__eyebrow {
+  font: 500 11px var(--ep-font-sans);
+  letter-spacing: var(--ep-track-overline);
+  text-transform: uppercase;
+  color: var(--ep-fg-subtle);
+}
+.demo__header h1 { font: 400 48px var(--ep-font-display); letter-spacing: -0.02em; color: var(--ep-fg); }
+.demo__header p { font: 400 16px/1.5 var(--ep-font-sans); color: var(--ep-fg-muted); max-width: 600px; }
+
+.demo__section {
+  background: var(--ep-bg-elevated);
+  border: 1px solid var(--ep-border-subtle);
+  border-radius: var(--ep-radius-lg);
+  padding: 28px 28px 32px;
+  margin-bottom: 18px;
+}
+.demo__section h2 {
+  font: 600 14px var(--ep-font-sans);
+  letter-spacing: var(--ep-track-overline);
+  text-transform: uppercase;
+  color: var(--ep-fg-subtle);
+  margin-bottom: 8px;
+}
+.demo__lead {
+  font: 400 15px/1.5 var(--ep-font-sans);
+  color: var(--ep-fg-muted);
+  margin-bottom: 24px;
+  max-width: 600px;
+}
+
+.demo__stack { display: flex; flex-direction: column; gap: 22px; }
+.demo__row { display: flex; gap: 24px; flex-wrap: wrap; }
+.demo__row--spinners {
+  background: var(--ep-bg-sunken);
+  border-radius: var(--ep-radius-md);
+  padding: 32px;
+  justify-content: space-around;
+  align-items: flex-end;
+}
+.demo__spin-cell { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.demo__caption { font: var(--ep-text-meta); font-family: var(--ep-font-mono); color: var(--ep-fg-subtle); }
+.demo__row--inline { margin-top: 24px; }
+
+.demo__inline-spin {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 18px;
+  background: var(--ep-bg-sunken);
+  border: 1px solid var(--ep-border-subtle);
+  border-radius: var(--ep-radius-md);
+}
+.demo__inline-text { display: flex; flex-direction: column; gap: 2px; }
+.demo__inline-text strong { font: 600 14px var(--ep-font-sans); color: var(--ep-fg); }
+.demo__inline-text span  { font: var(--ep-text-meta); color: var(--ep-fg-subtle); font-family: var(--ep-font-mono); }
+
+/* ============================================================
+   PROGRESS BAR
+   ============================================================ */
+.progress-bar { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+
+.progress-bar__header {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 12px;
+}
+.progress-bar__label {
+  font: 500 13px var(--ep-font-sans);
+  color: var(--ep-fg);
+}
+.progress-bar__value {
+  font: 500 12px var(--ep-font-mono);
+  color: var(--ep-fg-subtle);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Indeterminate dots — three small breathing dots */
+.progress-bar__value--dots { display: inline-flex; gap: 4px; align-items: center; }
+.progress-bar__value--dots span {
+  width: 4px; height: 4px; border-radius: 50%;
+  background: var(--ep-fg-subtle);
+  animation: pb-dot 1.2s ease-in-out infinite;
+}
+.progress-bar__value--dots span:nth-child(2) { animation-delay: 0.15s; }
+.progress-bar__value--dots span:nth-child(3) { animation-delay: 0.3s;  }
+@keyframes pb-dot {
+  0%, 60%, 100% { opacity: 0.3; transform: scale(1); }
+  30%           { opacity: 1;   transform: scale(1.2); }
+}
+
+/* Track + fill */
+.progress-bar__track {
+  position: relative;
+  width: 100%;
+  background: var(--ep-bg-pressed);
+  border-radius: var(--ep-radius-pill);
+  overflow: hidden;
+}
+.progress-bar--sm .progress-bar__track { height: 4px; }
+.progress-bar--md .progress-bar__track { height: 8px; }
+.progress-bar--lg .progress-bar__track { height: 12px; }
+
+.progress-bar__fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--ep-accent-hover), var(--ep-blue-500));
+  border-radius: var(--ep-radius-pill);
+  position: relative;
+  overflow: hidden;
+  transition: width 240ms var(--ep-ease-out);
+  min-width: 0;
+}
+
+/* Subtle shimmer overlay — slides across the fill continuously */
+.progress-bar__shimmer {
+  position: absolute; inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.0) 30%,
+    rgba(255, 255, 255, 0.35) 50%,
+    rgba(255, 255, 255, 0.0) 70%,
+    transparent 100%
+  );
+  animation: pb-shimmer 1.6s linear infinite;
+}
+@keyframes pb-shimmer {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(100%);  }
+}
+
+/* Indeterminate fill */
+.progress-bar__indeterminate {
+  position: absolute; top: 0; bottom: 0;
+  width: 40%;
+  border-radius: var(--ep-radius-pill);
+  background: linear-gradient(90deg,
+    transparent 0%,
+    var(--ep-blue-500) 30%,
+    var(--ep-accent-hover) 50%,
+    var(--ep-blue-500) 70%,
+    transparent 100%
+  );
+  animation: pb-indet 1.6s var(--ep-ease-in-out) infinite;
+}
+@keyframes pb-indet {
+  0%   { left: -45%; width: 35%; }
+  50%  {             width: 50%; }
+  100% { left: 100%; width: 35%; }
+}
+
+/* ============================================================
+   LOGO SPINNER — counter-rotating aperture
+   ============================================================ */
+.spin { display: inline-flex; flex-direction: column; align-items: center; gap: 12px; }
+.spin__stage { display: inline-block; position: relative; }
+.spin__svg { display: block; }
+.spin__label {
+  font: 500 12px var(--ep-font-sans);
+  color: var(--ep-fg-muted);
+}
+
+/* Rotation animations — each ring gets its own speed/direction */
+@keyframes spin-cw  { from { transform: rotate(0deg);   } to { transform: rotate(360deg);  } }
+@keyframes spin-ccw { from { transform: rotate(0deg);   } to { transform: rotate(-360deg); } }
+@keyframes spin-pulse {
+  0%, 100% { opacity: 1;   r: 1.6; }
+  50%      { opacity: 0.6; r: 2.2; }
+}
+@keyframes spin-glow {
+  0%, 100% { opacity: 1;   transform: scale(1);    }
+  50%      { opacity: 0.7; transform: scale(1.08); }
+}
+@keyframes spin-ghost-drift {
+  0%, 100% { transform: translate(-0.7px, -0.4px); }
+  50%      { transform: translate( 0.9px,  0.6px); }
+}
+
+.spin__r {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.spin__r.r0 { animation: spin-cw  4.4s linear infinite; }
+.spin__r.r1 { animation: spin-ccw 3.6s linear infinite; }
+.spin__r.r2 { animation: spin-cw  3.0s linear infinite; }
+.spin__r.r3 { animation: spin-ccw 2.6s linear infinite; }
+.spin__r.r4 { animation: spin-cw  2.2s linear infinite; }
+.spin__r.r5 { animation: spin-ccw 1.9s linear infinite; }
+.spin__r.r6 { animation: spin-cw  1.6s linear infinite; }
+.spin__r.r7 { animation: spin-ccw 1.3s linear infinite; }
+.spin__r.r8 { animation: spin-cw  1.0s linear infinite; }
+
+.spin__ghost {
+  animation: spin-ghost-drift 1.4s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.spin__glow {
+  animation: spin-glow 1.2s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.spin__pin {
+  animation: spin-pulse 0.9s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spin__r, .spin__ghost, .spin__glow, .spin__pin,
+  .progress-bar__shimmer, .progress-bar__indeterminate, .progress-bar__value--dots span { animation: none !important; }
+  /* The determinate fill's width tween is cosmetic — snap it instead of easing. */
+  .progress-bar__fill { transition: none; }
+}
+
+/* ============================================================
+   Forced colors (Windows High Contrast): the fill relies on a gradient
+   background, which is stripped in forced-colors — pin it to a system colour so
+   the filled portion stays distinct from the track. System colours only; no
+   token/hex/rgb/hsl; no forced-color-adjust. Live emulation not run —
+   source/CSSOM-verified.
+   ============================================================ */
+@media (forced-colors: active) {
+  .progress-bar { color: CanvasText; }
+  .progress-bar__label { color: CanvasText; }
+  .progress-bar__value { color: CanvasText; }
+  .progress-bar__value--dots span { background: CanvasText; }
+  .progress-bar__track { background: Canvas; border: 1px solid CanvasText; }
+  .progress-bar__fill { background: Highlight; }
+  .progress-bar__shimmer { background: none; }
+  .progress-bar__indeterminate { background: Highlight; }
+}
+
+/* ============================================================
+   File upload demo
+   ============================================================ */
+.files { display: flex; flex-direction: column; gap: 12px; }
+.file {
+  background: var(--ep-bg-sunken);
+  border: 1px solid var(--ep-border-subtle);
+  border-radius: var(--ep-radius-md);
+  padding: 12px 14px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.file__header { display: flex; align-items: center; gap: 12px; }
+.file__icon {
+  width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.file__icon svg { width: 18px; height: 18px; }
+.file--done .file__icon { color: var(--ep-success); }
+.file--queued .file__icon { color: var(--ep-fg-faint); }
+
+.file__name { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.file__name strong { font: 600 13px var(--ep-font-sans); color: var(--ep-fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.file__name span  { font: var(--ep-text-meta); color: var(--ep-fg-subtle); font-family: var(--ep-font-mono); }
+
+.file__state {
+  font: 500 12px var(--ep-font-mono);
+  color: var(--ep-fg-subtle);
+  font-variant-numeric: tabular-nums;
+}
+.file__state--done    { color: var(--ep-success-fg); }
+.file__state--queued  { color: var(--ep-fg-faint); }
+
+/* Static thin track for queued / done */
+.file__queued-track {
+  width: 100%; height: 4px;
+  background: var(--ep-bg-pressed);
+  border-radius: var(--ep-radius-pill);
+  overflow: hidden;
+}
+.file__queued-track > div {
+  height: 100%; width: 0;
+  background: var(--ep-fg-faint);
+  border-radius: var(--ep-radius-pill);
+}
+.file__queued-track--done > div { width: 100%; background: var(--ep-success); }

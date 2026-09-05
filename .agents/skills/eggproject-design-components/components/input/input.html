@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>EggProject — Input</title>
+  <script src="../../../eggproject-design/preview/_theme.js" defer></script>
+  <meta name="viewport" content="width=720" />
+  <link rel="stylesheet" href="input.css" />
+  <link rel="icon" href="../../../eggproject-design/assets/logo-mark.svg" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--ep-bg); color: var(--ep-fg); font-family: var(--ep-font-sans); padding: 40px; display: flex; flex-direction: column; gap: 16px; max-width: 640px; }
+    .row { display: flex; gap: 12px; }
+    .row > * { flex: 1; }
+  </style>
+</head>
+<body>
+  <div class="row">
+    <div class="field">
+      <span class="field__label">Name</span>
+      <div class="input">Adam Kovács</div>
+    </div>
+    <div class="field">
+      <span class="field__label">Email — focused</span>
+      <div class="input input--focused">adam@eggproject.dev</div>
+    </div>
+  </div>
+  <div class="field">
+    <span class="field__label">Search — with leading icon</span>
+    <div class="input-with-icon">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="7" cy="7" r="5"/><path d="m11 11 3 3"/></svg>
+      <div class="input">Find a component…</div>
+    </div>
+  </div>
+  <div class="field">
+    <span class="field__label">Project slug — error</span>
+    <div class="input input--error">my new project</div>
+    <span class="field__error">No spaces. Use kebab-case: my-new-project</span>
+  </div>
+</body>
+</html>

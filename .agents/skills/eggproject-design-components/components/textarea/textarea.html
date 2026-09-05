@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>EggProject — Textarea</title>
+  <script src="../../../eggproject-design/preview/_theme.js" defer></script>
+  <meta name="viewport" content="width=720" />
+  <link rel="stylesheet" href="textarea.css" />
+  <link rel="icon" href="../../../eggproject-design/assets/logo-mark.svg" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--ep-bg); color: var(--ep-fg); font-family: var(--ep-font-sans); padding: 40px; }
+    .page { max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+    h1 { font: 400 36px/1.1 var(--ep-font-display); letter-spacing: -0.02em; }
+    h1 em { font-weight: 700; }
+    .lead { font: var(--ep-text-body); color: var(--ep-fg-muted); }
+    .label { font: var(--ep-text-overline); letter-spacing: var(--ep-track-overline); text-transform: uppercase; color: var(--ep-fg-subtle); }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field-label { font: 500 12px/1 var(--ep-font-sans); letter-spacing: 0.04em; text-transform: uppercase; color: var(--ep-fg-muted); }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1>Textarea · <em>multiline input</em></h1>
+    <p class="lead">Multi-line text input with size variants, error state and ghost style.</p>
+    <div class="field">
+      <span class="field-label">Default</span>
+      <textarea class="textarea" placeholder="Describe the project scope…" rows="3"></textarea>
+    </div>
+    <div class="field">
+      <span class="field-label">Small</span>
+      <textarea class="textarea textarea--sm" placeholder="Short note…" rows="2"></textarea>
+    </div>
+    <div class="field">
+      <span class="field-label">Large</span>
+      <textarea class="textarea textarea--lg" placeholder="Detailed description…" rows="5">Lumenwerk is a 12-week engagement focused on the design system, client portal, and billing integration.</textarea>
+    </div>
+    <div class="field">
+      <span class="field-label">Error state</span>
+      <textarea class="textarea is-error" placeholder="Required…" rows="2"></textarea>
+    </div>
+    <div class="field">
+      <span class="field-label">Ghost</span>
+      <textarea class="textarea textarea--ghost" placeholder="Minimal underline style…" rows="2"></textarea>
+    </div>
+    <div class="field">
+      <span class="field-label">Disabled</span>
+      <textarea class="textarea" placeholder="Not editable" rows="2" disabled>This field is disabled.</textarea>
+    </div>
+  </div>
+</body>
+</html>

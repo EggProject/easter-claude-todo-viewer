@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>EggProject — Code block</title>
+  <script src="../../../eggproject-design/preview/_theme.js" defer></script>
+  <meta name="viewport" content="width=860" />
+  <link rel="stylesheet" href="code-block.css" />
+  <link rel="icon" href="../../../eggproject-design/assets/logo-mark.svg" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--ep-bg); color: var(--ep-fg); font-family: var(--ep-font-sans); padding: 40px; }
+    .page { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+    h1 { font: 400 36px/1.1 var(--ep-font-display); letter-spacing: -0.02em; color: var(--ep-fg); }
+ h1 em { font-weight: 700; }
+    .lead { font: var(--ep-text-body); color: var(--ep-fg-muted); }
+    .label { font: var(--ep-text-overline); letter-spacing: var(--ep-track-overline); text-transform: uppercase; color: var(--ep-fg-subtle); margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1>Code block · <em>snippets & terminals</em></h1>
+    <p class="lead">For showing source, configs, and terminal output. Inline <code class="code-inline">code</code> shares the same family.</p>
+
+    <span class="label">Paper — with header</span>
+    <div class="code">
+      <div class="code__header">
+        <span class="code__filename">tokens.css</span>
+        <span class="code__lang">CSS</span>
+        <span class="code__header-spacer"></span>
+        <button class="code__copy"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3.5A1.5 1.5 0 0 1 4.5 2H11"/></svg>Copy</button>
+      </div>
+      <pre class="code__body"><code><span class="code__line"><span class="code__number">1</span><span class="code__token--comment">/* Brand colors */</span></span>
+<span class="code__line"><span class="code__number">2</span><span class="code__token--punctuation">:root</span> <span class="code__token--punctuation">{</span></span>
+<span class="code__line"><span class="code__number">3</span>  <span class="code__token--keyword">--ep-blue-600</span><span class="code__token--punctuation">:</span> <span class="code__token--string">#2E5BE0</span><span class="code__token--punctuation">;</span></span>
+<span class="code__line"><span class="code__number">4</span>  <span class="code__token--keyword">--ep-paper-50</span><span class="code__token--punctuation">:</span>  <span class="code__token--string">#FBF9F4</span><span class="code__token--punctuation">;</span></span>
+<span class="code__line"><span class="code__number">5</span>  <span class="code__token--keyword">--ep-ink-900</span><span class="code__token--punctuation">:</span>   <span class="code__token--string">#0A1230</span><span class="code__token--punctuation">;</span></span>
+<span class="code__line"><span class="code__number">6</span><span class="code__token--punctuation">}</span></span></code></pre>
+    </div>
+
+    <span class="label">Ink — terminal</span>
+    <div class="code code--ink">
+      <div class="code__header">
+        <span class="code__filename">~/projects/lumenwerk</span>
+        <span class="code__lang">SHELL</span>
+        <span class="code__header-spacer"></span>
+        <button class="code__copy"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3.5A1.5 1.5 0 0 1 4.5 2H11"/></svg>Copy</button>
+      </div>
+      <pre class="code__body"><code><span class="code__token--comment"># Deploy to production</span>
+<span class="code__token--function">$ npm</span> run build
+<span class="code__token--comment">  → built in</span> <span class="code__token--number">2.41s</span>
+<span class="code__token--function">$ ep</span> deploy --env prod
+<span class="code__token--comment">  ✓ uploaded 142 files</span>
+<span class="code__token--comment">  ✓ live at</span> <span class="code__token--string">https://lumenwerk.app</span></code></pre>
+    </div>
+
+    <span class="label">Paper — no header, no line numbers</span>
+    <div class="code">
+      <pre class="code__body"><code><span class="code__token--keyword">function</span> <span class="code__token--function">Button</span><span class="code__token--punctuation">({</span> variant<span class="code__token--punctuation">,</span> children <span class="code__token--punctuation">})</span> <span class="code__token--punctuation">{</span>
+  <span class="code__token--keyword">return</span> <span class="code__token--punctuation">&lt;</span><span class="code__token--type">button</span> className<span class="code__token--punctuation">={</span><span class="code__token--string">`btn btn--${variant}`</span><span class="code__token--punctuation">}&gt;{</span>children<span class="code__token--punctuation">}&lt;/</span><span class="code__token--type">button</span><span class="code__token--punctuation">&gt;;</span>
+<span class="code__token--punctuation">}</span></code></pre>
+    </div>
+  </div>
+</body>
+</html>

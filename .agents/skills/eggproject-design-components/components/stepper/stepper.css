@@ -1,0 +1,141 @@
+@import url('../../../eggproject-design/colors_and_type.css');
+
+/* ============ Stepper ============
+   Linear progression indicator for wizards / onboarding.
+
+   .stepper             — flex container
+   .stepper--vertical
+   .stepper__step       — single step
+   .stepper__step--complete | --current | --pending
+   .stepper__node       — circle with number / check / dot
+   .stepper__label      — title under/right of node
+   .stepper__subtitle        — secondary line
+   .stepper__line       — connecting line
+============================================ */
+.stepper {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+}
+
+.stepper__step {
+  display: flex; align-items: flex-start;
+  flex: 1;
+  min-width: 0;
+  position: relative;
+}
+.stepper__step:last-child { flex: 0 1 auto; }
+
+.stepper__header {
+  display: flex; align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.stepper__node {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--ep-bg-elevated);
+  border: 1.5px solid var(--ep-border);
+  display: inline-flex; align-items: center; justify-content: center;
+  font: 600 13px var(--ep-font-sans);
+  color: var(--ep-fg-muted);
+  flex-shrink: 0;
+  transition: all var(--ep-dur-fast) var(--ep-ease-out);
+}
+.stepper__node svg { width: 14px; height: 14px; }
+
+.stepper__text {
+  display: flex; flex-direction: column;
+  gap: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.stepper__label {
+  font: 600 13px var(--ep-font-sans);
+  color: var(--ep-fg-muted);
+  text-overflow: ellipsis; overflow: hidden;
+}
+.stepper__subtitle {
+  font: var(--ep-text-meta);
+  color: var(--ep-fg-subtle);
+  text-overflow: ellipsis; overflow: hidden;
+}
+
+.stepper__line {
+  flex: 1;
+  height: 1.5px;
+  background: var(--ep-border);
+  margin: 14px 12px 0;
+  min-width: 24px;
+  border-radius: 1px;
+}
+
+/* States */
+.stepper__step--complete .stepper__node {
+  background: var(--ep-accent);
+  border-color: var(--ep-accent);
+  color: var(--ep-accent-on);
+}
+.stepper__step--complete .stepper__label { color: var(--ep-fg); }
+.stepper__step--complete + .stepper__step .stepper__line,
+.stepper__step--complete .stepper__line { background: var(--ep-accent); }
+
+.stepper__step--current .stepper__node {
+  background: var(--ep-bg-elevated);
+  border-color: var(--ep-accent);
+  color: var(--ep-accent);
+  box-shadow: 0 0 0 4px var(--ep-blue-100);
+}
+.stepper__step--current .stepper__label { color: var(--ep-fg); }
+
+.stepper__step--pending .stepper__node {
+  background: var(--ep-bg-elevated);
+  border-color: var(--ep-border);
+  color: var(--ep-fg-faint);
+}
+.stepper__step--pending .stepper__label { color: var(--ep-fg-muted); }
+
+/* Connecting line lives between steps — owned by left step */
+.stepper__step .stepper__line:last-child { display: none; }
+
+/* ---- Vertical orientation ---- */
+.stepper--vertical {
+  flex-direction: column;
+  align-items: stretch;
+}
+.stepper--vertical .stepper__step {
+  flex-direction: column;
+  align-items: stretch;
+  flex: 0 0 auto;
+}
+.stepper--vertical .stepper__header { align-items: flex-start; }
+.stepper--vertical .stepper__line {
+  width: 1.5px; height: auto;
+  flex: 1;
+  min-height: 24px;
+  margin: 8px 13.25px;
+  align-self: flex-start;
+}
+.stepper--vertical .stepper__step {
+  padding-bottom: 20px;
+}
+.stepper--vertical .stepper__step:last-child { padding-bottom: 0; }
+.stepper--vertical .stepper__after {
+  display: flex;
+}
+.stepper--vertical .stepper__line {
+  background: var(--ep-border);
+}
+
+/* ---- Numbered (default) vs. dot variant ---- */
+.stepper--dots .stepper__node {
+  width: 12px; height: 12px;
+  font-size: 0;
+  border-width: 0;
+  background: var(--ep-border);
+}
+.stepper--dots .stepper__step--complete .stepper__node,
+.stepper--dots .stepper__step--current  .stepper__node {
+  background: var(--ep-accent);
+}

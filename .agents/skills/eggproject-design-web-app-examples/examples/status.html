@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<!-- @dsCard group="Brand" name="Demo · Status" subtitle="Public uptime page with services + incidents" -->
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>EggProject — Status</title>
+  <script src="../../eggproject-design/preview/_theme.js" defer></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" href="../../eggproject-design/assets/logo-mark.svg" />
+  <link rel="stylesheet" href="../../eggproject-design/colors_and_type.css" />
+  <link rel="stylesheet" href="../../eggproject-design-app-common/_shell.css" />
+  <link rel="stylesheet" href="../../eggproject-design-components/components/button/button.css" />
+  <link rel="stylesheet" href="../../eggproject-design-components/components/nav/nav.css" />
+  <link rel="stylesheet" href="../../eggproject-design-components/components/badge/badge.css" />
+  <link rel="stylesheet" href="../../eggproject-design-components/components/alert/alert.css" />
+  <link rel="stylesheet" href="../../eggproject-design-components/components/divider/divider.css" />
+  <link rel="stylesheet" href="../../eggproject-design-components/components/avatar/avatar.css" />
+  <link rel="stylesheet" href="../../eggproject-design-components/components/stat/stat.css" />
+  <link rel="stylesheet" href="../../eggproject-design-components/components/input/input.css" />
+  <link rel="stylesheet" href="../../eggproject-design-components/components/tabs/tabs.css" />
+  <style>
+    body { background: var(--ep-bg-sunken); color: var(--ep-fg); }
+
+    /* status reads best in a narrower column than the default marketing width */
+    .mkt { max-width: 960px; }
+    .topnav { margin-bottom: 8px; }
+
+    /* Header */
+    .head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--ep-divider);
+    }
+    .head__brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+    .head__brand img { width: 28px; height: 28px; }
+    .head__brand b {
+      font: 600 18px var(--ep-font-sans);
+      letter-spacing: -0.02em;
+      color: var(--ep-fg);
+      display: inline-flex; align-items: baseline; gap: 4px;
+    }
+    .head__brand b::after {
+      content: ""; width: 5px; height: 5px;
+      background: var(--ep-accent);
+      border-radius: 50%;
+      display: inline-block;
+      margin-bottom: 2px;
+    }
+    .head__brand small {
+      display: block;
+      font: var(--ep-text-meta);
+      font-family: var(--ep-font-mono);
+      color: var(--ep-fg-subtle);
+      margin-top: 2px;
+    }
+    .head__actions { display: flex; gap: 10px; align-items: center; }
+    .subscribe {
+      display: inline-flex; align-items: center; gap: 6px;
+      font: 500 13px var(--ep-font-sans);
+      padding: 7px 14px;
+      border-radius: var(--ep-radius-pill);
+      background: var(--ep-bg-elevated);
+      border: 1px solid var(--ep-border);
+      color: var(--ep-fg);
+      text-decoration: none;
+    }
+    .subscribe:hover { border-color: var(--ep-fg); }
+    .subscribe svg { width: 14px; height: 14px; color: var(--ep-fg-muted); }
+
+    /* === Big banner === */
+    .banner {
+      margin-top: 40px;
+      padding: 36px 40px;
+      background: var(--ep-bg-elevated);
+      border: 1px solid var(--ep-success);
+      border-radius: var(--ep-radius-xl);
+      box-shadow: var(--ep-shadow-sm);
+      display: flex; align-items: center; gap: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    .banner::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(35% 70% at 0% 50%, rgba(47, 156, 106, 0.10), transparent 70%);
+      pointer-events: none;
+    }
+    .banner > * { position: relative; }
+    .banner__icon {
+      width: 56px; height: 56px;
+      border-radius: 50%;
+      background: var(--ep-success-bg);
+      color: var(--ep-success);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .banner__icon svg { width: 24px; height: 24px; }
+    .banner__copy h1 {
+      font: 400 36px/1.1 var(--ep-font-display);
+      letter-spacing: -0.02em;
+      color: var(--ep-fg);
+    }
+ .banner__copy h1 em { font-weight: 700; color: var(--ep-success); }
+    .banner__copy p { margin-top: 4px; font: var(--ep-text-body); color: var(--ep-fg-muted); }
+    .banner__meta {
+      margin-left: auto;
+      text-align: right;
+      font: var(--ep-text-meta);
+      font-family: var(--ep-font-mono);
+      color: var(--ep-fg-subtle);
+    }
+    .banner__meta b { display: block; color: var(--ep-fg); font-weight: 500; font: 500 13px var(--ep-font-sans); margin-bottom: 4px; }
+
+    /* === Services list === */
+    .services { margin-top: 36px; background: var(--ep-bg-elevated); border: 1px solid var(--ep-border-subtle); border-radius: var(--ep-radius-lg); overflow: hidden; }
+
+    .service {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--ep-divider);
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 16px;
+    }
+    .service:last-child { border-bottom: 0; }
+    .service__header { display: flex; flex-direction: column; gap: 2px; min-width: 220px; }
+    .service__name {
+      font: 600 15px var(--ep-font-sans);
+      color: var(--ep-fg);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .service__subtitle { font: var(--ep-text-meta); font-family: var(--ep-font-mono); color: var(--ep-fg-subtle); }
+
+    .service__bars {
+      display: flex; align-items: flex-end;
+      gap: 2px;
+      height: 28px;
+    }
+    .service__bar {
+      flex: 1;
+      max-width: 8px;
+      height: 100%;
+      background: var(--ep-success);
+      border-radius: 1.5px;
+      transition: opacity var(--ep-dur-fast) var(--ep-ease-out);
+    }
+    .service__bar:hover { opacity: 0.75; }
+    .service__bar--warning { background: var(--ep-warning); height: 70%; }
+    .service__bar--down { background: var(--ep-danger); height: 50%; }
+    .service__bar--maintenance { background: var(--ep-blue-400); }
+
+    .service__stats { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; min-width: 100px; }
+    .service__uptime { font: 500 14px var(--ep-font-mono); color: var(--ep-fg); font-variant-numeric: tabular-nums; }
+    .service__status {
+      display: inline-flex; align-items: center; gap: 6px;
+      font: 500 12px var(--ep-font-sans);
+      color: var(--ep-success);
+    }
+    .service__status::before {
+      content: ""; width: 6px; height: 6px; border-radius: 50%;
+      background: currentColor;
+    }
+    .svc__status--maint { color: var(--ep-accent); }
+
+    /* === Stat row === */
+    .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 36px; }
+    .stat--card { padding: 20px 22px; }
+
+    /* === Incidents === */
+    .section-h {
+      display: flex; align-items: baseline; justify-content: space-between;
+      margin: 56px 0 16px;
+    }
+    .section-h h2 {
+      font: 400 32px/1 var(--ep-font-display);
+      letter-spacing: -0.02em;
+      color: var(--ep-fg);
+    }
+ .section-h h2 em { font-weight: 700; }
+    .section-h a { font: 500 13px var(--ep-font-sans); color: var(--ep-accent); text-decoration: none; }
+
+    .timeline {
+      display: flex; flex-direction: column;
+      gap: 16px;
+    }
+    .incident {
+      background: var(--ep-bg-elevated);
+      border: 1px solid var(--ep-border-subtle);
+      border-radius: var(--ep-radius-lg);
+      padding: 22px 24px;
+    }
+    .incident__top {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .incident__title {
+      font: 600 17px var(--ep-font-sans);
+      color: var(--ep-fg);
+    }
+    .incident__when { font: var(--ep-text-meta); font-family: var(--ep-font-mono); color: var(--ep-fg-subtle); }
+
+    .incident__steps { display: flex; flex-direction: column; gap: 12px; margin-top: 14px; }
+    .incident__step {
+      display: grid;
+      grid-template-columns: 80px 1fr;
+      gap: 14px;
+      align-items: flex-start;
+      padding-top: 12px;
+      border-top: 1px solid var(--ep-divider);
+    }
+    .incident__step:first-child { padding-top: 0; border-top: 0; }
+    .incident__step-label {
+      font: 500 11px var(--ep-font-sans);
+      letter-spacing: var(--ep-track-overline);
+      text-transform: uppercase;
+      color: var(--ep-fg-subtle);
+      padding-top: 2px;
+    }
+    .incident__step-label--resolved  { color: var(--ep-success); }
+    .incident__step-label--monitoring   { color: var(--ep-accent); }
+    .incident__step-label--identified{ color: var(--ep-warning); }
+    .incident__step-label--investigating  { color: var(--ep-danger); }
+
+    .incident__step-body { font: 400 14.5px/1.55 var(--ep-font-sans); color: var(--ep-fg); }
+    .incident__step-body small { display: block; font: var(--ep-text-meta); font-family: var(--ep-font-mono); color: var(--ep-fg-subtle); margin-top: 4px; }
+
+    /* Maintenance row */
+    .maintenance {
+      margin-top: 16px;
+      padding: 18px 24px;
+      background: var(--ep-accent-bg);
+      border: 1px solid var(--ep-blue-200);
+      border-radius: var(--ep-radius-lg);
+      display: flex; align-items: center; gap: 16px;
+    }
+    .maintenance__icon {
+      width: 36px; height: 36px;
+      border-radius: var(--ep-radius-md);
+      background: var(--ep-bg-elevated);
+      color: var(--ep-accent);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .maintenance__icon svg { width: 18px; height: 18px; }
+    .maintenance__title { font: 600 14px var(--ep-font-sans); color: var(--ep-accent-fg); }
+    .maintenance__subtitle { font: 400 13px var(--ep-font-sans); color: var(--ep-accent-fg); margin-top: 2px; }
+    .maintenance__when { margin-left: auto; font: 500 13px var(--ep-font-mono); color: var(--ep-accent-fg); }
+
+    /* Footer */
+    .foot {
+      margin-top: 72px;
+      padding-top: 32px;
+      border-top: 1px solid var(--ep-divider);
+      display: flex; align-items: center; justify-content: space-between;
+      font: var(--ep-text-meta);
+      font-family: var(--ep-font-mono);
+      color: var(--ep-fg-subtle);
+    }
+    .foot a { color: var(--ep-fg-muted); text-decoration: none; }
+    .foot a:hover { color: var(--ep-fg); }
+
+    /* Legend */
+    .legend {
+      display: flex; align-items: center; gap: 16px;
+      margin-top: 16px;
+      padding: 12px 24px;
+      background: var(--ep-bg-sunken);
+      border-radius: var(--ep-radius-md);
+      font: var(--ep-text-meta);
+      font-family: var(--ep-font-mono);
+      color: var(--ep-fg-subtle);
+    }
+    .legend span { display: inline-flex; align-items: center; gap: 6px; }
+    .legend span::before { content: ""; width: 8px; height: 8px; border-radius: 2px; }
+    .legend .ok::before { background: var(--ep-success); }
+    .legend .warn::before { background: var(--ep-warning); }
+    .legend .down::before { background: var(--ep-danger); }
+    .legend .maintenance::before { background: var(--ep-blue-400); }
+  </style>
+</head>
+<body>
+
+  <div class="mkt" data-screen-label="Status">
+
+    <!-- ============ TOP NAV (marketing shell) ============ -->
+    <nav class="topnav">
+      <div class="topnav__brand">
+        <img src="../../eggproject-design/assets/logo-mark.svg" alt="" />
+        <b>EggProject</b>
+      </div>
+      <div class="topnav__links">
+        <a class="is-on" href="#">Status</a>
+        <a href="docs.html">Docs</a>
+        <a href="#">Incidents</a>
+        <a href="#">Changelog</a>
+      </div>
+      <div class="topnav__actions">
+        <button class="ep-theme-toggle" type="button" data-ep-theme-toggle aria-label="Switch to dark theme">
+          <svg class="ep-theme-toggle__moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+          <svg class="ep-theme-toggle__sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        </button>
+        <a class="btn btn--ghost" href="#">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6a4 4 0 0 0-8 0c0 5-2 6-2 6h12s-2-1-2-6M9 13a1.5 1.5 0 0 1-2 0"/></svg>
+          Subscribe
+        </a>
+        <a href="docs.html" class="btn btn--ink">Back to docs</a>
+      </div>
+    </nav>
+
+    <!-- ===== Banner ===== -->
+    <section class="banner">
+      <span class="banner__icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m4 12 5 5L20 6"/></svg>
+      </span>
+      <div class="banner__copy">
+        <h1>All systems <em>normal.</em></h1>
+        <p>Everything's responding within target. Last incident resolved 13 days ago.</p>
+      </div>
+      <div class="banner__meta">
+        <b>Updated just now</b>
+        Checked every 60s · UTC+02:00
+      </div>
+    </section>
+
+    <!-- ===== Services ===== -->
+    <section class="services">
+
+      <div class="service">
+        <div class="service__header">
+          <span class="service__name">Portal &amp; web app</span>
+          <span class="service__subtitle">app.egg.dev</span>
+        </div>
+        <div class="service__bars">
+          <!-- 90 bars, mostly green -->
+          <span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar service__bar--warning"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span>
+        </div>
+        <div class="service__stats">
+          <span class="service__uptime">99.984%</span>
+          <span class="service__status">Operational</span>
+        </div>
+      </div>
+
+      <div class="service">
+        <div class="service__header">
+          <span class="service__name">Public API</span>
+          <span class="service__subtitle">api.egg.dev/v2</span>
+        </div>
+        <div class="service__bars">
+          <span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar service__bar--down"></span><span class="service__bar service__bar--warning"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span>
+        </div>
+        <div class="service__stats">
+          <span class="service__uptime">99.892%</span>
+          <span class="service__status">Operational</span>
+        </div>
+      </div>
+
+      <div class="service">
+        <div class="service__header">
+          <span class="service__name">Webhooks</span>
+          <span class="service__subtitle">hooks.egg.dev</span>
+        </div>
+        <div class="service__bars">
+          <span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span>
+        </div>
+        <div class="service__stats">
+          <span class="service__uptime">99.996%</span>
+          <span class="service__status">Operational</span>
+        </div>
+      </div>
+
+      <div class="service">
+        <div class="service__header">
+          <span class="service__name">Payments &amp; payouts</span>
+          <span class="service__subtitle">via Stripe · SEPA</span>
+        </div>
+        <div class="service__bars">
+          <span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span>
+        </div>
+        <div class="service__stats">
+          <span class="service__uptime">100.000%</span>
+          <span class="service__status">Operational</span>
+        </div>
+      </div>
+
+      <div class="service">
+        <div class="service__header">
+          <span class="service__name">Document storage</span>
+          <span class="service__subtitle">eu-central-1</span>
+        </div>
+        <div class="service__bars">
+          <span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar service__bar--maintenance"></span><span class="service__bar service__bar--maintenance"></span><span class="service__bar service__bar--maintenance"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span><span class="service__bar"></span>
+        </div>
+        <div class="service__stats">
+          <span class="service__uptime">99.870%</span>
+          <span class="service__status">Operational</span>
+        </div>
+      </div>
+
+    </section>
+
+    <div class="legend">
+      <span>Last 90 days · each bar = 1 day</span>
+      <span class="ok">Operational</span>
+      <span class="warn">Degraded</span>
+      <span class="down">Outage</span>
+      <span class="maintenance">Maintenance</span>
+    </div>
+
+    <!-- ===== Stat row ===== -->
+    <section class="stat-row">
+      <div class="stat stat--card">
+        <span class="stat__label">90-day uptime</span>
+        <div class="stat__value-row">
+          <span class="stat__value">99.94<em>%</em></span>
+        </div>
+        <span class="stat__subtitle stat__subtitle--mono">Target ≥ 99.9%</span>
+      </div>
+      <div class="stat stat--card">
+        <span class="stat__label">Avg. response · API</span>
+        <div class="stat__value-row">
+          <span class="stat__value">142<em>ms</em></span>
+        </div>
+        <span class="stat__subtitle stat__subtitle--mono">P95 over 24h</span>
+      </div>
+      <div class="stat stat--card">
+        <span class="stat__label">Incidents · 90 days</span>
+        <div class="stat__value-row">
+          <span class="stat__value">2</span>
+        </div>
+        <span class="stat__subtitle stat__subtitle--mono">1 major · 1 minor</span>
+      </div>
+    </section>
+
+    <!-- ===== Maintenance scheduled ===== -->
+    <div class="maintenance">
+      <span class="maintenance__icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4l-7 7L4 20l7-7a4 4 0 0 0 5.4-5.4l-2.4 2.4-1.4-1.4z"/></svg>
+      </span>
+      <div>
+        <div class="maintenance__title">Scheduled: Postgres upgrade (eu-central-1)</div>
+        <div class="maintenance__subtitle">Expected ~15min API degradation. Webhooks queued; portal unaffected.</div>
+      </div>
+      <span class="maintenance__when">23 May · 02:00 UTC</span>
+    </div>
+
+    <!-- ===== Incident history ===== -->
+    <div class="section-h">
+      <h2>Past <em>incidents</em></h2>
+      <a href="#">View full history →</a>
+    </div>
+
+    <div class="timeline">
+
+      <article class="incident">
+        <div class="incident__top">
+          <span class="incident__title">Webhook delivery delays — eu-central-1</span>
+          <span class="incident__when">2 May · resolved in 38m</span>
+        </div>
+        <p class="design-mark-meta" style="text-transform: none; letter-spacing: 0;">A burst of retries from a downstream subscriber filled the regional queue. Customer-impacting for ~25 minutes.</p>
+
+        <div class="incident__steps">
+          <div class="incident__step">
+            <span class="incident__step-label incident__step-label--resolved">Resolved</span>
+            <div class="incident__step-body">
+              Queue drained. New rate-limit headers now sent to subscribers that retry aggressively.
+              <small>14:48 UTC · Márton Kovács</small>
+            </div>
+          </div>
+          <div class="incident__step">
+            <span class="incident__step-label incident__step-label--monitoring">Monitoring</span>
+            <div class="incident__step-body">
+              Patch deployed; watching the queue depth.
+              <small>14:30 UTC</small>
+            </div>
+          </div>
+          <div class="incident__step">
+            <span class="incident__step-label incident__step-label--identified">Identified</span>
+            <div class="incident__step-body">
+              Root cause: one subscriber returning 5xx is generating 12k retries/min, blocking other deliveries.
+              <small>14:18 UTC</small>
+            </div>
+          </div>
+          <div class="incident__step">
+            <span class="incident__step-label incident__step-label--investigating">Investigating</span>
+            <div class="incident__step-body">
+              Some webhook deliveries are queued longer than the 60s target.
+              <small>14:10 UTC</small>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="incident">
+        <div class="incident__top">
+          <span class="incident__title">Brief 502s on /v2/invoices — read replica failover</span>
+          <span class="incident__when">14 Apr · resolved in 6m</span>
+        </div>
+        <p class="design-mark-meta" style="text-transform: none; letter-spacing: 0;">Routine read-replica failover took longer than expected. About 0.8% of requests in the window returned 502.</p>
+      </article>
+
+    </div>
+
+    <footer class="foot">
+      <span>EggProject Studio · Budapest</span>
+      <span>
+        <a href="#">RSS</a> ·
+        <a href="#">Atom</a> ·
+        <a href="#">Slack alerts</a> ·
+        <a href="#">Incident policy</a>
+      </span>
+    </footer>
+
+  </div>
+
+</body>
+</html>

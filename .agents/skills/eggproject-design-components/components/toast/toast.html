@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>EggProject — Toast</title>
+  <script src="../../../eggproject-design/preview/_theme.js" defer></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="toast.css" />
+  <link rel="stylesheet" href="../button/button.css" />
+  <link rel="icon" href="../../../eggproject-design/assets/logo-mark.svg" />
+  <style>
+    /* demo-page chrome only — no .toast / .toast-viewport / .toast__* rules; the component
+       owns its CSS, its focus-visible, its forced-colors and its reduced-motion recipes. */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--ep-bg); color: var(--ep-fg); font-family: var(--ep-font-sans); padding: 40px; min-height: 100vh; }
+    .page { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 22px; }
+    header { display: flex; flex-direction: column; gap: 8px; }
+    h1 { font: 400 36px/1.1 var(--ep-font-display); letter-spacing: -0.02em; color: var(--ep-fg); }
+    h1 em { font-weight: 700; }
+    .lead { font: var(--ep-text-body); color: var(--ep-fg-muted); max-width: 62ch; }
+    code { font-family: var(--ep-font-mono); font-size: 0.92em; color: var(--ep-fg); }
+
+    .panel { display: flex; flex-direction: column; align-items: flex-start; gap: 12px;
+      background: var(--ep-bg-elevated); border: 1px solid var(--ep-border-subtle);
+      border-radius: var(--ep-radius-lg); padding: 20px 22px; }
+    .panel h2 { font: 600 15px var(--ep-font-sans); color: var(--ep-fg); }
+    .panel h3 { font: 600 13px var(--ep-font-sans); color: var(--ep-fg); margin-top: 6px; }
+
+    .btn-row { display: flex; flex-wrap: wrap; gap: 10px; }
+
+    .positions { border: 1px solid var(--ep-border-subtle); border-radius: var(--ep-radius-md);
+      padding: 12px 14px; display: flex; flex-wrap: wrap; gap: 8px 18px; width: 100%; }
+    .positions legend { font: 500 12px var(--ep-font-sans); color: var(--ep-fg-muted); padding: 0 6px; }
+    .pos-opt { display: inline-flex; align-items: center; gap: 7px; font: var(--ep-text-small); color: var(--ep-fg); cursor: pointer; }
+    .pos-opt code { color: var(--ep-fg-muted); }
+
+    .field { display: flex; flex-direction: column; gap: 6px; width: 100%; max-width: 380px; }
+    .field label { font: 500 12px var(--ep-font-sans); color: var(--ep-fg-muted); }
+    .field__input { width: 100%; background: var(--ep-bg); color: var(--ep-fg);
+      border: 1px solid var(--ep-border); border-radius: var(--ep-radius-md);
+      padding: 8px 12px; font: var(--ep-text-small); font-family: inherit; }
+    .field__input:focus-visible { outline: none; box-shadow: var(--ep-shadow-focus); }
+
+    .link { color: var(--ep-accent); font: 500 13px var(--ep-font-sans); width: fit-content; }
+    .link:focus-visible { outline: none; box-shadow: var(--ep-shadow-focus); border-radius: var(--ep-radius-sm); }
+
+    .status { font: var(--ep-text-small); color: var(--ep-fg-muted);
+      border-top: 1px solid var(--ep-divider); padding-top: 10px; width: 100%; }
+    .status strong { color: var(--ep-fg); font-weight: 600; }
+
+    .hint { font: var(--ep-text-small); color: var(--ep-fg-muted); max-width: 64ch; }
+    .hint code, .hint strong { color: var(--ep-fg); }
+
+    .guide { width: 100%; display: flex; flex-direction: column; gap: 6px;
+      border-top: 1px solid var(--ep-divider); padding-top: 12px; }
+    .guide ol, .guide ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 3px; }
+    .guide li, .guide p { font: var(--ep-text-small); color: var(--ep-fg-muted); max-width: 66ch; }
+    .guide em { color: var(--ep-fg); font-style: italic; }
+
+    .keys { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }
+    .keys li { font: var(--ep-text-small); color: var(--ep-fg-muted); max-width: 66ch; }
+
+    kbd { font: 600 11px var(--ep-font-mono); background: var(--ep-bg-hover);
+      border: 1px solid var(--ep-border-subtle); border-radius: var(--ep-radius-sm); padding: 1px 5px; color: var(--ep-fg); }
+  </style>
+  <script src="../../assets/vendor/react.production.min.js"></script>
+  <script src="../../assets/vendor/react-dom.production.min.js"></script>
+  <script src="../../assets/vendor/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel" src="Toast.jsx"></script>
+  <script type="text/babel">
+    const { useState, useRef } = React;
+
+    // Human-readable names for the six real, supported position codes.
+    const POSITIONS = [
+      ['br', 'Bottom right'],
+      ['bl', 'Bottom left'],
+      ['tr', 'Top right'],
+      ['tl', 'Top left'],
+      ['tc', 'Top center'],
+      ['bc', 'Bottom center'],
+    ];
+
+    function App() {
+      // Demo-only state: the chosen viewport position, the action-result line, and the id of
+      // the persistent toast. No timers, no pause state, no live region, no DOM access here —
+      // the managed useToasts + ToastViewport own every bit of toast behaviour.
+      const [position, setPosition] = useState('br');
+      const [status, setStatus] = useState('No action yet.');
+      const persistentId = useRef(null);            // last Infinity toast id from push()
+      const safeSpotRef = useRef(null);             // consumer-owned focus target for §15
+
+      const { toasts, push, dismiss } = useToasts();
+
+      return (
+        <>
+          <main className="page">
+            <header>
+              <h1>Toast · <em>quiet feedback</em></h1>
+              <p className="lead">A real <code>&lt;ToastViewport&gt;</code> driven only by the public <code>useToasts()</code> store (<code>toasts</code> / <code>push</code> / <code>dismiss</code>). The viewport owns the persistent live region, the per-toast auto-dismiss timer, hover/focus pause and focus return; this page only pushes data and picks a corner.</p>
+            </header>
+
+            <section className="panel" aria-labelledby="pos-h">
+              <h2 id="pos-h">Position</h2>
+              <fieldset className="positions">
+                <legend>Viewport corner</legend>
+                {POSITIONS.map(([value, label]) => (
+                  <label key={value} className="pos-opt">
+                    <input type="radio" name="position" value={value} checked={position === value} onChange={() => setPosition(value)} />
+                    <span>{label} <code>{value}</code></span>
+                  </label>
+                ))}
+              </fieldset>
+              <p className="hint">Switching corners moves any visible toasts to the chosen viewport — it never pushes a new toast, re-announces anything, or changes toast ids or durations. The default is <code>br</code>.</p>
+            </section>
+
+            <section className="panel" aria-labelledby="var-h">
+              <h2 id="var-h">Variants</h2>
+              <div className="btn-row">
+                <button type="button" className="btn btn--secondary" onClick={() => push({ variant: 'info', title: 'Heads up', message: 'A new comment was added to Lumenwerk.' })}>Info</button>
+                <button type="button" className="btn btn--primary" onClick={() => push({ variant: 'success', title: 'Project shipped', message: 'v1.0.0 is live in production.', meta: 'just now' })}>Success</button>
+                <button type="button" className="btn btn--secondary" onClick={() => push({ variant: 'warning', title: 'Bandwidth low', message: 'Live preview may lag for the next 2 minutes.' })}>Warning</button>
+                <button type="button" className="btn btn--danger" onClick={() => push({ variant: 'danger', title: 'Build failed', message: '3 tests failing on main · #4129' })}>Danger</button>
+                <button type="button" className="btn btn--ink" onClick={() => push({ variant: 'ink', title: 'Deploy queued', message: 'Production deploy starts when CI is green.', meta: 'ETA · 4 min' })}>Ink</button>
+              </div>
+              <p className="hint">Every variant is announced as a <strong>polite</strong> message — there is no urgency/assertive API, so <em>warning</em> and <em>danger</em> are announced exactly like the rest.</p>
+            </section>
+
+            <section className="panel" aria-labelledby="content-h">
+              <h2 id="content-h">Title / message / meta</h2>
+              <div className="btn-row">
+                <button type="button" className="btn btn--secondary" onClick={() => push({ variant: 'info', title: 'Saved' })}>Title only</button>
+                <button type="button" className="btn btn--secondary" onClick={() => push({ variant: 'info', message: 'Your changes are syncing to the cloud.' })}>Message only</button>
+                <button type="button" className="btn btn--secondary" onClick={() => push({ variant: 'success', title: 'Invitation sent', message: 'Eszter Kovács will get an email shortly.' })}>Title + message</button>
+                <button type="button" className="btn btn--secondary" onClick={() => push({ variant: 'success', title: 'Invoice paid', message: 'Northbeam · €4,200.00', meta: 'receipt 8f3a · 12 sec ago' })}>Title + message + meta</button>
+              </div>
+              <p className="hint">The announcer reads each new toast as <em>title, then message, then meta</em>. Empty optional fields are skipped, so a message-only toast announces just its message.</p>
+            </section>
+
+            <section className="panel" aria-labelledby="action-h">
+              <h2 id="action-h">Action button &amp; result</h2>
+              <div className="btn-row">
+                <button type="button" className="btn btn--secondary" onClick={() => push({ variant: 'info', title: 'Invitation sent', message: 'Eszter Kovács · eszter@northbeam.co', action: { label: 'Undo', onClick: () => setStatus('Undo selected') } })}>Toast with “Undo” action</button>
+                <button type="button" className="btn btn--secondary" ref={safeSpotRef} onClick={() => setStatus('Safe spot focused')}>Safe spot</button>
+                <button type="button" className="btn btn--secondary" onClick={() => push({ variant: 'info', title: 'Item archived', message: 'Moved “Q3 plan” to the archive.', action: { label: 'Focus safe spot', onClick: () => { if (safeSpotRef.current) safeSpotRef.current.focus(); setStatus('Action moved focus to the safe spot'); } } })}>Toast whose action moves focus</button>
+              </div>
+              <p className="status" role="status" aria-live="polite">Last action: <strong>{status}</strong></p>
+              <p className="hint">This status line reports only the <em>result</em> of an action — it is a separate polite region, never a stand-in for the toast announcer, and never carries the toast’s own text. Action and close labels never enter the toast announcement.</p>
+            </section>
+
+            <section className="panel" aria-labelledby="dur-h">
+              <h2 id="dur-h">Duration</h2>
+              <div className="btn-row">
+                <button type="button" className="btn btn--secondary" onClick={() => push({ variant: 'info', title: 'Default timing', message: 'Auto-dismisses after the standard delay.' })}>Default</button>
+                <button type="button" className="btn btn--secondary" onClick={() => push({ variant: 'info', title: 'Quick toast', message: 'Gone in about 1.5 seconds.', duration: 1500 })}>Short · 1500&nbsp;ms</button>
+                <button type="button" className="btn btn--secondary" onClick={() => { persistentId.current = push({ variant: 'warning', title: 'Sticky toast', message: 'Stays until you close it or press “Dismiss persistent”.', duration: Infinity }); }}>Persistent · Infinity</button>
+                <button type="button" className="btn btn--secondary" onClick={() => { if (persistentId.current != null) dismiss(persistentId.current); }}>Dismiss persistent</button>
+              </div>
+              <p className="hint">The default button omits <code>duration</code> entirely (no hard-coded 4500). The persistent toast uses <code>duration: Infinity</code> and never auto-dismisses — remove it with its own close button or the <em>Dismiss persistent</em> control, which calls <code>dismiss(id)</code> with the id returned by <code>push</code> (a safe no-op once it is already gone).</p>
+            </section>
+
+            <section className="panel" aria-labelledby="announce-h">
+              <h2 id="announce-h">Announcement &amp; queue</h2>
+              <div className="btn-row">
+                <button type="button" className="btn btn--secondary" onClick={() => push({ variant: 'info', title: 'Sync complete', message: 'All files are up to date.', meta: 'moments ago' })}>Push identical toast</button>
+                <button type="button" className="btn btn--secondary" onClick={() => { push({ variant: 'info', title: 'First queued toast' }); push({ variant: 'success', title: 'Second queued toast' }); push({ variant: 'warning', title: 'Third queued toast' }); }}>Push three quickly</button>
+              </div>
+              <p className="hint">Click <em>Push identical toast</em> repeatedly: each carries the same title/message/meta but is a separate event with its own id, and a screen reader should re-announce every one. <em>Push three quickly</em> fires three synchronous pushes — they are announced in creation order (first, then second, then third).</p>
+            </section>
+
+            <section className="panel" aria-labelledby="pause-h">
+              <h2 id="pause-h">Hover, focus &amp; focus-return tests</h2>
+              <div className="field">
+                <label htmlFor="bg-input">Background field (a focus-return target)</label>
+                <input id="bg-input" type="text" className="field__input" placeholder="Focus me, then open a toast" />
+              </div>
+              <div className="btn-row">
+                <button type="button" className="btn btn--secondary" onClick={() => push({ variant: 'info', title: 'Hover to pause', message: 'I run for 7 seconds of un-paused time.', duration: 7000 })}>Long toast · 7000&nbsp;ms</button>
+                <button type="button" className="btn btn--secondary" onClick={() => push({ variant: 'info', title: 'Focus to pause', message: 'Tab to my action or close to hold me open.', duration: 7000, action: { label: 'Acknowledge', onClick: () => setStatus('Acknowledged') } })}>Focus-pause toast · 7000&nbsp;ms</button>
+                <button type="button" className="btn btn--secondary" onClick={() => push({ variant: 'success', title: 'Focus test', message: 'Close me and watch focus return.', duration: Infinity, action: { label: 'Keep open', onClick: () => setStatus('Kept open') } })}>Create focus test toast</button>
+              </div>
+              <a className="link" href="#pos-h">A background link (another focus-return target)</a>
+
+              <div className="guide">
+                <h3>Hover pause</h3>
+                <ol>
+                  <li>Open the <em>Long toast · 7000 ms</em>.</li>
+                  <li>Move the pointer over it and hold past most of the 7 seconds.</li>
+                  <li>Move the pointer away.</li>
+                  <li>Only the remaining time runs out — it does not restart from 7 seconds.</li>
+                </ol>
+                <h3>Focus pause</h3>
+                <ol>
+                  <li>Open the <em>Focus-pause toast</em>.</li>
+                  <li><kbd>Tab</kbd> to its action or close button and wait past 7 seconds — it stays open.</li>
+                  <li>Move focus between action and close: this internal switch does not restart the timer.</li>
+                  <li>Move focus and pointer away — only the remaining time continues.</li>
+                </ol>
+                <h3>Focus return</h3>
+                <ol>
+                  <li>Focus the <em>Background field</em> (or the background link), then open the <em>Create focus test toast</em>.</li>
+                  <li><kbd>Tab</kbd> into the toast and activate <strong>Close</strong> with <kbd>Enter</kbd> / <kbd>Space</kbd>.</li>
+                  <li>Focus returns to the exact element you started from — never to <code>&lt;body&gt;</code>.</li>
+                  <li>If that element is gone, disabled, hidden or inert, focus is left where it is — there is no global fallback hunting.</li>
+                </ol>
+                <h3>Consumer focus wins</h3>
+                <p>Open <em>Toast whose action moves focus</em> above, <kbd>Tab</kbd> to its action and activate it: the action sends focus to <em>Safe spot</em>. When that toast is later removed, its own return logic does not steal focus back from the safe spot.</p>
+              </div>
+            </section>
+
+            <section className="panel" aria-labelledby="kbd-h">
+              <h2 id="kbd-h">Keyboard</h2>
+              <ul className="keys">
+                <li><kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd> — reach a toast’s action and close buttons.</li>
+                <li><kbd>Enter</kbd> / <kbd>Space</kbd> — activate the focused button.</li>
+                <li>While a toast is hovered <em>or</em> holds focus, its auto-dismiss is paused.</li>
+                <li>Closing a toast returns focus to the element you were on before entering it.</li>
+                <li>Tabbing between a toast’s action and close does not restart its timer.</li>
+              </ul>
+            </section>
+
+            <section className="panel" aria-labelledby="notes-h">
+              <h2 id="notes-h">Behaviour notes</h2>
+              <h3>Live region</h3>
+              <ul className="keys">
+                <li>The viewport renders one persistent <code>polite</code> live region; the visible toasts are not live regions themselves.</li>
+                <li>New toasts are announced in order; dismissing a toast announces nothing — “dismissed” is never spoken.</li>
+                <li>Action and close labels never enter the toast announcement.</li>
+                <li>Warning and danger stay polite — there is no separate urgency API.</li>
+              </ul>
+              <h3>Position</h3>
+              <p className="hint">Use the radios above to verify all six physical corners — <code>br</code>, <code>bl</code>, <code>tr</code>, <code>tl</code>, <code>tc</code>, <code>bc</code>. Changing position moves existing toasts without changing their ids, durations or announcements, and an unknown value would simply fall back to bottom-right.</p>
+              <h3>Forced colors</h3>
+              <p className="hint">In forced-colors mode every variant converges to a Canvas/CanvasText surface with a real border; the action and close buttons get a Highlight focus outline; the variant dot stays visible though its hue may be lost.</p>
+              <h3>Reduced motion</h3>
+              <p className="hint">With reduced motion the toast entrance animation is switched off, while auto-dismiss, hover/focus pause and announcements all keep working. There is no exit-animation contract.</p>
+            </section>
+          </main>
+
+          <ToastViewport toasts={toasts} onDismiss={dismiss} position={position} />
+        </>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>

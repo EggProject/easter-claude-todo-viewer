@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<!-- @dsCard group="Brand" name="Shell gallery" subtitle="Gallery of all five page shells" -->
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>EggProject — Page shells</title>
+  <script src="../eggproject-design/preview/_theme.js" defer></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" href="../eggproject-design/assets/logo-mark.svg" />
+  <link rel="stylesheet" href="../eggproject-design/colors_and_type.css" />
+  <link rel="stylesheet" href="_shell.css" />
+  <link rel="stylesheet" href="../eggproject-design-components/components/button/button.css" />
+  <link rel="stylesheet" href="../eggproject-design-components/components/badge/badge.css" />
+  <style>
+    body { background: var(--ep-bg); color: var(--ep-fg); }
+    .wrap { max-width: 1080px; margin: 0 auto; padding: 56px 32px 96px; }
+
+    .head { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+    .head__brand { display: flex; align-items: center; gap: 10px; }
+    .head__brand img { width: 26px; height: 26px; }
+    .head__brand b { font: 600 18px var(--ep-font-sans); letter-spacing: -0.02em; }
+    .head a.back { font: 500 13px var(--ep-font-sans); color: var(--ep-fg-muted); text-decoration: none; }
+    .head a.back:hover { color: var(--ep-fg); }
+
+    h1 { font: 400 clamp(40px, 5vw, 60px)/1 var(--ep-font-display); letter-spacing: var(--ep-track-tight); margin: 40px 0 0; }
+    h1 em { font-weight: 700; }
+    .lead { margin: 16px 0 0; font: 400 18px/1.55 var(--ep-font-sans); color: var(--ep-fg-muted); max-width: 64ch; }
+
+    .grid { margin-top: 48px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+    .card {
+      background: var(--ep-bg-elevated);
+      border: 1px solid var(--ep-border-subtle);
+      border-radius: var(--ep-radius-xl);
+      padding: 22px 24px 20px;
+      display: flex; flex-direction: column; gap: 14px;
+      text-decoration: none; color: inherit;
+      transition: transform var(--ep-dur-fast) var(--ep-ease-out), box-shadow var(--ep-dur-fast) var(--ep-ease-out), border-color var(--ep-dur-fast) var(--ep-ease-out);
+    }
+    .card:hover { transform: translateY(-2px); box-shadow: var(--ep-shadow-md); border-color: var(--ep-ink-900); }
+
+    /* mini diagram of each shell */
+    .mini { height: 132px; border-radius: var(--ep-radius-md); border: 1px solid var(--ep-divider); overflow: hidden; display: flex; background: var(--ep-slate-50); }
+    .mini--paper { background: var(--ep-paper-100); }
+    .mini--ink { background: var(--ep-ink-900); }
+    .mini .rail { width: 28%; background: var(--ep-bg-elevated); border-right: 1px solid var(--ep-divider); padding: 8px; display: flex; flex-direction: column; gap: 5px; }
+    .mini .rail i { height: 7px; border-radius: 3px; background: color-mix(in oklab, var(--ep-fg) 12%, transparent); }
+    .mini .rail i.on { background: var(--ep-ink-900); }
+    .mini .col { flex: 1; display: flex; flex-direction: column; }
+    .mini .bar { height: 22px; background: var(--ep-bg-elevated); border-bottom: 1px solid var(--ep-divider); display: flex; align-items: center; gap: 5px; padding: 0 8px; }
+    .mini .bar i { height: 7px; border-radius: 3px; background: color-mix(in oklab, var(--ep-fg) 12%, transparent); }
+    .mini .bar i.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ep-blue-600); }
+    .mini .bar i.on { background: var(--ep-ink-900); }
+    .mini .body { flex: 1; padding: 10px; display: flex; flex-direction: column; gap: 6px; }
+    .mini .body i { height: 8px; border-radius: 3px; background: color-mix(in oklab, var(--ep-fg) 9%, transparent); }
+    .mini .body i.w1 { width: 40%; }
+    .mini .body i.w2 { width: 70%; }
+    .mini .pillrow { display: flex; gap: 5px; padding: 7px; justify-content: center; }
+    .mini .pillrow i { width: 26px; height: 8px; border-radius: 999px; background: color-mix(in oklab, var(--ep-fg) 12%, transparent); }
+    .mini .pillrow i.on { background: var(--ep-ink-900); }
+    .mini--ink .body i { background: rgba(255,255,255,0.12); }
+    .mini--ink .pillrow i { background: rgba(255,255,255,0.16); }
+    .mini .toc { width: 22%; border-left: 1px solid var(--ep-divider); padding: 8px; display: flex; flex-direction: column; gap: 5px; }
+    .mini .toc i { height: 6px; border-radius: 3px; background: color-mix(in oklab, var(--ep-fg) 10%, transparent); }
+    .mini .split { flex: 1; display: flex; }
+    .mini .split .ed { width: 48%; background: var(--ep-ink-900); }
+    .mini .split .fm { flex: 1; display: flex; flex-direction: column; gap: 6px; padding: 14px; justify-content: center; }
+    .mini .split .fm i { height: 9px; border-radius: 3px; background: color-mix(in oklab, var(--ep-fg) 10%, transparent); }
+
+    .card__title { display: flex; align-items: center; gap: 10px; }
+    .card__title b { font: 600 16px var(--ep-font-sans); }
+    .card__number { font: 500 11px var(--ep-font-mono); color: var(--ep-fg-faint); }
+    .card__description { font: 400 13.5px/1.5 var(--ep-font-sans); color: var(--ep-fg-muted); }
+    .card__footer { margin-top: auto; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font: var(--ep-text-meta); font-family: var(--ep-font-mono); color: var(--ep-fg-subtle); }
+    .card__footer .badge { margin-right: 2px; }
+    .card__sel { font: 500 12px var(--ep-font-sans); color: var(--ep-accent); }
+  </style>
+</head>
+<body>
+
+  <div class="wrap">
+
+    <div class="head">
+      <div class="head__brand">
+        <img src="../eggproject-design/assets/logo-mark.svg" alt="" />
+        <b>EggProject</b>
+      </div>
+      <a class="back" href="index.html">← All demos</a>
+    </div>
+
+    <h1>Page <em>shells</em></h1>
+    <p class="lead">Every demo composes around exactly one of five canonical shells, all defined in <code style="font-family:var(--ep-font-mono);font-size:0.85em;">_shell.css</code>. Two product shells (slate), two public shells (paper), and one focus shell. Open any one for an annotated skeleton.</p>
+
+    <div class="grid">
+
+      <!-- 1 · Sidebar -->
+      <a class="card" href="skeletons/shell-sidebar.html">
+        <div class="mini">
+          <div class="rail"><i></i><i class="on"></i><i></i><i></i></div>
+          <div class="col">
+            <div class="bar"><i style="width:34%"></i><i class="dot" style="margin-left:auto"></i></div>
+            <div class="body"><i class="w1"></i><i class="w2"></i><i></i><i class="w2"></i></div>
+          </div>
+        </div>
+        <div class="card__title"><span class="card__number">01</span><b>Sidebar app shell</b></div>
+        <p class="card__description">Left nav rail + topbar. For data-dense product surfaces with many top-level sections.</p>
+        <div class="card__footer"><span class="card__sel">.app</span> · analytics · billing · inbox</div>
+      </a>
+
+      <!-- 2 · Top-nav app -->
+      <a class="card" href="skeletons/shell-topnav.html">
+        <div class="mini">
+          <div class="col">
+            <div class="pillrow"><i></i><i class="on"></i><i></i><i></i></div>
+            <div class="body"><i class="w1"></i><i class="w2"></i><i></i><i class="w2"></i></div>
+          </div>
+        </div>
+        <div class="card__title"><span class="card__number">02</span><b>Top-nav app shell</b></div>
+        <p class="card__description">Horizontal nav bar, full-width centered content. For product surfaces with few sections.</p>
+        <div class="card__footer"><span class="card__sel">.app-tn</span> · settings · live-trading</div>
+      </a>
+
+      <!-- 3 · Marketing -->
+      <a class="card" href="skeletons/shell-marketing.html">
+        <div class="mini mini--paper">
+          <div class="col">
+            <div class="pillrow"><i></i><i></i><i class="on"></i><i></i></div>
+            <div class="body" style="align-items:center"><i class="w1"></i><i class="w2"></i><i style="width:55%"></i></div>
+          </div>
+        </div>
+        <div class="card__title"><span class="card__number">03</span><b>Marketing shell</b></div>
+        <p class="card__description">Pill top-nav in a centered editorial column, closed by a footer. Warm paper surface.</p>
+        <div class="card__footer"><span class="card__sel">.mkt + .topnav</span> · pricing · status</div>
+      </a>
+
+      <!-- 4 · Docs -->
+      <a class="card" href="skeletons/shell-docs.html">
+        <div class="mini mini--paper">
+          <div class="rail"><i></i><i class="on"></i><i></i><i></i></div>
+          <div class="col">
+            <div class="bar"><i style="width:30%"></i></div>
+            <div class="body"><i class="w2"></i><i></i><i class="w1"></i></div>
+          </div>
+          <div class="toc"><i></i><i></i><i></i></div>
+        </div>
+        <div class="card__title"><span class="card__number">04</span><b>Docs shell</b></div>
+        <p class="card__description">Sticky blurred bar over a three-column layout: section nav · prose · table of contents.</p>
+        <div class="card__footer"><span class="card__sel">.docs-top</span> · docs</div>
+      </a>
+
+      <!-- 5 · Focus -->
+      <a class="card" href="skeletons/shell-focus.html">
+        <div class="mini">
+          <div class="col">
+            <div class="bar"><i class="dot"></i><i style="width:26%"></i></div>
+            <div class="split">
+              <div class="ed"></div>
+              <div class="fm"><i style="width:60%"></i><i></i><i style="width:40%"></i></div>
+            </div>
+          </div>
+        </div>
+        <div class="card__title"><span class="card__number">05</span><b>Focus shell</b></div>
+        <p class="card__description">Slim brand bar + centered, nav-free body. Modifiers: <code style="font-family:var(--ep-font-mono)">--split</code> · <code style="font-family:var(--ep-font-mono)">--ink</code>.</p>
+        <div class="card__footer"><span class="card__sel">.focus</span> · signin · onboarding · not-found</div>
+      </a>
+
+    </div>
+
+  </div>
+
+</body>
+</html>

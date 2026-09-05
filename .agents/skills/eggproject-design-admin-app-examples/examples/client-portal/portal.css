@@ -1,0 +1,145 @@
+/* EggProject Client Portal — bespoke layer only.
+   Tokens + every component come from ../../../eggproject-design-components/styles.css;
+   the app shell (.app / .app-side / .app-top / collapse rail) comes from
+   ../../../eggproject-design-app-common/_shell.css. This file holds ONLY the
+   product-specific dashboard composition the design system doesn't ship —
+   stat grid, project rows, the upcoming feature card and the activity feed. */
+
+/* styles.css pulls in every component stylesheet — a few of them (data-table,
+   charts, tooltip, loading) carry demo-page chrome that targets #root with
+   padding + flex-centering. Neutralise it so the app shell stays full-bleed.
+   This is the same override the billing demo applies. */
+html, body { background: var(--ep-bg-sunken); }
+#root { padding: 0; min-height: 0; display: block; }
+a { text-decoration: none; }
+ul { list-style: none; }
+button { cursor: pointer; }
+
+/* ===== Stat grid ===== */
+.portal-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.portal-meter {
+  height: 4px; background: var(--ep-bg-control);
+  border-radius: 2px; overflow: hidden; margin-top: 2px;
+}
+.portal-meter > div { height: 100%; background: var(--ep-accent); border-radius: 2px; }
+
+/* ===== Two-column body ===== */
+.portal-grid { display: grid; grid-template-columns: 1.6fr 1fr; gap: 14px; }
+
+/* ===== Panel (card surface) ===== */
+.portal-panel {
+  background: var(--ep-bg-elevated);
+  border: 1px solid var(--ep-border-subtle);
+  border-radius: var(--ep-radius-lg);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+.portal-panel__header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--ep-divider);
+}
+.portal-panel__header h2 { font: 600 14px var(--ep-font-sans); color: var(--ep-fg); letter-spacing: 0.02em; }
+.portal-panel__header-actions { display: flex; gap: 6px; align-items: center; }
+
+.portal-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--ep-radius-pill);
+  font: 500 12px var(--ep-font-sans);
+  color: var(--ep-fg-muted);
+}
+.portal-chip span { font: 500 11px var(--ep-font-mono); color: var(--ep-fg-subtle); }
+.portal-chip.is-on { background: var(--ep-accent); color: var(--ep-accent-on); }
+.portal-chip.is-on span { color: var(--ep-accent-on); }
+
+.portal-link { font: 500 12px var(--ep-font-sans); color: var(--ep-blue-700); }
+
+.portal-icon-button {
+  width: 36px; height: 36px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: var(--ep-radius-md);
+  color: var(--ep-fg-muted);
+  background: var(--ep-bg-elevated);
+  border: 1px solid var(--ep-border-subtle);
+}
+.portal-icon-button:hover { color: var(--ep-fg); background: var(--ep-bg-hover); }
+.portal-icon-button--small { width: 28px; height: 28px; }
+
+/* ===== Project rows ===== */
+.portal-project-rows { display: flex; flex-direction: column; }
+.portal-project-row {
+  display: grid;
+  grid-template-columns: 1.4fr 110px 1fr 100px 80px 16px;
+  align-items: center; gap: 18px;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--ep-divider);
+  transition: background var(--ep-dur-fast) var(--ep-ease-out);
+}
+.portal-project-row:last-child { border-bottom: 0; }
+.portal-project-row:hover { background: var(--ep-bg-hover); }
+.portal-project-row__main strong { display: block; font: 600 14px var(--ep-font-sans); color: var(--ep-fg); }
+.portal-project-row__main span  { font: var(--ep-text-meta); color: var(--ep-fg-subtle); }
+.portal-project-row__progress { display: flex; align-items: center; gap: 10px; }
+.portal-project-row__bar { flex: 1; height: 6px; background: var(--ep-bg-control); border-radius: 3px; overflow: hidden; }
+.portal-project-row__bar > div { height: 100%; background: var(--ep-accent); border-radius: 3px; }
+.portal-project-row__progress span { font: 500 12px var(--ep-font-mono); color: var(--ep-fg-subtle); width: 36px; text-align: right; }
+.portal-project-row__updated { font: var(--ep-text-meta); color: var(--ep-fg-subtle); font-family: var(--ep-font-mono); }
+.portal-project-row > svg { color: var(--ep-fg-faint); }
+
+/* ===== Aside ===== */
+.portal-aside { display: flex; flex-direction: column; gap: 14px; }
+
+.portal-upcoming {
+  background: var(--ep-ink-900);
+  color: var(--ep-paper-100);
+  border-radius: var(--ep-radius-lg);
+  padding: 24px 24px 20px;
+  position: relative;
+  overflow: hidden;
+  background-image: radial-gradient(circle at 100% 0%, rgba(46,91,224,0.4) 0%, transparent 50%);
+}
+.portal-upcoming__eyebrow {
+  font: 500 11px var(--ep-font-sans);
+  letter-spacing: var(--ep-track-overline);
+  text-transform: uppercase;
+  color: var(--ep-blue-300);
+}
+.portal-upcoming h3 {
+  font: 400 28px/1.05 var(--ep-font-display);
+  letter-spacing: -0.02em;
+  color: var(--ep-paper-50);
+  margin: 10px 0 8px;
+}
+.portal-upcoming p { font: 400 14px/1.5 var(--ep-font-sans); color: var(--ep-slate-300); margin-bottom: 20px; }
+.portal-upcoming__date {
+  position: absolute; top: 24px; right: 24px;
+  background: var(--ep-paper-50);
+  color: var(--ep-ink-900);
+  border-radius: var(--ep-radius-md);
+  padding: 6px 12px;
+  text-align: center;
+  line-height: 1;
+}
+.portal-upcoming__date-month { font: 500 10px var(--ep-font-sans); letter-spacing: 0.1em; color: var(--ep-fg-subtle); margin-bottom: 2px; }
+.portal-upcoming__date-day { font: 400 22px var(--ep-font-display); color: var(--ep-ink-900); }
+.portal-upcoming__row { display: flex; justify-content: space-between; align-items: center; }
+.portal-upcoming__team > .avatar { box-shadow: 0 0 0 2px var(--ep-ink-900); }
+
+/* Ghost button on the dark upcoming card */
+.btn--ghost-invert { color: var(--ep-blue-200); border: 1px solid rgba(255,255,255,0.16); background: transparent; }
+.btn--ghost-invert:hover { color: #fff; border-color: rgba(255,255,255,0.3); }
+
+/* ===== Activity feed ===== */
+.portal-panel--activity { flex: 1; }
+.portal-activities { padding: 14px 18px 8px; display: flex; flex-direction: column; gap: 14px; }
+.portal-activity { display: flex; gap: 12px; align-items: flex-start; }
+.portal-activity__dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 6px; flex-shrink: 0; }
+.portal-activity__dot--blue { background: var(--ep-blue-600); }
+.portal-activity__dot--yolk { background: var(--ep-yolk-600); }
+.portal-activity__dot--ink  { background: var(--ep-ink-900); }
+.portal-activity__dot--mint { background: #2F9C6A; }
+.portal-activity__body { font: 400 13px/1.5 var(--ep-font-sans); color: var(--ep-fg-muted); }
+.portal-activity__body strong { color: var(--ep-fg); font-weight: 600; }
+.portal-activity__body em { font-style: normal; color: var(--ep-fg); }
+.portal-activity__when { display: block; font: var(--ep-text-meta); color: var(--ep-fg-subtle); font-family: var(--ep-font-mono); margin-top: 2px; }

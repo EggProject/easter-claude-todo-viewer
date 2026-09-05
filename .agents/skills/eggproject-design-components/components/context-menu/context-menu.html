@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>EggProject — Context Menu</title>
+  <script src="../../../eggproject-design/preview/_theme.js" defer></script>
+  <meta name="viewport" content="width=720" />
+  <link rel="stylesheet" href="context-menu.css" />
+  <link rel="icon" href="../../../eggproject-design/assets/logo-mark.svg" />
+  <style>
+    /* demo-page chrome only — no .context-menu/.context-menu__* rules; the component owns its CSS */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--ep-bg); color: var(--ep-fg); font-family: var(--ep-font-sans); padding: 40px; }
+    .page { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+    h1 { font: 400 36px/1.1 var(--ep-font-display); letter-spacing: -0.02em; }
+    h1 em { font-weight: 700; }
+    .lead { font: var(--ep-text-body); color: var(--ep-fg-muted); max-width: 62ch; }
+    .label { display: block; font: var(--ep-text-overline); letter-spacing: var(--ep-track-overline); text-transform: uppercase; color: var(--ep-fg-subtle); margin-bottom: 8px; }
+    .guide { font: var(--ep-text-small); color: var(--ep-fg-muted); border: 1px solid var(--ep-border-subtle); border-radius: var(--ep-radius-lg); padding: 16px 18px; }
+    .guide h2 { font: 600 13px var(--ep-font-sans); color: var(--ep-fg); margin-bottom: 8px; }
+    .guide ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }
+    .guide kbd { font: 600 11px var(--ep-font-mono); background: var(--ep-bg-hover); border: 1px solid var(--ep-border-subtle); border-radius: var(--ep-radius-sm); padding: 1px 5px; color: var(--ep-fg); }
+    /* the visible content of the context target; the focusable wrapper + ring belong to the component */
+    .ct-target { border: 1.5px dashed var(--ep-border); border-radius: var(--ep-radius-lg); padding: 48px 40px; text-align: center; font: var(--ep-text-body); color: var(--ep-fg-subtle); }
+    .ct-edge { border: 1.5px dashed var(--ep-border); border-radius: var(--ep-radius-lg); padding: 16px; text-align: center; font: var(--ep-text-small); color: var(--ep-fg-subtle); }
+    /* a second target pinned to the viewport's bottom-right, so right-clicking it shows the viewport clamp */
+    .edge-dock { position: fixed; right: 8px; bottom: 8px; width: 200px; z-index: 1; }
+    .status { font: var(--ep-text-small); color: var(--ep-fg-muted); border-top: 1px solid var(--ep-divider); padding-top: 12px; }
+    .status b { color: var(--ep-fg); font-weight: 600; }
+  </style>
+  <script src="../../assets/vendor/react.production.min.js"></script>
+  <script src="../../assets/vendor/react-dom.production.min.js"></script>
+  <script src="../../assets/vendor/babel.min.js"></script>
+</head>
+<body>
+  <div class="page">
+    <h1>Context Menu · <em>right-click</em></h1>
+    <p class="lead">A real <code>&lt;ContextMenu&gt;</code>: right-click (or keyboard-open) a target to get a menu that clamps inside the viewport. The component supplies the focusable target wrapper, its ARIA, roving focus, typeahead and focus-restore.</p>
+
+    <section class="guide" aria-label="Keyboard and pointer guide">
+      <h2>Open &amp; navigate</h2>
+      <ul>
+        <li>Right-click the target to open at the pointer.</li>
+        <li><kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd> focuses the target — watch its focus-visible ring.</li>
+        <li><kbd>Shift</kbd>+<kbd>F10</kbd> opens from the keyboard; the <kbd>Context&nbsp;Menu</kbd> / <kbd>Apps</kbd> key works where available.</li>
+        <li><kbd>↓</kbd> / <kbd>↑</kbd>, <kbd>Home</kbd> / <kbd>End</kbd> move between items; type to use typeahead.</li>
+        <li><kbd>Enter</kbd> / <kbd>Space</kbd> activates an item.</li>
+        <li><kbd>Esc</kbd> closes and returns focus to the target (its ring shows again).</li>
+        <li><kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd> leaves the menu; clicking outside closes it. Any scroll closes it.</li>
+        <li>Near a screen edge the panel clamps inside the viewport — try the box pinned to the bottom-right corner.</li>
+      </ul>
+    </section>
+
+    <div id="root"></div>
+  </div>
+
+  <script type="text/babel" src="ContextMenu.jsx"></script>
+  <script type="text/babel">
+    const { useState } = React;
+
+    const EditIcon = () => <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="m10.5 2.5 3 3L5 14H2v-3z"/></svg>;
+    const CopyIcon = () => <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><rect x="5" y="5" width="8" height="9" rx="1"/><path d="M3 11V3a1 1 0 0 1 1-1h8"/></svg>;
+    const TrashIcon = () => <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M2 4h12M5 4V2h6v2M6 7v5M10 7v5M3 4l1 9h8l1-9"/></svg>;
+
+    function App() {
+      const [status, setStatus] = useState('nothing yet');
+      // items shape matches the component contract: {type:'label'|'separator'} or an action button
+      const items = [
+        { type: 'label', label: 'Quick actions' },
+        { label: 'Edit', icon: <EditIcon />, kbd: '⌘E', onSelect: () => setStatus('Edit') },
+        { label: 'Duplicate', icon: <CopyIcon />, kbd: '⌘D', onSelect: () => setStatus('Duplicate') },
+        { type: 'separator' },
+        { label: 'Move to project…', disabled: true, onSelect: () => setStatus('Move (should not fire)') },
+        { label: 'Rename', kbd: 'F2', onSelect: () => setStatus('Rename') },
+        { type: 'separator' },
+        { label: 'Delete', icon: <TrashIcon />, danger: true, onSelect: () => setStatus('Delete') },
+      ];
+
+      return (
+        <>
+          <span className="label">Right-click the area below</span>
+          <ContextMenu items={items}>
+            <div className="ct-target">Right-click anywhere in this box (or focus it and press Shift+F10)</div>
+          </ContextMenu>
+
+          <p className="status" role="status" aria-live="polite">Last action: <b>{status}</b></p>
+
+          {/* second target pinned to the viewport corner — demonstrates the right/bottom clamp */}
+          <div className="edge-dock">
+            <ContextMenu items={items}>
+              <div className="ct-edge">Edge target — right-click to see the clamp</div>
+            </ContextMenu>
+          </div>
+        </>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>

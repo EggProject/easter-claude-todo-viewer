@@ -1,0 +1,298 @@
+@import url('../../../eggproject-design/colors_and_type.css');
+@import url('../../../eggproject-design-components/components/feed-indicator/feed-indicator.css');
+
+/* ============================================================
+   LcWrap — Live Chart Wrapper
+   Chrome (header + body + legend + footer) for TradingView
+   Lightweight Charts™ — the one chart renderer the system ships.
+   The wrapper owns layout, title, range tabs, feed indicator,
+   and legend chips; the consumer mounts a lightweight-charts
+   instance into .line-chart-wrapper__body (see components/lc-wrap/lc-charts.js).
+   ============================================================ */
+
+.line-chart-wrapper {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  background: var(--ep-bg-elevated);
+  border: 1px solid var(--ep-border-subtle);
+  border-radius: var(--ep-radius-lg);
+  overflow: hidden;
+  font-family: var(--ep-font-sans);
+  color: var(--ep-fg);
+  box-shadow: var(--ep-shadow-xs);
+}
+
+/* ---- Header --------------------------------------------- */
+.line-chart-wrapper__header {
+  display: flex; align-items: center;
+  gap: 16px;
+  padding: 14px 18px 12px;
+  border-bottom: 1px solid var(--ep-divider);
+}
+.line-chart-wrapper__title-group {
+  display: flex; align-items: baseline; gap: 10px;
+  flex: 1; min-width: 0;
+}
+.line-chart-wrapper__title {
+  font: 600 14px var(--ep-font-sans);
+  color: var(--ep-fg);
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.line-chart-wrapper__symbol {
+  font: 600 15px var(--ep-font-mono);
+  color: var(--ep-fg);
+  letter-spacing: 0.02em;
+}
+.line-chart-wrapper__meta {
+  font: 500 11px var(--ep-font-mono);
+  color: var(--ep-fg-faint);
+  letter-spacing: 0.04em;
+  text-transform: lowercase;
+}
+
+/* Price readout — big mono number for live mark price */
+.line-chart-wrapper__price {
+  display: inline-flex; align-items: baseline; gap: 6px;
+  font: 600 18px var(--ep-font-mono);
+  color: var(--ep-fg);
+  letter-spacing: -0.01em;
+}
+.line-chart-wrapper__delta {
+  font: 500 12px var(--ep-font-mono);
+  padding: 1px 6px;
+  border-radius: var(--ep-radius-sm);
+}
+.line-chart-wrapper__delta--up   { color: var(--ep-success); background: var(--ep-success-bg); }
+.line-chart-wrapper__delta--down { color: var(--ep-danger); background: var(--ep-danger-bg); }
+.line-chart-wrapper__delta--flat { color: var(--ep-fg-muted); background: var(--ep-bg-sunken); }
+
+/* Right cluster — range tabs + feed indicator + actions */
+.line-chart-wrapper__actions {
+  display: flex; align-items: center; gap: 12px;
+  margin-left: auto;
+}
+
+/* Range tabs — segmented control, mono labels */
+.line-chart-wrapper__ranges {
+  display: inline-flex;
+  background: var(--ep-bg-sunken);
+  border-radius: var(--ep-radius-md);
+  padding: 2px;
+  gap: 0;
+}
+.line-chart-wrapper__range-button {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  font: 500 11px var(--ep-font-mono);
+  color: var(--ep-fg-muted);
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  transition: background var(--ep-dur-fast) var(--ep-ease-out),
+              color    var(--ep-dur-fast) var(--ep-ease-out);
+}
+.line-chart-wrapper__range-button:hover { color: var(--ep-fg); }
+.line-chart-wrapper__range-button[aria-checked="true"] {
+  background: var(--ep-bg-elevated);
+  color: var(--ep-fg);
+  box-shadow: var(--ep-shadow-xs);
+}
+/* Keyboard focus ring only — the token two-layer ring replaces the UA outline,
+   no layout shift, not animated; the checked background/color still shows through. */
+.line-chart-wrapper__range-button:focus-visible {
+  outline: none;
+  box-shadow: var(--ep-shadow-focus);
+}
+@media (prefers-reduced-motion: reduce) {
+  .line-chart-wrapper__range-button { transition: none; }
+  .line-chart-wrapper__icon-button { transition: none; }
+}
+/* Forced colors: the UA drops the box-shadow ring and the tinted checked surface,
+   so the focused radio gets a real system outline and the checked radio a real
+   Highlight border (padding compensates the 1px so the row does not shift). */
+@media (forced-colors: active) {
+  .line-chart-wrapper__range-button:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+    box-shadow: none;
+  }
+  .line-chart-wrapper__range-button[aria-checked="true"] {
+    border: 1px solid Highlight;
+    padding: 3px 9px;
+  }
+  /* Icon button: same system-outline focus fallback as the radio (paper + ink). */
+  .line-chart-wrapper__icon-button:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+    box-shadow: none;
+  }
+}
+
+/* Icon button — for fullscreen, settings, etc. */
+.line-chart-wrapper__icon-button {
+  appearance: none;
+  width: 28px; height: 28px;
+  border-radius: var(--ep-radius-md);
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--ep-fg-muted);
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: background var(--ep-dur-fast) var(--ep-ease-out),
+              color      var(--ep-dur-fast) var(--ep-ease-out);
+}
+.line-chart-wrapper__icon-button:hover {
+  color: var(--ep-fg);
+  background: var(--ep-bg-sunken);
+}
+/* Keyboard focus ring only — the same two-layer token ring as the range radio;
+   replaces the UA outline with no layout shift (the 1px transparent border keeps
+   the box size constant) and is not animated (box-shadow is outside the transition
+   list above). Visible on paper and ink via the token's gold + ink layers. */
+.line-chart-wrapper__icon-button:focus-visible {
+  outline: none;
+  box-shadow: var(--ep-shadow-focus);
+}
+.line-chart-wrapper__icon-button svg { width: 16px; height: 16px; }
+
+/* ---- Body ----------------------------------------------- */
+.line-chart-wrapper__body {
+  position: relative;
+  background: var(--ep-bg-elevated);
+  /* Consumer fills this with their renderer; the wrapper guarantees
+     a positioned, padded surface and a min-height so empty states
+     don't collapse. */
+  min-height: 180px;
+  padding: 4px 0;
+}
+.line-chart-wrapper__body--flush { padding: 0; }
+
+/* Lightweight Charts mount node — fills the body. The renderer
+   (lc-charts.js) sizes its canvas to this element via autoSize. */
+.line-chart-plot {
+  position: absolute;
+  inset: 4px 6px 4px 6px;
+}
+.line-chart-wrapper__body--flush .line-chart-plot { inset: 0; }
+
+/* Placeholder grid for design-time mocks */
+.line-chart-wrapper__placeholder {
+  position: absolute; inset: 8px 8px 8px 8px;
+  background:
+    linear-gradient(to right,  var(--ep-slate-100) 1px, transparent 1px) 0 0 / 60px 100%,
+    linear-gradient(to bottom, var(--ep-bg-sunken) 1px, transparent 1px) 0 0 / 100% 40px;
+  border-radius: var(--ep-radius-sm);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+/* Y/X axis caption hooks (consumer may override) */
+.line-chart-wrapper__axis-y, .line-chart-wrapper__axis-x {
+  position: absolute;
+  font: 500 10px var(--ep-font-mono);
+  color: var(--ep-fg-faint);
+  letter-spacing: 0.04em;
+}
+.line-chart-wrapper__axis-y { right: 10px; }
+.line-chart-wrapper__axis-x { bottom: 6px; }
+
+/* Tooltip slot (consumer renders contents) */
+.line-chart-wrapper__tooltip {
+  position: absolute;
+  background: var(--ep-ink-900);
+  color: var(--ep-paper-100);
+  font: 500 11px var(--ep-font-mono);
+  padding: 6px 10px;
+  border-radius: var(--ep-radius-sm);
+  box-shadow: var(--ep-shadow-lg);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+/* ---- Legend (optional, between body and footer) --------- */
+.line-chart-wrapper__legend {
+  display: flex; align-items: center;
+  gap: 14px; flex-wrap: wrap;
+  padding: 8px 18px;
+  border-top: 1px solid var(--ep-divider);
+  background: var(--ep-bg-sunken);
+}
+.line-chart-wrapper__legend-item {
+  display: inline-flex; align-items: center; gap: 6px;
+  font: 500 11px var(--ep-font-sans);
+  color: var(--ep-fg-muted);
+}
+.line-chart-wrapper__legend-swatch {
+  width: 10px; height: 10px;
+  border-radius: 2px;
+  background: var(--ep-accent);
+  flex-shrink: 0;
+}
+.line-chart-wrapper__legend-swatch--bar {
+  width: 12px; height: 3px;
+  border-radius: 1px;
+}
+.line-chart-wrapper__legend-swatch--candle-up   { background: var(--ep-success); }
+.line-chart-wrapper__legend-swatch--candle-down { background: var(--ep-danger); }
+
+/* ---- Footer (optional) --------------------------------- */
+.line-chart-wrapper__footer {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 18px;
+  font: 500 11px var(--ep-font-mono);
+  color: var(--ep-fg-faint);
+  letter-spacing: 0.04em;
+  border-top: 1px solid var(--ep-divider);
+  background: var(--ep-bg-sunken);
+}
+
+/* ---- Ink surface variant -------------------------------- */
+.line-chart-wrapper--ink {
+  background: var(--ep-ink-900);
+  border-color: var(--ep-ink-800);
+  color: var(--ep-paper-100);
+}
+.line-chart-wrapper--ink .line-chart-wrapper__title,
+.line-chart-wrapper--ink .line-chart-wrapper__symbol,
+.line-chart-wrapper--ink .line-chart-wrapper__price { color: var(--ep-paper-50); }
+.line-chart-wrapper--ink .line-chart-wrapper__header,
+.line-chart-wrapper--ink .line-chart-wrapper__legend,
+.line-chart-wrapper--ink .line-chart-wrapper__footer { border-color: rgba(255,255,255,0.08); }
+.line-chart-wrapper--ink .line-chart-wrapper__legend,
+.line-chart-wrapper--ink .line-chart-wrapper__footer { background: rgba(255,255,255,0.02); }
+.line-chart-wrapper--ink .line-chart-wrapper__ranges { background: rgba(255,255,255,0.06); }
+.line-chart-wrapper--ink .line-chart-wrapper__range-button { color: var(--ep-slate-300); }
+.line-chart-wrapper--ink .line-chart-wrapper__delta--up   { color: #4FBF8A; background: rgba(47,156,106,0.16); }
+.line-chart-wrapper--ink .line-chart-wrapper__delta--down { color: #E15A6E; background: rgba(199,56,78,0.18); }
+.line-chart-wrapper--ink .line-chart-wrapper__range-button:hover { color: #fff; }
+.line-chart-wrapper--ink .line-chart-wrapper__range-button[aria-checked="true"] {
+  background: rgba(255,255,255,0.10);
+  color: #fff;
+  box-shadow: none;
+}
+.line-chart-wrapper--ink .line-chart-wrapper__body { background: var(--ep-ink-900); }
+.line-chart-wrapper--ink .line-chart-wrapper__placeholder {
+  background:
+    linear-gradient(to right,  rgba(255,255,255,0.05) 1px, transparent 1px) 0 0 / 60px 100%,
+    linear-gradient(to bottom, rgba(255,255,255,0.05) 1px, transparent 1px) 0 0 / 100% 40px;
+}
+.line-chart-wrapper--ink .line-chart-wrapper__icon-button { color: var(--ep-slate-300); }
+.line-chart-wrapper--ink .line-chart-wrapper__icon-button:hover { background: rgba(255,255,255,0.06); color: #fff; }
+
+/* ---- Density variants ---------------------------------- */
+.line-chart-wrapper--compact .line-chart-wrapper__header { padding: 10px 14px 8px; }
+.line-chart-wrapper--compact .line-chart-wrapper__title  { font-size: 13px; }
+.line-chart-wrapper--compact .line-chart-wrapper__price  { font-size: 15px; }
+.line-chart-wrapper--compact .line-chart-wrapper__body   { min-height: 120px; }
+
+/* Sizing helpers — consumers may set width/height directly,
+   but these match common dashboard breakpoints. */
+.line-chart-wrapper--w-full { width: 100%; }
+.line-chart-wrapper--h-sm   { height: 220px; }
+.line-chart-wrapper--h-md   { height: 320px; }
+.line-chart-wrapper--h-lg   { height: 480px; }

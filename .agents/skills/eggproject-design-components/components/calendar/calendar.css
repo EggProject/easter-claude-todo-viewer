@@ -1,0 +1,177 @@
+@import url('../../../eggproject-design/colors_and_type.css');
+
+/* ============ Calendar ============
+   Structure:
+     .calendar
+       > .calendar__header (nav + month label)
+       > .calendar__grid (7-col day grid)
+         > .calendar__day-name (Mon..Sun headers)
+         > .calendar__day (day cells)
+           .is-today · .is-selected · .is-range · .is-range-end
+           .is-disabled · .is-outside (prev/next month)
+============================================ */
+.calendar {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--ep-bg-elevated);
+  border: 1px solid var(--ep-border);
+  border-radius: var(--ep-radius-xl);
+  padding: 20px;
+  box-shadow: var(--ep-shadow-sm);
+  user-select: none;
+  min-width: 280px;
+}
+
+.calendar__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.calendar__navigation {
+  width: 30px; height: 30px;
+  border: 1px solid var(--ep-border);
+  border-radius: var(--ep-radius-md);
+  background: transparent;
+  color: var(--ep-fg-muted);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: background-color var(--ep-dur-base) var(--ep-ease-out),
+              color var(--ep-dur-base) var(--ep-ease-out);
+  flex-shrink: 0;
+}
+.calendar__navigation:hover { background: var(--ep-bg-hover); color: var(--ep-fg); }
+.calendar__navigation svg { width: 14px; height: 14px; }
+
+.calendar__month-label {
+  font: 600 14px/1 var(--ep-font-sans);
+  color: var(--ep-fg);
+  flex: 1;
+  text-align: center;
+}
+
+.calendar__grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.calendar__day-name {
+  font: 500 11px/1 var(--ep-font-sans);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ep-fg-subtle);
+  text-align: center;
+  padding: 4px 0 6px;
+}
+
+.calendar__day {
+  width: 36px; height: 36px;
+  border-radius: var(--ep-radius-md);
+  border: none;
+  background: transparent;
+  font: 13px/1 var(--ep-font-sans);
+  color: var(--ep-fg);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background-color var(--ep-dur-fast) var(--ep-ease-out),
+              color var(--ep-dur-fast) var(--ep-ease-out);
+  position: relative;
+}
+.calendar__day:hover:not(.is-disabled):not(.is-selected) {
+  background: var(--ep-bg-hover);
+}
+/* Keyboard focus ring — house-style, :focus-visible only so a pointer click
+   never leaves a persistent ring. Applies to nav and day buttons alike. */
+.calendar__navigation:focus-visible,
+.calendar__day:focus-visible {
+  outline: none;
+  box-shadow: var(--ep-shadow-focus);
+}
+.calendar__day.is-outside {
+  color: var(--ep-fg-faint);
+}
+.calendar__day.is-today {
+  font-weight: 700;
+  color: var(--ep-accent-fg, var(--ep-yolk-700));
+}
+.calendar__day.is-today::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  left: 50%; transform: translateX(-50%);
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: var(--ep-accent);
+}
+.calendar__day.is-selected {
+  background: var(--ep-accent);
+  color: var(--ep-accent-on);
+  font-weight: 600;
+}
+.calendar__day.is-selected.is-today::after { background: var(--ep-accent-on); }
+.calendar__day.is-range {
+  background: var(--ep-accent-bg);
+  border-radius: 0;
+}
+.calendar__day.is-range-start {
+  border-radius: var(--ep-radius-md) 0 0 var(--ep-radius-md);
+}
+.calendar__day.is-range-end {
+  border-radius: 0 var(--ep-radius-md) var(--ep-radius-md) 0;
+}
+.calendar__day.is-disabled {
+  color: var(--ep-fg-faint);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* ---- Reduced motion: neutralise the nav + day-cell transitions (the only
+        animated elements). The day cell carries every day state and the
+        :focus-visible ring, so this also covers selected / today / range /
+        focus; the focus ring is a static box-shadow and never animates. */
+@media (prefers-reduced-motion: reduce) {
+  .calendar__navigation,
+  .calendar__day {
+    transition: none;
+  }
+}
+
+/* ---- Forced colors (Windows High Contrast): color-only state cues are
+        flattened by the UA, so outside / today / range / selected / disabled
+        are re-expressed with system colors, and the box-shadow focus ring
+        (dropped by the UA) is restored as a real Highlight outline on nav +
+        day. System colors only — no tokens. */
+@media (forced-colors: active) {
+  .calendar { border-color: CanvasText; }
+  .calendar__navigation { color: ButtonText; }
+  .calendar__navigation:hover { color: Highlight; }
+
+  /* Outside-month recedes; never reads as active */
+  .calendar__day.is-outside { color: GrayText; }
+
+  /* Today perceivable via its dot, independent of selection / range */
+  .calendar__day.is-today { color: CanvasText; }
+  .calendar__day.is-today::after { background: CanvasText; }
+
+  /* Range interior distinct from endpoints — Highlight text vs Highlight fill */
+  .calendar__day.is-range { background: Canvas; color: Highlight; }
+
+  /* Selected single day + range endpoints (both carry is-selected) — Highlight fill */
+  .calendar__day.is-selected { background: Highlight; color: HighlightText; }
+  .calendar__day.is-selected.is-today::after { background: HighlightText; }
+
+  /* Disabled last so GrayText dominates — a disabled day never looks active */
+  .calendar__day.is-disabled,
+  .calendar__day:disabled { color: GrayText; }
+
+  /* Box-shadow focus ring is dropped by the UA → real Highlight outline */
+  .calendar__navigation:focus-visible,
+  .calendar__day:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+    box-shadow: none;
+  }
+}

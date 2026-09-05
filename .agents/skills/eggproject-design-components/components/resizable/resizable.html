@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>EggProject — Resizable</title>
+  <script src="../../../eggproject-design/preview/_theme.js" defer></script>
+  <meta name="viewport" content="width=720" />
+  <link rel="stylesheet" href="resizable.css" />
+  <link rel="icon" href="../../../eggproject-design/assets/logo-mark.svg" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--ep-bg); color: var(--ep-fg); font-family: var(--ep-font-sans); padding: 40px; }
+    .page { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+    h1 { font: 400 36px/1.1 var(--ep-font-display); letter-spacing: -0.02em; }
+    h1 em { font-weight: 700; }
+    .lead { font: var(--ep-text-body); color: var(--ep-fg-muted); }
+    .label { font: var(--ep-text-overline); letter-spacing: var(--ep-track-overline); text-transform: uppercase; color: var(--ep-fg-subtle); }
+    .pane {
+      height: 100%;
+      padding: 20px;
+      font: var(--ep-text-body); color: var(--ep-fg-muted);
+      display: flex; align-items: center; justify-content: center;
+    }
+  </style>
+  <script src="../../assets/vendor/react.production.min.js"></script>
+  <script src="../../assets/vendor/react-dom.production.min.js"></script>
+  <script src="../../assets/vendor/babel.min.js"></script>
+</head>
+<body>
+  <div class="page">
+    <h1>Resizable · <em>drag to resize</em></h1>
+    <p class="lead">Drag the handle between panels to resize. Horizontal and vertical layouts.</p>
+    <span class="label">Horizontal (drag handle)</span>
+    <div style={{height: 240}} id="root"></div>
+    <span class="label" id="label2">Vertical</span>
+    <div style={{height: 240}} id="root2"></div>
+  </div>
+  <script type="text/babel" src="Resizable.jsx"></script>
+  <script type="text/babel">
+    function App() {
+      return (
+        <div style={{height: 240}}>
+          <Resizable defaultSizes={[35, 65]}>
+            <div className="pane" style={{background:'var(--ep-bg-sunken)'}}>Sidebar</div>
+            <div className="pane">Main content area</div>
+          </Resizable>
+        </div>
+      );
+    }
+    function App2() {
+      return (
+        <div style={{height: 240}}>
+          <Resizable direction="vertical" defaultSizes={[40, 60]}>
+            <div className="pane" style={{background:'var(--ep-bg-sunken)'}}>Top panel</div>
+            <div className="pane">Bottom panel</div>
+          </Resizable>
+        </div>
+      );
+    }
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    ReactDOM.createRoot(document.getElementById('root2')).render(<App2 />);
+  </script>
+</body>
+</html>

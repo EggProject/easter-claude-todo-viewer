@@ -1,0 +1,90 @@
+@import url('../../../eggproject-design/colors_and_type.css');
+
+/* ============ Divider ============
+   .divider                 — plain horizontal line
+   .divider--vertical       — 1px tall column rule
+   .divider--ornament       — display glyph at the center
+   .divider--label          — inline text label, lines either side
+   Variants for color: --soft (default) · --strong · --on-ink
+============================================ */
+.divider {
+  border: 0;
+  height: 1px;
+  background: var(--ep-divider);
+  margin: 0;
+  width: 100%;
+}
+.divider--strong { background: var(--ep-border); height: 1px; }
+.divider--on-ink { background: rgba(255,255,255,0.12); }
+
+/* Vertical (inline) — use as a span between elements */
+.divider--vertical {
+  display: inline-block;
+  width: 1px;
+  height: 16px;
+  background: var(--ep-divider);
+  vertical-align: middle;
+  margin: 0 8px;
+}
+.divider--vertical.divider--strong { background: var(--ep-border); }
+.divider--vertical.divider--tall  { height: 24px; }
+.divider--vertical.divider--on-ink { background: rgba(255,255,255,0.12); }
+
+/* Label divider — "Section A · Section B" */
+.divider--label {
+  display: flex; align-items: center;
+  gap: 12px;
+  height: auto;
+  background: transparent;
+  font: var(--ep-text-overline);
+  letter-spacing: var(--ep-track-overline);
+  text-transform: uppercase;
+  color: var(--ep-fg-subtle);
+}
+.divider--label::before,
+.divider--label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--ep-divider);
+}
+.divider--label.divider--on-ink { color: var(--ep-slate-400); }
+.divider--label.divider--on-ink::before,
+.divider--label.divider--on-ink::after { background: rgba(255,255,255,0.12); }
+
+/* Ornament — decorative flourish, display-font glyph */
+.divider--ornament {
+  display: flex; align-items: center;
+  gap: 14px;
+  height: auto;
+  background: transparent;
+  color: var(--ep-fg-faint);
+}
+.divider--ornament::before,
+.divider--ornament::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--ep-divider);
+}
+.divider--ornament .divider__glyph {
+  font-family: var(--ep-font-display);
+  font-style: italic;
+  font-size: 22px;
+  line-height: 1;
+  color: var(--ep-blue-600);
+}
+.divider--ornament.divider--on-ink { color: var(--ep-slate-400); }
+.divider--ornament.divider--on-ink::before,
+.divider--ornament.divider--on-ink::after { background: rgba(255,255,255,0.12); }
+.divider--ornament.divider--on-ink .divider__glyph { color: var(--ep-yolk-400); }
+
+/* Dotted variant — uses pseudo dots */
+.divider--dotted {
+  background: transparent;
+  background-image: radial-gradient(circle, var(--ep-paper-400) 0.8px, transparent 1px);
+  background-size: 8px 1px;
+  background-repeat: repeat-x;
+  background-position: center;
+  height: 1px;
+}
