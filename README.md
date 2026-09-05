@@ -50,8 +50,6 @@ Options:
 ./start-client.sh --no-open
 ```
 
-There is **no session-id argument** anymore. `claude-todos.sh` is only a migration hint and is no longer the supported launcher.
-
 ## Architecture
 
 ```text
