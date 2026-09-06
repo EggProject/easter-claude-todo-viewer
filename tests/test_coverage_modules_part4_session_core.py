@@ -2461,62 +2461,70 @@ class TestHttpHandlerAndServerAndMain(unittest.TestCase):
             self.assertTrue(cfg.log_output)
             self.assertEqual(cfg.port, 9000)
 
-    def test_main_cli_execution(self):
-        with tempfile.TemporaryDirectory() as td:
-            base = pathlib.Path(td)
-            cfg = session_core.Config(
-                session_id="s_main",
-                transcript="",
-                project_cwd=str(base),
-                task_root=base / "tasks",
-                candidate_ids=[],
-                cache_root=base / "cache",
-                settings_file=base / "config.json",
-                log_root=base / "logs",
-                log_file=True,
-                log_output=True,
-                no_open=False,
-            )
-            mock_server = mock.MagicMock()
-            mock_server.server_port = 8765
-            mock_server.serve_forever.side_effect = KeyboardInterrupt()
+    def test_session_core_main_and_entrypoint(self):
+        with contextlib.redirect_stdout(io.StringIO()):
+            with tempfile.TemporaryDirectory() as td:
+                base = pathlib.Path(td)
+                cfg = session_core.Config(
+                    session_id="s_main",
+                    transcript="",
+                    project_cwd=str(base),
+                    task_root=base / "tasks",
+                    candidate_ids=[],
+                    cache_root=base / "cache",
+                    settings_file=base / "config.json",
+                    log_root=base / "logs",
+                    log_file=True,
+                    log_output=True,
+                    no_open=False,
+                )
+                mock_server = mock.MagicMock()
+                mock_server.server_port = 8765
+                mock_server.serve_forever.side_effect = KeyboardInterrupt()
 
-            with mock.patch("server.session_core.config_from_env", return_value=cfg), \
-                 mock.patch("server.session_core.make_server", return_value=mock_server), \
-                 mock.patch("webbrowser.open") as mock_open, \
-                 mock.patch("threading.Thread") as mock_thread, \
-                 mock.patch("threading.Timer") as mock_timer:
-                session_core.main()
-                mock_server.serve_forever.assert_called_once()
-                mock_server.server_close.assert_called_once()
-                mock_timer.assert_called_once()
+                with mock.patch("server.session_core.config_from_env", return_value=cfg), \
+                     mock.patch("server.session_core.make_server", return_value=mock_server), \
+                     mock.patch("webbrowser.open") as mock_open, \
+                     mock.patch("threading.Thread") as mock_thread, \
+                     mock.patch("threading.Timer") as mock_timer:
+                    session_core.main()
+                    mock_server.serve_forever.assert_called_once()
+                    mock_server.server_close.assert_called_once()
+                    mock_timer.assert_called_once()
 
-            # False branches for log_file, log_output, and no_open (lines 3277->3279, 3279->3281, 3283->3285)
-            cfg_silent = session_core.Config(
-                session_id="s_silent",
-                transcript="",
-                project_cwd=str(base),
-                task_root=base / "tasks",
-                candidate_ids=[],
-                cache_root=base / "cache",
-                settings_file=base / "config.json",
-                log_root=base / "logs",
-                log_file=False,
-                log_output=False,
-                no_open=True,
-            )
-            with mock.patch("server.session_core.config_from_env", return_value=cfg_silent), \
-                 mock.patch("server.session_core.make_server", return_value=mock_server), \
-                 mock.patch("webbrowser.open") as mock_open, \
-                 mock.patch("threading.Thread") as mock_thread, \
-                 mock.patch("threading.Timer") as mock_timer:
-                session_core.main()
+                # False branches for log_file, log_output, and no_open (lines 3277->3279, 3279->3281, 3283->3285)
+                cfg_silent = session_core.Config(
+                    session_id="s_silent",
+                    transcript="",
+                    project_cwd=str(base),
+                    task_root=base / "tasks",
+                    candidate_ids=[],
+                    cache_root=base / "cache",
+                    settings_file=base / "config.json",
+                    log_root=base / "logs",
+                    log_file=False,
+                    log_output=False,
+                    no_open=True,
+                )
+                with mock.patch("server.session_core.config_from_env", return_value=cfg_silent), \
+                     mock.patch("server.session_core.make_server", return_value=mock_server), \
+                     mock.patch("webbrowser.open") as mock_open, \
+                     mock.patch("threading.Thread") as mock_thread, \
+                     mock.patch("threading.Timer") as mock_timer:
+                    session_core.main()
 
-        # __main__ execution test (line 3296)
-        with mock.patch("http.server.HTTPServer.serve_forever", side_effect=KeyboardInterrupt()), \
-             mock.patch("webbrowser.open"), \
-             mock.patch("server.session_core.run_agy"):
-            runpy.run_path(session_core.__file__, run_name="__main__")
+                # __main__ execution test (line 3296)
+                with mock.patch("server.session_core.make_server", return_value=mock_server), \
+                     mock.patch("server.session_core.config_from_env", return_value=cfg_silent), \
+                     mock.patch("threading.Thread"), \
+                     mock.patch("threading.Timer"), \
+                     mock.patch("http.server.HTTPServer.serve_forever", side_effect=KeyboardInterrupt()), \
+                     mock.patch("webbrowser.open"), \
+                     mock.patch("server.session_core.run_agy"), \
+                     contextlib.redirect_stdout(io.StringIO()):
+                    runpy.run_path(session_core.__file__, run_name="__main__")
+
+    test_main_cli_execution = test_session_core_main_and_entrypoint
 
 
 class TestAgyProviderCoverage(unittest.TestCase):
