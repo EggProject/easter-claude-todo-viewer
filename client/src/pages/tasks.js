@@ -99,4 +99,4 @@ function SessionBadge({ task }) {
   const label = task.session?.label || task.sessionId || 'session';
   return h('span', { className: 'session-badge', title: `${label}\n${task.sessionId || ''}` }, `🧵 ${compactLabel(label)}`);
 }
-function compactLabel(value) { const text = String(value || ''); return text.length > 26 ? `${text.slice(0, 24)}…` : text; }
+function compactLabel(value) { const text = String(value); return text.length > 26 ? `${text.slice(0, 24)}…` : text; }

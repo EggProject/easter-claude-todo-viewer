@@ -16,6 +16,7 @@ const h = React.createElement;
 const TERMINAL = new Set(['success', 'validation_failed', 'error', 'canceled', 'interrupted']);
 const RETRYABLE = new Set(['validation_failed', 'error', 'canceled', 'interrupted']);
 const ACTIVE = new Set(['queued', 'translating', 'validating', 'retrying', 'canceling']);
+const EMPTY_CATALOG = [];
 
 export default function TranslationsPage() {
   const app = useApp();
@@ -33,7 +34,7 @@ export default function TranslationsPage() {
   const [rowSelection, setRowSelection] = useState({});
   const [bulkBusy, setBulkBusy] = useState(false);
 
-  const allData = app.translationCatalog || [];
+  const allData = app.translationCatalog || EMPTY_CATALOG;
   const data = useMemo(() => sessionFilter === 'all' ? allData : allData.filter(row => row.sessionId === sessionFilter), [allData, sessionFilter]);
   const sessionOptions = useMemo(() => app.sessionsState.sessions.filter(session => allData.some(row => row.sessionId === session.id)), [app.sessionsState.sessions, allData]);
   const columns = useMemo(() => buildColumns(app, navigate), [app, navigate]);

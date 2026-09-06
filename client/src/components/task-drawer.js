@@ -29,10 +29,6 @@ export function TaskDrawer({ base, tasks: scopedTasks = null }) {
 
   const sameStore = tasks.filter(item => item.sessionId === task.sessionId && item.storeId === task.storeId);
   const byId = new Map(sameStore.map(item => [String(item.id), item]));
-  const dependencyLabel = id => {
-    const dependency = byId.get(String(id));
-    return dependency ? `#${id} — ${dependency.subject}` : `#${id}`;
-  };
   const sessionLabel = task.session?.label || task.sessionId || 'session';
 
   return h(React.Fragment, null,

@@ -17,4 +17,4 @@ export function Topbar(){
 }
 function shortId(x){x=String(x||'');return x.length>18?`${x.slice(0,8)}…${x.slice(-6)}`:x;}
 function sessionTooltip(session,sessionsState){if(!session)return'No current session';return[`Session: ${session.id}`,`Project: ${session.cwd||'—'}`,`Branch: ${session.gitBranch||'—'}`,`Created: ${fmt(session.createdAt)}`,`Last activity: ${fmt(session.lastActivity)}`,`Session language: ${String(session.globalLanguage||'en').toUpperCase()}`,`Watched: ${sessionsState.watchedSessionIds.includes(session.id)?'Yes':'No'}`].join('\n');}
-function fmt(v){try{return v?new Date(v).toLocaleString():'—';}catch{return String(v||'—');}}
+function fmt(v){try{return v?new Date(v).toLocaleString():'—';}catch{return String(v);}}

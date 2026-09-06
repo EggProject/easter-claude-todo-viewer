@@ -126,7 +126,7 @@ function historyEventType(event) {
   if (fields.has('owner')) return 'owner';
   return 'other';
 }
-function historyEventIcon(event) { return ({ translation: '🌐', lifecycle: event.kind === 'deleted' ? '🗑️' : '✨', status: '📌', text: '✍️', dependency: '🔒', owner: '👤', other: '🧩' }[historyEventType(event)] || '⚡'); }
+function historyEventIcon(event) { return ({ translation: '🌐', lifecycle: event.kind === 'deleted' ? '🗑️' : '✨', status: '📌', text: '✍️', dependency: '🔒', owner: '👤', other: '🧩' }[historyEventType(event)]); }
 function historyEventTitle(event) { if (event.kind === 'translated') return 'Translation ready'; if (event.kind === 'created') return 'Task created'; if (event.kind === 'deleted') return 'Task removed'; const changes = event.changes || []; return changes.length === 1 ? `${changes[0].label || changes[0].field} changed` : `${changes.length} fields changed`; }
 function fieldIcon(field) { return ({ status: '📌', subject: '🏷️', description: '📝', owner: '👤', blockedBy: '🔒', blocks: '🚧', activeForm: '⚡', metadata: '🧩' }[field] || '🔹'); }
 function historySearchText(event) { const values = [event.sessionId, event.session?.label, event.kind, event.source, event.title, event.taskId, event.provider, event.model]; for (const change of event.changes || []) values.push(change.field, change.label, fmt(change.before), fmt(change.after)); return values.filter(Boolean).join(' ').toLowerCase(); }

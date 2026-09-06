@@ -33,12 +33,12 @@ export default function SettingsPage(){
         tr.provider!=='anthropic'
           ?h(React.Fragment,null,
             label('Model',h('select',{value:agy.model||'',onChange:e=>set(['translation','agy','model'],e.target.value)},(form.agyModels||[]).map(m=>h('option',{value:m.slug,key:m.slug},m.label)))),
-            concurrencySetting(agy.maxConcurrency||2,value=>set(['translation','agy','maxConcurrency'],value)))
+            concurrencySetting(agy.maxConcurrency,value=>set(['translation','agy','maxConcurrency'],value)))
           :h(React.Fragment,null,
             label('Base URL',h('input',{value:anth.baseUrl||'http://127.0.0.1:8000',onChange:e=>set(['translation','anthropic','baseUrl'],e.target.value)})),
             label('API key',h('input',{type:'password',placeholder:anth.apiKeyConfigured?'Configured — enter only to replace':'Optional',value:anth.apiKey||'',onChange:e=>set(['translation','anthropic','apiKey'],e.target.value)})),
             label('Model',h('select',{value:anth.model||'',disabled:loadingModels,onChange:e=>set(['translation','anthropic','model'],e.target.value)},h('option',{value:''},loadingModels?'Loading models…':'Select model…'),modelOptions.map(m=>h('option',{value:m.id,key:m.id},m.label||m.id)))),
-            concurrencySetting(anth.maxConcurrency||2,value=>set(['translation','anthropic','maxConcurrency'],value)),
+            concurrencySetting(anth.maxConcurrency,value=>set(['translation','anthropic','maxConcurrency'],value)),
             h('div',{className:'actions'},h('button',{className:'mini',disabled:loadingModels,onClick:refresh},loadingModels?'⟳ Loading…':'↻ Refresh models'),h('button',{className:'mini',disabled:loadingModels,onClick:test},'🧪 Test connection'))),
         h('div',{className:'card-actions'},h('button',{className:'primary',onClick:save},'💾 Save provider settings'))),
       h('section',{className:'settings-card prompts-card'},

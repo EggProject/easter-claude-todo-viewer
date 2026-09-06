@@ -40,7 +40,7 @@ class SpaTests(unittest.TestCase):
         self.assertIn('/src/main.js',html)
     def test_task_drawer_resolves_dependency_titles(self):
         drawer=(ROOT/'client'/'src'/'components'/'task-drawer.js').read_text()
-        self.assertIn('dependencyLabel',drawer)
+        self.assertIn('dependencyField',drawer)
         self.assertIn('Blocked by',drawer)
     def test_no_legacy_monolithic_app(self):
         self.assertFalse((ROOT/'client'/'app.js').exists())

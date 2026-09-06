@@ -23,6 +23,7 @@ echo "Generating Backend Coverage Report"
 echo "================================================================================"
 mise exec -- python3 -m coverage report -m || true
 mise exec -- python3 -m coverage json -o coverage_backend.json || true
+mise exec -- python3 -m coverage html || true
 
 SUMMARY_EXIT=0
 mise exec -- python3 - "$ROOT" "$BACKEND_TEST_EXIT" "$FRONTEND_TEST_EXIT" << 'EOF' || SUMMARY_EXIT=$?
