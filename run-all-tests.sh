@@ -3,27 +3,89 @@ set -u
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-echo "================================================================================"
-echo "Running Frontend Tests"
-echo "================================================================================"
+FRONTEND_LOG="$(mktemp -t frontend_test_XXXXXX.log)"
+BACKEND_LOG="$(mktemp -t backend_test_XXXXXX.log)"
+
+cleanup() {
+    rm -f "$FRONTEND_LOG" "$BACKEND_LOG"
+}
+trap cleanup EXIT INT TERM
+
+spin() {
+    local pid=$1
+    local msg=$2
+    local start_time
+    start_time=$(date +%s)
+    if [ -t 1 ]; then
+        local spin_chars=('⠋' '⠙' '⠹' '⠸' '⠼' '⠴' '⠦' '⠧' '⠇' '⠏')
+        local i=0
+        while kill -0 "$pid" 2>/dev/null; do
+            local elapsed=$(( $(date +%s) - start_time ))
+            printf "\r\033[K%s %s (%ds)" "${spin_chars[i]}" "$msg" "$elapsed"
+            i=$(( (i + 1) % ${#spin_chars[@]} ))
+            sleep 0.1
+        done
+        wait "$pid"
+        local exit_code=$?
+        local total_elapsed=$(( $(date +%s) - start_time ))
+        if [ "$exit_code" -eq 0 ]; then
+            printf "\r\033[K[PASS] %s (%ds)\n" "$msg" "$total_elapsed"
+        else
+            printf "\r\033[K[FAIL] %s (%ds)\n" "$msg" "$total_elapsed"
+        fi
+        return "$exit_code"
+    else
+        printf "[...] %s...\n" "$msg"
+        wait "$pid"
+        local exit_code=$?
+        local total_elapsed=$(( $(date +%s) - start_time ))
+        if [ "$exit_code" -eq 0 ]; then
+            printf "[PASS] %s (%ds)\n" "$msg" "$total_elapsed"
+        else
+            printf "[FAIL] %s (%ds)\n" "$msg" "$total_elapsed"
+        fi
+        return "$exit_code"
+    fi
+}
+
+# 1. Frontend Tests
 FRONTEND_TEST_EXIT=0
-(cd "$ROOT/client" && mise exec -- pnpm run test:coverage) || FRONTEND_TEST_EXIT=$?
+(cd "$ROOT/client" && mise exec -- pnpm run test:coverage) > "$FRONTEND_LOG" 2>&1 &
+FRONTEND_PID=$!
+spin "$FRONTEND_PID" "Running Frontend Tests (vitest + v8 coverage)" || FRONTEND_TEST_EXIT=$?
 
-echo ""
-echo "================================================================================"
-echo "Running Backend Tests"
-echo "================================================================================"
-cd "$ROOT"
+# 2. Backend Tests
 BACKEND_TEST_EXIT=0
-mise exec -- python3 -m coverage run --rcfile=.coveragerc -m unittest discover tests || BACKEND_TEST_EXIT=$?
+(cd "$ROOT" && mise exec -- python3 -m coverage run --rcfile=.coveragerc -m unittest discover tests) > "$BACKEND_LOG" 2>&1 &
+BACKEND_PID=$!
+spin "$BACKEND_PID" "Running Backend Tests (unittest + coverage)" || BACKEND_TEST_EXIT=$?
 
-echo ""
-echo "================================================================================"
-echo "Generating Backend Coverage Report"
-echo "================================================================================"
-mise exec -- python3 -m coverage report -m || true
-mise exec -- python3 -m coverage json -o coverage_backend.json || true
-mise exec -- python3 -m coverage html || true
+# If either test suite failed, print the full output of that failing test suite
+if [ "$FRONTEND_TEST_EXIT" -ne 0 ]; then
+    echo ""
+    echo "================================================================================"
+    echo "                      FRONTEND TEST SUITE FAILED (OUTPUT)"
+    echo "================================================================================"
+    cat "$FRONTEND_LOG"
+    echo "================================================================================"
+fi
+
+if [ "$BACKEND_TEST_EXIT" -ne 0 ]; then
+    echo ""
+    echo "================================================================================"
+    echo "                      BACKEND TEST SUITE FAILED (OUTPUT)"
+    echo "================================================================================"
+    cat "$BACKEND_LOG"
+    echo "================================================================================"
+fi
+
+if [ "$FRONTEND_TEST_EXIT" -ne 0 ] || [ "$BACKEND_TEST_EXIT" -ne 0 ]; then
+    exit 1
+fi
+
+# Generate coverage reports quietly
+(cd "$ROOT" && mise exec -- python3 -m coverage json -o coverage_backend.json >/dev/null 2>&1) || true
+(cd "$ROOT" && mise exec -- python3 -m coverage html >/dev/null 2>&1) || true
 
 SUMMARY_EXIT=0
 mise exec -- python3 - "$ROOT" "$BACKEND_TEST_EXIT" "$FRONTEND_TEST_EXIT" << 'EOF' || SUMMARY_EXIT=$?
