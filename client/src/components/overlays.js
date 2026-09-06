@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useApp } from '../app-context.js';
 import { TaskLanguageBadge } from './language-badge.js';
 import { usePersistentLocalState } from '../filter-state.js';

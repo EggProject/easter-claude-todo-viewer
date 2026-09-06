@@ -4,6 +4,8 @@
   "version": "4.1.2",
   "type": "module",
   "scripts": {
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage"
   },
@@ -17,10 +19,17 @@
     "react-router": "8.3.1"
   },
   "devDependencies": {
+    "@eslint/js": "^9.21.0",
     "@testing-library/react": "^16.3.3",
     "@testing-library/user-event": "^14.6.7",
     "@vitest/coverage-v8": "^5.0.0",
+    "eslint": "^9.21.0",
+    "eslint-plugin-react": "^7.37.4",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^16.0.0",
     "jsdom": "^30.0.1",
+    "typescript": "^5.7.3",
+    "typescript-eslint": "^8.26.0",
     "vitest": "^5.0.0"
   }
 }
