@@ -14,8 +14,7 @@ export function usePersistentPageFilters(pageKey, defaults) {
     if (typeof window === 'undefined') return {};
     return safeParse(window.localStorage.getItem(storageKey), {}) || {};
   });
-  const defaultsKey = JSON.stringify(defaults);
-  const values = useMemo(() => resolvePersistedFilters(defaults, searchParams, stored), [searchParams, stored, defaultsKey]);
+  const values = useMemo(() => resolvePersistedFilters(defaults, searchParams, stored), [defaults, searchParams, stored]);
   const setFilter = useCallback((key, value) => {
     const stringValue = value == null ? '' : String(value);
     const nextState = { ...values, [key]: stringValue };
@@ -25,7 +24,7 @@ export function usePersistentPageFilters(pageKey, defaults) {
     const defaultValue = defaults[key] == null ? '' : String(defaults[key]);
     if (stringValue === defaultValue) next.delete(key); else next.set(key, stringValue);
     setSearchParams(next, { replace: true });
-  }, [values, storageKey, searchParams, setSearchParams, defaultsKey]);
+  }, [values, storageKey, searchParams, setSearchParams, defaults]);
   return [values, setFilter];
 }
 

@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { flexRender, getCoreRowModel, getSortedRowModel, useReactTable } from '@tanstack/react-table';
 import { useApp } from '../app-context.js';
 import { parseSorting, serializeSorting, usePersistentPageFilters } from '../filter-state.js';
@@ -25,7 +25,7 @@ export default function SessionsPage() {
     });
   }, [app.sessionsState.sessions, query]);
 
-  const switchCurrent = async sessionId => {
+  const switchCurrent = useCallback(async sessionId => {
     // Native double-click is two click events. Guard synchronously with a ref so the
     // second click cannot race React's state flush and send a second switch request.
     if (switchingRef.current) return;
@@ -33,7 +33,7 @@ export default function SessionsPage() {
     setSwitching(sessionId);
     try { await app.switchSessionOptimistic(sessionId); }
     finally { switchingRef.current = null; setSwitching(null); }
-  };
+  }, [app]);
 
   const columns = useMemo(() => [
     {
@@ -66,7 +66,7 @@ export default function SessionsPage() {
     { accessorKey: 'taskCount', header: 'Tasks' },
     { accessorKey: 'deletedTaskCount', header: 'Deleted' },
     { accessorKey: 'translationCount', header: 'Translations' },
-  ], [app, switching]);
+  ], [app, switching, switchCurrent]);
 
   const table = useReactTable({ data, columns, state: { sorting }, onSortingChange: setSorting, getCoreRowModel: getCoreRowModel(), getSortedRowModel: getSortedRowModel() });
 

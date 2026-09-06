@@ -33,7 +33,8 @@ export default function FlowPage() {
   const location = useLocation();
   const { selectedSessionIds, setSelectedSessionIds } = useSessionScope();
   const [scopedState, setScopedState] = useState(null);
-  const tasks = scopedState?.tasks || [];
+  const scopedTasks = scopedState?.tasks;
+  const tasks = useMemo(() => scopedTasks || [], [scopedTasks]);
   const [filters, setFilter] = usePersistentPageFilters('flow', {
     q: '', status: 'all', sort: scopedState?.initialSort ?? 'dependency',
   });
@@ -52,11 +53,12 @@ export default function FlowPage() {
   const rf = useRef(null);
   const flowContainer = useRef(null);
 
+  const { loadState, showModal, revision: appRevision } = app; // app.loadState
   useEffect(() => {
     let alive = true;
-    app.loadState(selectedSessionIds).then(value => { if (alive) setScopedState(value); }).catch(error => app.showModal({ kind: 'error', title: 'Flow could not be loaded', message: error.message }));
+    loadState(selectedSessionIds).then(value => { if (alive) setScopedState(value); }).catch(error => showModal({ kind: 'error', title: 'Flow could not be loaded', message: error.message }));
     return () => { alive = false; };
-  }, [selectedSessionIds.join(','), app.revision]);
+  }, [loadState, showModal, selectedSessionIds, appRevision]);
 
   const grouped = useMemo(() => groupTasksBySession(tasks), [tasks]);
   const visibleGroups = useMemo(() => {
@@ -69,10 +71,10 @@ export default function FlowPage() {
       result.set(sessionId, { tasks: sortTasks(filtered, sort, graph), graph, session: group[0]?.session || app.sessionsState.sessions.find(item => item.id === sessionId) || { id: sessionId, label: sessionId } });
     }
     return result;
-  }, [grouped, selectedSessionIds.join(','), query, statuses, sort, app.sessionsState.sessions]);
+  }, [grouped, selectedSessionIds, query, statuses, sort, app.sessionsState.sessions]);
 
-  const automatic = useMemo(() => buildMultiSessionFlow(visibleGroups, selectedSessionIds), [visibleGroups, selectedSessionIds.join(',')]);
-  const graphRevision = useMemo(() => semanticGraphRevision(visibleGroups, selectedSessionIds, sort), [visibleGroups, selectedSessionIds.join(','), sort]);
+  const automatic = useMemo(() => buildMultiSessionFlow(visibleGroups, selectedSessionIds), [visibleGroups, selectedSessionIds]);
+  const graphRevision = useMemo(() => semanticGraphRevision(visibleGroups, selectedSessionIds, sort), [visibleGroups, selectedSessionIds, sort]);
 
   useEffect(() => {
     let alive = true;
@@ -87,12 +89,12 @@ export default function FlowPage() {
       setLayoutReady(true);
     }).catch(() => { if (alive) setLayoutReady(true); });
     return () => { alive = false; };
-  }, [selectedSessionIds.join(',')]);
+  }, [selectedSessionIds]);
 
   useEffect(() => {
     if (!layoutReady) return;
     setNodes(previous => reconcileSemanticNodes(previous, automatic.nodes, savedLayouts.current));
-  }, [graphRevision, layoutRevision, layoutReady]);
+  }, [graphRevision, layoutRevision, layoutReady, automatic.nodes]);
 
   const restoreViewport = useCallback((instance = rf.current) => {
     if (!layoutReady || !instance) return;
@@ -103,9 +105,9 @@ export default function FlowPage() {
       else if (automatic.nodes.length) instance.fitView({ padding: 0.18, duration: 0 });
     } else if (automatic.nodes.length) instance.fitView({ padding: 0.18, duration: 0 });
     requestAnimationFrame(() => requestAnimationFrame(() => { restoringViewport.current = false; }));
-  }, [layoutReady, selectedSessionIds.join(','), graphRevision]);
+  }, [layoutReady, selectedSessionIds, automatic.nodes.length]);
 
-  useEffect(() => { restoreViewport(); }, [layoutRevision, selectedSessionIds.join(','), restoreViewport]);
+  useEffect(() => { restoreViewport(); }, [layoutRevision, restoreViewport]);
 
   const onNodesChange = useCallback(changes => setNodes(current => applyNodeChanges(changes, current)), []);
   const persistNode = useCallback((_, node) => {
@@ -123,7 +125,7 @@ export default function FlowPage() {
     const current = savedLayouts.current[sessionId] || { nodes: {}, viewport: null };
     savedLayouts.current = { ...savedLayouts.current, [sessionId]: { ...current, viewport: clean } };
     postJSON(`/api/sessions/${encodeURIComponent(sessionId)}/flow-layout`, { viewport: clean }).catch(() => {});
-  }, [selectedSessionIds.join(',')]);
+  }, [selectedSessionIds]);
 
   useEffect(() => {
     const onFullscreenChange = () => {
@@ -182,7 +184,7 @@ export default function FlowPage() {
       await Promise.all(persistence);
       requestAnimationFrame(() => rf.current?.fitView({ padding: 0.2, duration: 350 }));
     } finally { setArranging(false); }
-  }, [nodes, automatic.edges, arranging, selectedSessionIds.join(','), visibleGroups]);
+  }, [nodes, automatic.edges, arranging, selectedSessionIds, visibleGroups]);
 
   const resetLayout = useCallback(async () => {
     await Promise.all(selectedSessionIds.map(sessionId => deleteJSON(`/api/sessions/${encodeURIComponent(sessionId)}/flow-layout`)));
@@ -190,7 +192,7 @@ export default function FlowPage() {
     setLayoutRevision(value => value + 1);
     setNodes(automatic.nodes);
     requestAnimationFrame(() => rf.current?.fitView({ padding: 0.18, duration: 250 }));
-  }, [automatic.nodes, selectedSessionIds.join(',')]);
+  }, [automatic.nodes, selectedSessionIds]);
 
   const openTask = node => node.data?.uid && navigate({ pathname: `/flow/${encodeURIComponent(node.data.sessionId)}/${encodeURIComponent(node.data.uid)}`, search: location.search });
 

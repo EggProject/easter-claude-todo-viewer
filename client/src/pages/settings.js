@@ -6,12 +6,13 @@ const h=React.createElement;
 export default function SettingsPage(){
   const a=useApp(),[form,setForm]=useState(null),[models,setModels]=useState([]),[msg,setMsg]=useState(''),[loadingModels,setLoadingModels]=useState(false);
   useEffect(()=>{if(a.settings)setForm(structuredClone(a.settings))},[a.settings]);
+  const provider = form?.translation?.provider;
   useEffect(()=>{
-    if(!form||form.translation?.provider!=='anthropic')return;
+    if(provider!=='anthropic')return;
     let alive=true;setLoadingModels(true);
     getJSON('/api/providers/anthropic/models').then(d=>{if(alive)setModels(d.models||[])}).catch(()=>{}).finally(()=>{if(alive)setLoadingModels(false)});
     return()=>{alive=false};
-  },[form?.translation?.provider]);
+  },[provider]);
   if(!form)return h('div',{className:'page'},'Loading settings…');
   const tr=form.translation||{},anth=tr.anthropic||{},agy=tr.agy||{};
   const set=(path,val)=>setForm(f=>{const n=structuredClone(f);let o=n;for(let i=0;i<path.length-1;i++)o=o[path[i]]??={};o[path.at(-1)]=val;return n});

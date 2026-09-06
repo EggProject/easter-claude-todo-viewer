@@ -10,10 +10,12 @@ export function useSessionScope() {
   const [searchParams, setSearchParams] = useSearchParams();
   const pageKey = String(location.pathname || '/').split('/').filter(Boolean)[0] || 'tasks';
   const storageKey = `claude-todos:session-scope:${pageKey}`;
-  const watchedIds = app.sessionsState?.watchedSessionIds || [];
+  const watchedSessionIds = app.sessionsState?.watchedSessionIds;
+  const watchedIds = useMemo(() => watchedSessionIds || [], [watchedSessionIds]);
   const current = app.currentSessionId;
+  const sessionsParam = searchParams.get('sessions');
   const selectedSessionIds = useMemo(() => {
-    const fromUrl = String(searchParams.get('sessions') || '').split(',').map(x => x.trim()).filter(Boolean);
+    const fromUrl = String(sessionsParam || '').split(',').map(x => x.trim()).filter(Boolean);
     let wanted = fromUrl;
     if (!wanted.length && typeof window !== 'undefined') {
       try { wanted = JSON.parse(window.localStorage.getItem(storageKey) || '[]'); } catch { wanted = []; }
@@ -23,9 +25,9 @@ export function useSessionScope() {
     if (valid.length) return [...new Set(valid)];
     if (current && watched.has(current)) return [current];
     return watchedIds.length ? [watchedIds[0]] : [];
-  }, [searchParams, watchedIds.join(','), current, storageKey]);
+  }, [sessionsParam, storageKey, watchedIds, current]);
 
-  const setSelectedSessionIds = ids => {
+  const setSelectedSessionIds = React.useCallback(ids => {
     const watched = new Set(watchedIds);
     const nextIds = [...new Set((ids || []).filter(id => watched.has(id)))];
     const fallback = current && watched.has(current) ? [current] : watchedIds.slice(0, 1);
@@ -35,13 +37,13 @@ export function useSessionScope() {
     if (resolved.length === 1 && resolved[0] === current) next.delete('sessions');
     else next.set('sessions', resolved.join(','));
     setSearchParams(next, { replace: true });
-  };
+  }, [watchedIds, current, storageKey, searchParams, setSearchParams]);
 
   // If a watched session is removed while this page is open, normalize the URL.
   useEffect(() => {
-    const raw = String(searchParams.get('sessions') || '').split(',').filter(Boolean);
+    const raw = String(sessionsParam || '').split(',').filter(Boolean);
     if (raw.length && raw.some(id => !watchedIds.includes(id))) setSelectedSessionIds(selectedSessionIds);
-  }, [watchedIds.join(',')]);
+  }, [sessionsParam, watchedIds, setSelectedSessionIds, selectedSessionIds]);
 
   return { selectedSessionIds, setSelectedSessionIds };
 }

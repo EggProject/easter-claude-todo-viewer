@@ -34,7 +34,7 @@ export function NotificationSidebar() {
     const onKeyDown = event => { if (event.key === 'Escape') app.setSidebar(false); };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [app.sidebar]);
+  }, [app]);
 
   const events = useMemo(() => {
     const needle = historyQuery.trim().toLowerCase();

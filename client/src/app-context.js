@@ -49,8 +49,8 @@ export function AppProvider({children}) {
     }catch(error){setBootstrapError(error?.message||String(error));setBootstrapStatus('error');}
   },[loadSessionsSnapshot,loadState,loadHeavyData,enqueue]);
 
-  useEffect(()=>{retryBootstrap();},[]);
-  useEffect(()=>{if(bootstrapStatus!=='ready')return;if(currentSessionId)refreshState().catch(()=>{});else setState(null);},[currentSessionId,revision,bootstrapStatus]);
+  useEffect(()=>{retryBootstrap();},[retryBootstrap]);
+  useEffect(()=>{if(bootstrapStatus!=='ready')return;if(currentSessionId)refreshState().catch(()=>{});else setState(null);},[currentSessionId,revision,bootstrapStatus,refreshState]);
   useEffect(()=>{const es=new EventSource(apiUrl('/events'));es.onopen=()=>setLive('LIVE');es.onerror=()=>setLive('RECONNECTING');
     const invalidate=()=>{setRevision(x=>x+1);Promise.all([refreshSessionsSnapshot(),refreshHistory(),refreshJobs(),refreshCatalog()]).catch(()=>{});};
     es.addEventListener('state-invalidated',invalidate);

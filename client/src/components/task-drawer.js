@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router';
 import { useApp } from '../app-context.js';
 import { TaskHistory } from './task-history.js';
@@ -12,14 +12,14 @@ export function TaskDrawer({ base, tasks: scopedTasks = null }) {
   const location = useLocation();
   const app = useApp();
   const tasks = scopedTasks || app.state?.tasks || [];
-  const close = () => navigate({ pathname: `/${base}`, search: location.search });
+  const close = useCallback(() => navigate({ pathname: `/${base}`, search: location.search }), [navigate, base, location.search]);
 
   useEffect(() => {
     if (!uid) return undefined;
     const onKeyDown = event => { if (event.key === 'Escape') close(); };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [uid, routeSessionId, base, navigate, location.search]);
+  }, [uid, close]);
 
   if (!uid) return null;
   const task = tasks.find(item => item.uid === uid && (!routeSessionId || item.sessionId === routeSessionId))

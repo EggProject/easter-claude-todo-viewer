@@ -70,15 +70,15 @@ export default function TranslationsPage() {
     setRowSelection(current => Object.fromEntries(Object.entries(current).filter(([id, selected]) => selected && (valid.has(id) || parentIds.has(id)))));
   }, [app.jobs, data]);
 
-  const selectedJobs = useMemo(() => table.getSelectedRowModel().flatRows
+  const selectedJobs = table.getSelectedRowModel().flatRows
     .filter(row => row.original.kind === 'version')
-    .map(row => row.original), [table, rowSelection, data]);
+    .map(row => row.original);
 
-  const eligibleSelectedJobs = useMemo(() => ({
+  const eligibleSelectedJobs = {
     stop: selectedJobs.filter(job => ACTIVE.has(job.status)),
     retry: selectedJobs.filter(job => RETRYABLE.has(job.status)),
     delete: selectedJobs.filter(job => TERMINAL.has(job.status)),
-  }), [selectedJobs]);
+  };
 
   const activeAll = app.jobs.filter(job => ACTIVE.has(job.status));
   const retryAll = app.jobs.filter(job => RETRYABLE.has(job.status));

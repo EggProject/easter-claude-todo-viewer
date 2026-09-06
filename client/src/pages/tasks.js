@@ -25,20 +25,21 @@ export default function TasksPage() {
     let alive = true;
     app.loadState(selectedSessionIds).then(value => { if (alive) setScopedState(value); }).catch(error => app.showModal({ kind: 'error', title: 'Tasks could not be loaded', message: error.message }));
     return () => { alive = false; };
-  }, [selectedSessionIds.join(','), app.revision]);
+  }, [app, selectedSessionIds]);
 
   const query = filters.q || '';
   const statuses = useMemo(() => normalizeStatusSelection(filters.status), [filters.status]);
   const sort = filters.sort || scopedState?.initialSort || 'dependency';
   const setStatus = next => setFilter('status', next.size === 4 || next.size === 0 ? 'all' : [...next].join(','));
-  const tasks = scopedState?.tasks || [];
-  const sessionRank = useMemo(() => new Map(selectedSessionIds.map((id, index) => [id, index])), [selectedSessionIds.join(',')]);
+  const scopedTasks = scopedState?.tasks;
+  const tasks = useMemo(() => scopedTasks || [], [scopedTasks]);
+  const sessionRank = useMemo(() => new Map(selectedSessionIds.map((id, index) => [id, index])), [selectedSessionIds]);
   const graphs = useMemo(() => {
     const groups = groupTasksBySession(tasks);
     return new Map([...groups.entries()].map(([sessionId, items]) => [sessionId, buildGraph(items)]));
   }, [tasks]);
 
-  let list = [...tasks].filter(task => {
+  const list = [...tasks].filter(task => {
     const statusMatch = statuses.has(task.status);
     const haystack = `${task.id} ${task.subject} ${task.description} ${task.owner} ${task.session?.label || ''} ${task.sessionId || ''}`.toLowerCase();
     return statusMatch && (!query || haystack.includes(query.toLowerCase()));

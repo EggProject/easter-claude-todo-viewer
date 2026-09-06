@@ -32,13 +32,29 @@ export default tseslint.config(
       },
     },
     rules: {
-      'no-empty': ['error', { allowEmptyCatch: true }],
-      '@typescript-eslint/no-empty-function': ['error', { allow: ['arrowFunctions'] }],
+      // React rules
       'react-hooks/rules-of-hooks': 'error',
-      'react-hooks/exhaustive-deps': 'warn',
+      'react-hooks/exhaustive-deps': 'error',
+      'react/jsx-no-constructed-context-values': 'error',
+      'react/no-unstable-nested-components': 'error',
+      'react/self-closing-comp': 'error',
+      'react/jsx-no-useless-fragment': 'error',
+      'react/jsx-boolean-value': ['error', 'never'],
+      'react/hook-use-state': 'error',
+      'react/jsx-no-duplicate-props': 'error',
+      'react/jsx-key': ['error', { checkFragmentShorthand: true }],
+      'react/no-children-prop': 'error',
+      'react/no-danger-with-children': 'error',
       'react/jsx-uses-react': 'error',
       'react/jsx-uses-vars': 'error',
-      'react/no-danger-with-children': 'error',
+
+      // JS / TS rules
+      'prefer-const': 'error',
+      'no-var': 'error',
+      'eqeqeq': ['error', 'always', { null: 'ignore' }],
+      'no-empty': ['error', { allowEmptyCatch: true }],
+      '@typescript-eslint/no-empty-function': ['error', { allow: ['arrowFunctions'] }],
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
     },
   },
   {
