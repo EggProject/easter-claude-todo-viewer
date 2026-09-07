@@ -30,6 +30,8 @@ import {
 
 const AppContext = createContext<AppContextValue | null>(null);
 
+export const useOptionalApp = (): AppContextValue | null => useContext(AppContext);
+
 export const useApp = (): AppContextValue => {
   const ctx = useContext(AppContext);
   if (!ctx) {

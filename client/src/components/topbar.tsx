@@ -79,8 +79,8 @@ function sessionTooltip(session: Session | null, sessionsState: SessionsState): 
   if (!session) return 'No current session';
   return [
     `Session: ${session.id}`,
-    `Project: ${session.cwd || '—'}`,
-    `Branch: ${session.gitBranch || '—'}`,
+    `Project: ${session.cwd || '-'}`,
+    `Branch: ${session.gitBranch || '-'}`,
     `Created: ${fmt(session.createdAt)}`,
     `Last activity: ${fmt(session.lastActivity)}`,
     `Session language: ${String(session.globalLanguage || 'en').toUpperCase()}`,
@@ -89,7 +89,7 @@ function sessionTooltip(session: Session | null, sessionsState: SessionsState): 
 }
 
 const fmt = (v: unknown): string => {
-  if (!v) return '—';
+  if (!v) return '-';
   try {
     return new Date(String(v)).toLocaleString();
   } catch {

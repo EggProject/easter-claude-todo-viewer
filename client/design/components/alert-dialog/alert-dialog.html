@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>EggProject — Alert Dialog</title>
+  <script src="../../../eggproject-design/preview/_theme.js" defer></script>
+  <meta name="viewport" content="width=720" />
+  <link rel="stylesheet" href="alert-dialog.css" />
+  <link rel="stylesheet" href="../button/button.css" />
+  <link rel="icon" href="../../../eggproject-design/assets/logo-mark.svg" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--ep-bg); color: var(--ep-fg); font-family: var(--ep-font-sans); padding: 40px; }
+    .page { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+    h1 { font: 400 36px/1.1 var(--ep-font-display); letter-spacing: -0.02em; color: var(--ep-fg); }
+    h1 em { font-weight: 700; }
+    .lead { font: var(--ep-text-body); color: var(--ep-fg-muted); }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; }
+  </style>
+  <script src="../../assets/vendor/react.production.min.js"></script>
+  <script src="../../assets/vendor/react-dom.production.min.js"></script>
+  <script src="../../assets/vendor/babel.min.js"></script>
+</head>
+<body>
+  <div class="page">
+    <h1>Alert Dialog · <em>destructive confirms</em></h1>
+    <p class="lead">Modal confirmation for irreversible or high-stakes actions. Danger, warning and info variants.</p>
+    <div class="row" id="root"></div>
+  </div>
+  <script type="text/babel" src="AlertDialog.jsx"></script>
+  <script type="text/babel">
+    const { useState } = React;
+
+    const ICON_DANGER = <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round"><circle cx="10" cy="10" r="7"/><path d="M7 7l6 6M13 7l-6 6"/></svg>;
+    const ICON_WARN   = <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M10 3 2.5 16h15z"/><path d="M10 8v4M10 14.5v.01"/></svg>;
+    const ICON_INFO   = <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round"><circle cx="10" cy="10" r="7"/><path d="M10 9v5M10 6.5v.01"/></svg>;
+
+    function App() {
+      const [open, setOpen] = useState(null);
+      return (
+        <>
+          <button className="btn btn--danger" aria-haspopup="dialog" aria-expanded={open === 'danger'} onClick={() => setOpen('danger')}>Delete project</button>
+          <button className="btn btn--secondary" aria-haspopup="dialog" aria-expanded={open === 'warning'} onClick={() => setOpen('warning')}>Discard changes</button>
+          <button className="btn btn--ghost" aria-haspopup="dialog" aria-expanded={open === 'info'} onClick={() => setOpen('info')}>Confirm action</button>
+          <AlertDialog
+            open={open === 'danger'}
+            onClose={() => setOpen(null)}
+            onConfirm={() => alert('Deleted!')}
+            variant="danger"
+            icon={ICON_DANGER}
+            title="Delete Lumenwerk?"
+            description="This will permanently remove the project and all its assets. This action cannot be undone."
+            confirmLabel="Delete project"
+            cancelLabel="Keep it"
+          />
+          <AlertDialog
+            open={open === 'warning'}
+            onClose={() => setOpen(null)}
+            onConfirm={() => alert('Discarded!')}
+            variant="warning"
+            icon={ICON_WARN}
+            title="Unsaved changes"
+            description="You have unsaved edits. Leaving now will discard them."
+            confirmLabel="Discard"
+            cancelLabel="Stay"
+          />
+          <AlertDialog
+            open={open === 'info'}
+            onClose={() => setOpen(null)}
+            onConfirm={() => alert('Confirmed!')}
+            variant="info"
+            icon={ICON_INFO}
+            title="Publish brief?"
+            description="This brief will be visible to all team members. You can unpublish it at any time."
+            confirmLabel="Publish"
+            cancelLabel="Not yet"
+          />
+        </>
+      );
+    }
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>

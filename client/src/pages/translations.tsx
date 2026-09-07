@@ -378,32 +378,32 @@ function buildColumns(
       header: 'Wanted',
       accessorFn: (row) => (row.kind === 'task' ? row.viewLanguage || '' : ''),
       cell: ({ row }) =>
-        row.original.kind === 'task' ? languageBadge(row.original.viewLanguage) : '—',
+        row.original.kind === 'task' ? languageBadge(row.original.viewLanguage) : 'none',
     },
     {
       id: 'shown',
       header: 'Shown',
       accessorFn: (row) => (row.kind === 'task' ? row.effectiveLanguage || '' : ''),
       cell: ({ row }) =>
-        row.original.kind === 'task' ? languageBadge(row.original.effectiveLanguage) : '—',
+        row.original.kind === 'task' ? languageBadge(row.original.effectiveLanguage) : 'none',
     },
     {
       id: 'trigger',
       header: 'Trigger',
       accessorFn: (row) => (row.kind === 'version' ? row.trigger || '' : ''),
-      cell: ({ row }) => (row.original.kind === 'version' ? row.original.trigger || '—' : '—'),
+      cell: ({ row }) => (row.original.kind === 'version' ? row.original.trigger || 'none' : 'none'),
     },
     {
       id: 'provider',
       header: 'Provider',
       accessorFn: (row) => (row.kind === 'version' ? row.provider || '' : ''),
-      cell: ({ row }) => (row.original.kind === 'version' ? row.original.provider || 'agy' : '—'),
+      cell: ({ row }) => (row.original.kind === 'version' ? row.original.provider || 'agy' : 'none'),
     },
     {
       id: 'model',
       header: 'Model',
       accessorFn: (row) => (row.kind === 'version' ? row.model || '' : ''),
-      cell: ({ row }) => (row.original.kind === 'version' ? row.original.model || '—' : '—'),
+      cell: ({ row }) => (row.original.kind === 'version' ? row.original.model || 'none' : 'none'),
     },
     {
       id: 'attempt',
@@ -428,19 +428,19 @@ function buildColumns(
       header: 'Queued',
       accessorFn: (row) => (row.kind === 'version' ? row.queuedAt || '' : ''),
       cell: ({ row }) =>
-        row.original.kind === 'version' ? formatDate(row.original.queuedAt) : '—',
+        row.original.kind === 'version' ? formatDate(row.original.queuedAt) : 'none',
     },
     {
       id: 'duration',
       header: 'Duration',
       accessorFn: (row) => (row.kind === 'version' ? durationSeconds(row) : 0),
-      cell: ({ row }) => (row.original.kind === 'version' ? duration(row.original) : '—'),
+      cell: ({ row }) => (row.original.kind === 'version' ? duration(row.original) : 'none'),
     },
     {
       id: 'tokens',
       header: 'Tokens',
       accessorFn: (row) => (row.kind === 'version' ? tokenCount(row) : 0),
-      cell: ({ row }) => (row.original.kind === 'version' ? tokens(row.original) : '—'),
+      cell: ({ row }) => (row.original.kind === 'version' ? tokens(row.original) : 'none'),
     },
     {
       id: 'action',
@@ -647,11 +647,11 @@ function currentStateLabel(state: string | undefined): string {
     retrying: '🔁 retrying',
     canceling: '🛑 canceling',
   };
-  return labels[state || ''] || state || '—';
+  return labels[state || ''] || state || 'none';
 }
 
 function fmtDate(v: unknown): string {
-  if (!v) return '—';
+  if (!v) return 'none';
   try {
     return new Date(String(v)).toLocaleString();
   } catch {
@@ -727,7 +727,7 @@ function Attempt({ attempt, index }: { attempt: TranslationAttempt; index: numbe
           )}
         </>
       ) : (
-        section('🔎 Validator', 'Skipped — deterministic precheck rejected this candidate.')
+        section('🔎 Validator', 'Skipped - deterministic precheck rejected this candidate.')
       )}
       {attempt.issues && attempt.issues.length > 0
         ? section('⚠ Issues', attempt.issues.map((item) => `• ${item}`).join('\n'), 'warning-panel')
@@ -761,7 +761,7 @@ function humanModelOutput(meta: TranslationAgentMeta | undefined, kind: string):
       return prettyCandidate(value);
     }
   }
-  return typeof meta?.rawResponse === 'string' ? meta.rawResponse : '—';
+  return typeof meta?.rawResponse === 'string' ? meta.rawResponse : 'none';
 }
 
 function rawSection(title: string, text: unknown): ReactElement | null {
@@ -811,7 +811,7 @@ function section(title: string, text: unknown, className = ''): ReactElement | n
 
 const metric = (key: string, value: unknown): ReactElement => {
   const display =
-    typeof value === 'string' ? value : typeof value === 'number' ? value.toString() : '—';
+    typeof value === 'string' ? value : typeof value === 'number' ? value.toString() : 'none';
   return (
     <div className="metric">
       <small>{key}</small>
@@ -863,13 +863,13 @@ function durationSeconds(job: TranslationJob): number {
 
 function duration(job: TranslationJob): string {
   const value = durationSeconds(job);
-  return value ? `${Math.round(value).toString()}s` : '—';
+  return value ? `${Math.round(value).toString()}s` : 'none';
 }
 
 function usage(value: TranslationUsage | undefined): string {
-  if (!value) return '—';
+  if (!value) return 'none';
   const tokensVal = value.total_tokens ?? value.totalTokens;
-  return tokensVal !== undefined ? String(tokensVal) : '—';
+  return tokensVal !== undefined ? String(tokensVal) : 'none';
 }
 
 function tokenCount(job: TranslationJob): number {
@@ -903,5 +903,5 @@ function tokenCount(job: TranslationJob): number {
 
 function tokens(job: TranslationJob): string {
   const count = tokenCount(job);
-  return count ? String(count) : '—';
+  return count ? String(count) : 'none';
 }

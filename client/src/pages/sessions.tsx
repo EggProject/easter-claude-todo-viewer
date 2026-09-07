@@ -282,7 +282,7 @@ function shortId(value: unknown): string {
 }
 
 function fmtDate(value: unknown): string {
-  if (!value) return '—';
+  if (!value) return 'none';
   try {
     return new Date(String(value)).toLocaleString();
   } catch {

@@ -1,40 +1,32 @@
 :root {
   color-scheme: dark;
-  --bg: #11111b;
-  --surface: #181825;
-  --surface2: #1e1e2e;
-  --surface3: #313244;
-  --text: #cdd6f4;
-  --sub: #a6adc8;
-  --overlay: #6c7086;
-  --lav: #b4befe;
-  --mauve: #cba6f7;
-  --pink: #f5c2e7;
-  --peach: #fab387;
-  --yellow: #f9e2af;
-  --green: #a6e3a1;
-  --red: #f38ba8;
-  --blue: #89b4fa;
-  --rose: #f5e0dc;
-  --border: #45475a;
-  --shadow: 0 20px 55px rgba(0, 0, 0, 0.35);
-  font-family:
-    Inter,
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    'Segoe UI',
-    sans-serif;
+  --bg: var(--ep-bg);
+  --surface: var(--ep-bg-elevated);
+  --surface2: var(--ep-bg-raised);
+  --surface3: var(--ep-bg-sunken);
+  --text: var(--ep-fg);
+  --sub: var(--ep-fg-muted);
+  --overlay: var(--ep-fg-subtle);
+  --lav: var(--ep-accent);
+  --mauve: var(--ep-second);
+  --pink: var(--ep-accent);
+  --peach: var(--ep-warning);
+  --yellow: var(--ep-accent);
+  --green: var(--ep-success);
+  --red: var(--ep-danger);
+  --blue: var(--ep-second);
+  --rose: var(--ep-border);
+  --border: var(--ep-border);
+  --shadow: var(--ep-shadow-md);
+  font-family: var(--ep-font-sans);
 }
 * {
   box-sizing: border-box;
 }
 body {
   margin: 0;
-  background:
-    radial-gradient(circle at 20% -10%, rgba(203, 166, 247, 0.08), transparent 28rem), var(--bg);
-  color: var(--text);
+  background: var(--ep-bg);
+  color: var(--ep-fg);
   min-height: 100vh;
 }
 button,
@@ -49,7 +41,7 @@ button {
 .mono,
 pre,
 code {
-  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+  font-family: var(--ep-font-mono);
 }
 .boot {
   display: grid;
@@ -161,9 +153,9 @@ code {
   background: var(--surface3);
 }
 .primary {
-  background: var(--mauve);
-  color: #1e1e2e;
-  border-color: var(--mauve);
+  background: var(--ep-accent);
+  color: var(--ep-accent-on);
+  border-color: var(--ep-accent);
   padding: 9px 16px;
 }
 .danger {
@@ -734,7 +726,7 @@ code {
   border: 1px solid var(--border);
   border-radius: 10px;
   padding: 14px;
-  font-family: 'SFMono-Regular', monospace;
+  font-family: var(--ep-font-mono);
   line-height: 1.5;
 }
 .prompt-editor > .actions,
@@ -1431,7 +1423,7 @@ code {
 .history-before-after .after {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
-  font-family: 'SFMono-Regular', Consolas, monospace;
+  font-family: var(--ep-font-mono);
   font-size: 10px;
 }
 .history-arrow {
@@ -1494,7 +1486,7 @@ code {
 }
 .tree-branch {
   color: var(--overlay);
-  font-family: 'SFMono-Regular', monospace;
+  font-family: var(--ep-font-mono);
 }
 .language-badge {
   display: inline-flex;

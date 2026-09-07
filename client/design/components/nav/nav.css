@@ -1,0 +1,146 @@
+@import url('../../../eggproject-design/colors_and_type.css');
+
+/* ============ TopNav — pill-style nav with brand + links + actions ============
+   Layout: brand · links · actions, with a guaranteed minimum gap so the first
+   link never crowds the wordmark. Collapses to a hamburger + dropdown panel
+   under 720px. */
+.topnav {
+  position: relative;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 24px;                       /* min-spacing between brand / links / actions */
+  padding: 10px 14px;
+  background: var(--ep-bg-elevated);
+  border: 1px solid var(--ep-border-subtle);
+  border-radius: var(--ep-radius-pill);
+  box-shadow: var(--ep-shadow-sm);
+}
+
+.topnav__brand { display: flex; align-items: center; gap: 8px; color: var(--ep-fg); flex: 0 0 auto; }
+.topnav__brand img { width: 24px; height: 24px; }
+.topnav__brand b {
+  font: 600 17px var(--ep-font-sans);
+  letter-spacing: -0.02em;
+  display: inline-flex; align-items: baseline; gap: 4px;
+}
+.topnav__brand b::after {
+  content: ""; width: 4px; height: 4px;
+  background: var(--ep-accent);
+  border-radius: 50%;
+  display: inline-block;
+  margin-bottom: 2px;
+}
+
+.topnav__links { display: flex; gap: 4px; }
+.topnav__links a {
+  padding: 6px 12px;
+  border-radius: var(--ep-radius-pill);
+  font: 500 13px var(--ep-font-sans);
+  color: var(--ep-fg-muted);
+  text-decoration: none;
+}
+.topnav__links a.is-on { background: var(--ep-ink-900); color: var(--ep-paper-100); }
+.topnav__links a:hover:not(.is-on) { color: var(--ep-fg); }
+
+.topnav__actions { display: flex; gap: 8px; align-items: center; flex: 0 0 auto; }
+.topnav__actions .btn { padding: 7px 14px; border-radius: var(--ep-radius-pill); font-size: 13px; }
+
+/* ============ Hamburger toggle (mobile only) ============ */
+.topnav__toggle {
+  display: none;                   /* shown via @media below */
+  width: 36px; height: 36px;
+  align-items: center; justify-content: center;
+  background: transparent;
+  border: 1px solid var(--ep-border-subtle);
+  border-radius: var(--ep-radius-pill);
+  cursor: pointer;
+  color: var(--ep-fg);
+  padding: 0;
+}
+.topnav__toggle:hover { background: var(--ep-bg-sunken); }
+.topnav__toggle svg { display: block; }
+.topnav__toggle .icon-close { display: none; }
+.topnav.is-open .topnav__toggle .icon-open  { display: none; }
+.topnav.is-open .topnav__toggle .icon-close { display: block; }
+
+/* Mobile dropdown sheet — same pill-elevated chrome, drops below the bar. */
+.topnav__sheet {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0; right: 0;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  background: var(--ep-bg-elevated);
+  border: 1px solid var(--ep-border-subtle);
+  border-radius: var(--ep-radius-xl);
+  box-shadow: var(--ep-shadow-md);
+}
+.topnav__sheet a {
+  padding: 10px 14px;
+  border-radius: var(--ep-radius-md);
+  font: 500 15px var(--ep-font-sans);
+  color: var(--ep-fg);
+  text-decoration: none;
+}
+.topnav__sheet a.is-on { background: var(--ep-ink-900); color: var(--ep-paper-100); }
+.topnav__sheet a:hover:not(.is-on) { background: var(--ep-bg-sunken); }
+.topnav__sheet hr {
+  border: 0; border-top: 1px solid var(--ep-divider);
+  margin: 6px 0;
+}
+.topnav__sheet .topnav__sheet-actions {
+  display: flex; flex-direction: column; gap: 6px;
+  padding: 4px 2px 2px;
+}
+.topnav__sheet .topnav__sheet-actions .btn {
+  width: 100%; justify-content: center;
+  padding: 10px 14px;
+  border-radius: var(--ep-radius-pill);
+  font-size: 14px;
+}
+.topnav.is-open .topnav__sheet { display: flex; }
+
+/* ============ Responsive breakpoint ============
+   < 720px: collapse desktop links + actions; show hamburger. */
+@media (max-width: 720px) {
+  .topnav { border-radius: var(--ep-radius-2xl); padding: 8px 8px 8px 14px; }
+  .topnav__links,
+  .topnav__actions { display: none; }
+  .topnav__toggle  { display: inline-flex; }
+}
+
+/* ============ Keyboard focus ============
+   House-style outset ring on the nav's own controls (toggle + link lists). The
+   .topnav is not clipped, so the ring shows in full. Action buttons are the
+   closed .btn family and keep their own focus treatment. Static ring, never
+   animated. */
+.topnav__toggle:focus-visible,
+.topnav__links a:focus-visible,
+.topnav__sheet a:focus-visible {
+  outline: none;
+  box-shadow: var(--ep-shadow-focus);
+}
+
+/* Forced colors (Windows High Contrast): the token bg/border chrome, the active
+   link tint, the toggle and the dropdown sheet flatten under the UA, so re-express
+   separation, current state and focus with system colors. System colors only. */
+@media (forced-colors: active) {
+  .topnav { border-color: CanvasText; }
+  .topnav__brand { color: CanvasText; }
+  .topnav__links a { color: LinkText; }
+  .topnav__links a.is-on { background: Highlight; color: HighlightText; }
+  .topnav__actions { color: CanvasText; }
+  .topnav__toggle { border-color: CanvasText; color: ButtonText; }
+  .topnav.is-open .topnav__toggle { border-color: Highlight; }
+  .topnav__sheet { border-color: CanvasText; }
+  .topnav__sheet a { color: LinkText; }
+  .topnav__sheet a.is-on { background: Highlight; color: HighlightText; }
+  .topnav__toggle:focus-visible,
+  .topnav__links a:focus-visible,
+  .topnav__sheet a:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+    box-shadow: none;
+  }
+}

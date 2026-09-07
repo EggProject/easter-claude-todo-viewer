@@ -1,7 +1,6 @@
-import React, { ComponentType, lazy, ReactElement, ReactNode } from 'react';
+import React, { ComponentType, lazy, ReactElement } from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useParams } from 'react-router';
-import { Topbar } from './components/topbar.js';
-import { NotificationSidebar, RequiredModal } from './components/overlays.js';
+import { Shell } from './components/shell.js';
 
 const Sessions = lazy(() => import('./pages/sessions.js'));
 const Tasks = lazy(() => import('./pages/tasks.js'));
@@ -9,17 +8,6 @@ const Flow = lazy(() => import('./pages/flow.js'));
 const Translations = lazy(() => import('./pages/translations.js'));
 const Prompts = lazy(() => import('./pages/prompts.js'));
 const Settings = lazy(() => import('./pages/settings.js'));
-
-function Shell({ children }: { children?: ReactNode }): ReactElement {
-  return (
-    <>
-      <Topbar />
-      <main className="shell">{children}</main>
-      <NotificationSidebar />
-      <RequiredModal />
-    </>
-  );
-}
 
 const page = (Component: ComponentType): ReactElement => (
   <Shell>

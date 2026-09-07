@@ -231,7 +231,7 @@ export default function SettingsPage(): ReactElement {
                 <input
                   type="password"
                   placeholder={
-                    anth.apiKeyConfigured ? 'Configured — enter only to replace' : 'Optional'
+                    anth.apiKeyConfigured ? 'Configured - enter only to replace' : 'Optional'
                   }
                   value={anth.apiKey || ''}
                   onChange={(e) => setAnthropicApiKey(e.target.value)}

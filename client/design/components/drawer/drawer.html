@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>EggProject — Drawer</title>
+  <script src="../../../eggproject-design/preview/_theme.js" defer></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="drawer.css" />
+  <link rel="stylesheet" href="../button/button.css" />
+  <link rel="icon" href="../../../eggproject-design/assets/logo-mark.svg" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--ep-bg); color: var(--ep-fg); font-family: var(--ep-font-sans); padding: 40px; min-height: 100vh; }
+    .page { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; }
+    h1 { font: 400 36px/1.1 var(--ep-font-display); letter-spacing: -0.02em; color: var(--ep-fg); }
+ h1 em { font-weight: 700; }
+    .lead { font: var(--ep-text-body); color: var(--ep-fg-muted); }
+    .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 24px; }
+    .meta-grid dt { font: 500 12px var(--ep-font-sans); letter-spacing: 0.04em; text-transform: uppercase; color: var(--ep-fg-subtle); margin-bottom: 4px; }
+    .meta-grid dd { font: var(--ep-text-body); color: var(--ep-fg); }
+  </style>
+  <script src="../../assets/vendor/react.production.min.js"></script>
+  <script src="../../assets/vendor/react-dom.production.min.js"></script>
+  <script src="../../assets/vendor/babel.min.js"></script>
+</head>
+<body>
+  <div class="page">
+    <h1>Drawer · <em>side panel</em></h1>
+    <p class="lead">A side-anchored sheet for detail views, edit forms and filter panes. Four sides, four widths.</p>
+    <div class="row" id="root"></div>
+  </div>
+
+  <script type="text/babel" src="Drawer.jsx"></script>
+  <script type="text/babel">
+    const { useState } = React;
+    function App() {
+      const [w, setW] = useState(null);
+      const close = () => setW(null);
+      return <>
+        <button className="btn btn--primary" aria-haspopup="dialog" aria-expanded={w === 'details'} onClick={() => setW('details')}>Project details (right)</button>
+        <button className="btn btn--secondary" aria-haspopup="dialog" aria-expanded={w === 'filters'} onClick={() => setW('filters')}>Filters (left)</button>
+        <button className="btn btn--secondary" aria-haspopup="dialog" aria-expanded={w === 'large'} onClick={() => setW('large')}>Large form (right XL)</button>
+        <button className="btn btn--ghost" aria-haspopup="dialog" aria-expanded={w === 'bottom'} onClick={() => setW('bottom')}>Mobile sheet (bottom)</button>
+
+        <Drawer open={w === 'details'} onClose={close}
+          eyebrow="Project · v1.0.0"
+          title={<>Lumenwerk · <em>shipped</em></>}
+          sub="Engagement closed on March 14, 2026"
+          footer={<>
+            <button className="btn btn--ghost" onClick={close}>Close</button>
+            <button className="btn btn--primary" onClick={close}>Open project</button>
+          </>}
+        >
+          <dl className="meta-grid">
+            <div><dt>Client</dt><dd>Lumenwerk GmbH</dd></div>
+            <div><dt>Owner</dt><dd>Eszter Kovács</dd></div>
+            <div><dt>Started</dt><dd>Jan 12, 2026</dd></div>
+            <div><dt>Hours</dt><dd>342 h</dd></div>
+          </dl>
+          <p style={{color:'var(--ep-fg-muted)'}}>A senior team delivered the v1 release two days ahead of schedule. All acceptance tests passed.</p>
+        </Drawer>
+
+        <Drawer open={w === 'filters'} onClose={close} side="left" size="sm"
+          title="Filters"
+          footer={<>
+            <button className="btn btn--ghost" onClick={close}>Reset</button>
+            <button className="btn btn--primary" onClick={close}>Apply</button>
+          </>}
+        >
+          <p style={{color: 'var(--ep-fg-muted)'}}>Filter controls would live here — status, owner, date range, tags.</p>
+        </Drawer>
+
+        <Drawer open={w === 'large'} onClose={close} size="xl"
+          eyebrow="Step 1 of 3"
+          title={<>New <em>project brief</em></>}
+          footer={<>
+            <button className="btn btn--ghost" onClick={close}>Cancel</button>
+            <button className="btn btn--primary" onClick={close}>Continue →</button>
+          </>}
+        >
+          <p>The wider variant suits multi-column forms or richer edit views without sending the user to a new page.</p>
+        </Drawer>
+
+        <Drawer open={w === 'bottom'} onClose={close} side="bottom"
+          title="Mobile sheet"
+          footer={<>
+            <button className="btn btn--primary" style={{width:'100%'}} onClick={close}>Done</button>
+          </>}
+        >
+          <p style={{color:'var(--ep-fg-muted)'}}>Use a bottom drawer for mobile-style action sheets or contextual settings.</p>
+        </Drawer>
+      </>;
+    }
+    ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+  </script>
+</body>
+</html>

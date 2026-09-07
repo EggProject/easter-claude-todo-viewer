@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>EggProject — Divider</title>
+  <script src="../../../eggproject-design/preview/_theme.js" defer></script>
+  <meta name="viewport" content="width=720" />
+  <link rel="stylesheet" href="divider.css" />
+  <link rel="icon" href="../../../eggproject-design/assets/logo-mark.svg" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--ep-bg); color: var(--ep-fg); font-family: var(--ep-font-sans); padding: 40px; }
+    .page { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+    h1 { font: 400 36px/1.1 var(--ep-font-display); letter-spacing: -0.02em; color: var(--ep-fg); }
+ h1 em { font-weight: 700; }
+    .label { font: var(--ep-text-overline); letter-spacing: var(--ep-track-overline); text-transform: uppercase; color: var(--ep-fg-subtle); margin-bottom: 8px; }
+    p { font: var(--ep-text-body); color: var(--ep-fg-muted); }
+    .ink { background: var(--ep-ink-900); color: var(--ep-paper-50); padding: 24px; border-radius: 12px; }
+    .ink .label { color: var(--ep-slate-400); }
+    .ink p { color: var(--ep-slate-300); }
+    .row { display: inline-flex; align-items: center; font: var(--ep-text-small); }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1>Divider · <em>visual rest</em></h1>
+
+    <div>
+      <span class="label">Plain</span>
+      <p>Senior team. Calm execution. Predictable delivery.</p>
+      <hr class="divider" style="margin: 14px 0;">
+ <p>Crafted code, <em style="font-family: var(--ep-font-display); font-weight: 700;">shipped on time.</em></p>
+    </div>
+
+    <div>
+      <span class="label">Label</span>
+      <p>Last release notes from sprint 13.</p>
+      <div class="divider divider--label" style="margin: 14px 0;">Sprint 14 · in progress</div>
+      <p>Current work: portal onboarding and billing webhooks.</p>
+    </div>
+
+    <div>
+      <span class="label">Ornament — editorial flourish</span>
+      <p style="text-align:center;">Northbeam shipped on March 14.</p>
+      <div class="divider divider--ornament" style="margin: 14px 0;"><span class="divider__glyph">&amp;</span></div>
+      <p style="text-align:center;">Lumenwerk released v1.0.0 on March 12.</p>
+    </div>
+
+    <div>
+      <span class="label">Dotted</span>
+      <hr class="divider divider--dotted" style="margin: 12px 0;">
+    </div>
+
+    <div>
+      <span class="label">Vertical — inline</span>
+      <div class="row">
+        <span>Eszter Kovács</span>
+        <span class="divider divider--vertical"></span>
+        <span>Lead engineer</span>
+        <span class="divider divider--vertical"></span>
+        <span style="font-family: var(--ep-font-mono); color: var(--ep-fg-subtle);">12 projects</span>
+      </div>
+    </div>
+
+    <div class="ink">
+      <span class="label">On ink</span>
+      <p>System status · all services operational.</p>
+      <div class="divider divider--ornament divider--on-ink" style="margin: 14px 0;"><span class="divider__glyph">·</span></div>
+      <p>Next scheduled maintenance: Sunday 22:00 CET.</p>
+    </div>
+  </div>
+</body>
+</html>

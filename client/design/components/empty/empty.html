@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>EggProject — EmptyState</title>
+  <script src="../../../eggproject-design/preview/_theme.js" defer></script>
+  <meta name="viewport" content="width=860" />
+  <link rel="stylesheet" href="empty.css" />
+  <link rel="stylesheet" href="../button/button.css" />
+  <link rel="icon" href="../../../eggproject-design/assets/logo-mark.svg" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--ep-bg); color: var(--ep-fg); font-family: var(--ep-font-sans); padding: 40px; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 860px; margin: 0 auto; }
+    .grid > .empty--card { background: var(--ep-bg-elevated); }
+    .span2 { grid-column: 1 / -1; }
+    .label { font: var(--ep-text-overline); letter-spacing: var(--ep-track-overline); text-transform: uppercase; color: var(--ep-fg-subtle); margin-bottom: 8px; }
+    h1 { font: 400 36px/1.1 var(--ep-font-display); letter-spacing: -0.02em; color: var(--ep-fg); margin-bottom: 24px; }
+ h1 em { font-weight: 700; }
+  </style>
+</head>
+<body>
+  <h1>EmptyState · <em>nothing here yet</em></h1>
+
+  <div class="grid">
+    <div class="empty empty--card">
+      <span class="empty__art empty__art--blue">
+        <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="7" width="22" height="18" rx="2"/><path d="M5 11h22M9 7V4M23 7V4"/><path d="M11 16h10M11 20h6"/></svg>
+      </span>
+      <span class="empty__eyebrow">Projects</span>
+      <h3 class="empty__title">No projects <em>yet</em></h3>
+      <p class="empty__message">Start a project to bring in a brief, a timeline and the team. Drafts live here until they're sent.</p>
+      <div class="empty__actions">
+        <button class="btn btn--primary">Start a project</button>
+        <button class="btn btn--ghost">Import from brief</button>
+      </div>
+    </div>
+
+    <div class="empty empty--card">
+      <span class="empty__art">
+        <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="14" cy="14" r="8"/><path d="m20 20 6 6"/></svg>
+      </span>
+      <h3 class="empty__title">No results</h3>
+      <p class="empty__message">No projects match <strong style="color:var(--ep-ink-900)">"refactor"</strong>. Try a different query or clear filters.</p>
+      <div class="empty__actions">
+        <button class="btn btn--secondary">Clear filters</button>
+      </div>
+    </div>
+
+    <div class="empty empty--card span2" style="background: var(--ep-ink-900); border-color: transparent;">
+      <span class="empty__art empty__art--ink">
+        <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4v6M16 22v6M4 16h6M22 16h6M8 8l4 4M20 20l4 4M8 24l4-4M20 12l4-4"/></svg>
+      </span>
+      <span class="empty__eyebrow" style="color: var(--ep-slate-400);">Inbox · zero</span>
+      <h3 class="empty__title" style="color: var(--ep-paper-50);">You're <em>caught up</em></h3>
+      <p class="empty__message" style="color: var(--ep-slate-300);">No unread comments, no pending approvals. Enjoy the quiet — we'll let you know when something needs you.</p>
+      <div class="empty__actions">
+        <button class="btn btn--secondary" style="background: var(--ep-paper-50); color: var(--ep-ink-900); border-color: transparent;">View archived</button>
+      </div>
+    </div>
+
+    <div class="empty empty--card empty--inline span2" style="grid-column: 1 / -1;">
+      <span class="empty__art empty__art--warning empty__art--square">
+        <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4 4 26h24z"/><path d="M16 13v6M16 22v.01"/></svg>
+      </span>
+      <div class="empty__body">
+        <h3 class="empty__title" style="font: var(--ep-text-h4);">No invoices to send this month</h3>
+        <p class="empty__message" style="margin-top:2px; font: var(--ep-text-small);">All projects are on retainer or already billed. Manual invoices appear here.</p>
+      </div>
+      <div class="empty__actions">
+        <button class="btn btn--ghost btn--sm">Create invoice</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

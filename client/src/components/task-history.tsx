@@ -174,7 +174,7 @@ function HistoryEventCard({ event }: { event: HistoryEvent }): ReactElement {
       </summary>
       <div className="history-event-body">
         {event.source === 'translation' ? (
-          <div className="history-language-note hu">🌐 Translation completed — EN → HU</div>
+          <div className="history-language-note hu">🌐 Translation completed - EN → HU</div>
         ) : (
           <div className="history-language-note en">🇬🇧 Original task event</div>
         )}
@@ -186,7 +186,7 @@ function HistoryEventCard({ event }: { event: HistoryEvent }): ReactElement {
         ))}
         {event.provider ? (
           <div className="history-meta mono">
-            {`provider=${event.provider} · model=${event.model || '—'} · run=${(event.run || 1).toString()}`}
+            {`provider=${event.provider} · model=${event.model || '-'} · run=${(event.run || 1).toString()}`}
           </div>
         ) : null}
       </div>
@@ -310,13 +310,13 @@ function searchable(event: HistoryEvent): string {
 }
 
 function stringify(value: unknown): string {
-  if (value == null || value === '') return '—';
+  if (value == null || value === '') return '-';
   if (typeof value === 'string') return value;
   return JSON.stringify(value, null, 2);
 }
 
 function formatTime(v: unknown): string {
-  if (!v) return '—';
+  if (!v) return '-';
   try {
     return new Date(String(v)).toLocaleString();
   } catch {

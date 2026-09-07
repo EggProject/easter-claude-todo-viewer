@@ -1189,7 +1189,7 @@ describe('TranslationsPage', () => {
     );
     expect(screen.getByText('🔬 TRANSLATION DEBUG')).toBeDefined();
     expect(
-      screen.getByText('Skipped — deterministic precheck rejected this candidate.'),
+      screen.getByText('Skipped - deterministic precheck rejected this candidate.'),
     ).toBeDefined();
     expect(screen.getByText('🧰 Raw provider payload · developer view')).toBeDefined();
     unmount();

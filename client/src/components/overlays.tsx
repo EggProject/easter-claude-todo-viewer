@@ -5,7 +5,7 @@ import { usePersistentLocalState } from '../filter-state.js';
 import { HistoryChange, HistoryEvent, ModalSummaryItem } from '../types.js';
 
 function fmt(value: unknown): string {
-  if (value == null) return '—';
+  if (value == null) return 'none';
   if (typeof value === 'string') return value;
   return JSON.stringify(value, null, 2);
 }
@@ -36,7 +36,7 @@ function notificationBlocks(events: HistoryEvent[] = []): ReactElement[] {
     >
       <div className="modal-task-title">
         <span>
-          {`${historyEventIcon(event)} #${event.taskId || '—'} ${event.title || event.subject || ''}`.trim()}
+          {`${historyEventIcon(event)} #${event.taskId || 'none'} ${event.title || event.subject || ''}`.trim()}
         </span>
         {event.taskSnapshot ? <TaskLanguageBadge task={event.taskSnapshot} compact /> : null}
       </div>
@@ -174,7 +174,7 @@ function HistoryCard({ event }: { event: HistoryEvent }): ReactElement {
         <span className="history-event-main">
           <div className="history-title-with-badge">
             <strong>
-              {`🧵 ${compact(sessionLabel)} · #${event.taskId || '—'} · ${historyEventTitle(event)}`}
+              {`🧵 ${compact(sessionLabel)} · #${event.taskId || 'none'} · ${historyEventTitle(event)}`}
             </strong>
             {event.taskSnapshot ? <TaskLanguageBadge task={event.taskSnapshot} compact /> : null}
           </div>
@@ -185,7 +185,7 @@ function HistoryCard({ event }: { event: HistoryEvent }): ReactElement {
       <div className="history-event-body">
         <div className={`history-language-note ${event.source === 'translation' ? 'hu' : 'en'}`}>
           {event.source === 'translation'
-            ? '🌐 Translation completed — EN → HU'
+            ? '🌐 Translation completed - EN → HU'
             : '🇬🇧 Original task event'}
         </div>
         <div className="muted small mono">{event.sessionId || ''}</div>
@@ -201,7 +201,7 @@ function HistoryCard({ event }: { event: HistoryEvent }): ReactElement {
         ))}
         {event.provider ? (
           <div className="history-meta mono">
-            {`provider=${event.provider} · model=${event.model || '—'} · run=${(event.run || 1).toString()}`}
+            {`provider=${event.provider} · model=${event.model || 'none'} · run=${(event.run || 1).toString()}`}
           </div>
         ) : null}
       </div>
@@ -291,7 +291,7 @@ export function RequiredModal(): ReactElement | null {
   if (!title && isNotification) {
     title =
       notificationEvents.length === 1
-        ? `Task #${notificationEvents[0]?.taskId || '—'} updated`
+        ? `Task #${notificationEvents[0]?.taskId || 'none'} updated`
         : `${notificationEvents.length.toString()} task updates`;
   }
   if (!title) {
@@ -404,7 +404,7 @@ function historySearchText(event: HistoryEvent): string {
 }
 
 function formatDate(v: string | null | undefined): string {
-  if (!v) return '—';
+  if (!v) return 'none';
   try {
     return new Date(String(v)).toLocaleString();
   } catch {

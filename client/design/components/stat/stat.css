@@ -1,0 +1,103 @@
+@import url('../../../eggproject-design/colors_and_type.css');
+
+/* ============ Stat — metric display ============
+   .stat               — card
+   .stat__label        — uppercase mini label
+   .stat__value        — large display number (Roboto display)
+   .stat__unit         — small suffix
+   .stat__delta        — Δ pill (up/down/flat)
+   .stat__subtitle          — secondary line (sparkline label, "vs last quarter")
+   Variants:
+     .stat--card       — wrapped in a card surface
+     .stat--ink        — dark surface
+     .stat--featured   — yolk highlight, used sparingly
+============================================ */
+.stat {
+  display: flex; flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.stat__label {
+  font: var(--ep-text-overline);
+  letter-spacing: var(--ep-track-overline);
+  text-transform: uppercase;
+  color: var(--ep-fg-subtle);
+}
+
+.stat__value-row {
+  display: flex; align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.stat__value {
+  font: 400 44px/1 var(--ep-font-display);
+  letter-spacing: var(--ep-track-tight);
+  color: var(--ep-fg);
+}
+.stat__value em { font-weight: 700; }
+
+.stat__unit {
+  font: 400 16px var(--ep-font-sans);
+  color: var(--ep-fg-muted);
+}
+
+.stat__delta {
+  display: inline-flex; align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: var(--ep-radius-pill);
+  font: 600 12px var(--ep-font-sans);
+  background: var(--ep-success-bg);
+  color: var(--ep-success-fg);
+}
+.stat__delta--down { background: var(--ep-danger-bg); color: var(--ep-danger); }
+.stat__delta--flat { background: var(--ep-bg-hover); color: var(--ep-fg-muted); }
+.stat__delta svg { width: 10px; height: 10px; }
+
+.stat__subtitle {
+  font: var(--ep-text-meta);
+  color: var(--ep-fg-subtle);
+}
+.stat__subtitle--mono { font-family: var(--ep-font-mono); }
+
+/* ---- Card variant ---- */
+.stat--card {
+  background: var(--ep-bg-elevated);
+  border: 1px solid var(--ep-border-subtle);
+  border-radius: var(--ep-radius-lg);
+  padding: 20px 22px;
+  gap: 8px;
+}
+
+/* ---- Ink variant ---- */
+.stat--ink {
+  background: var(--ep-ink-900);
+  color: var(--ep-paper-50);
+  border-radius: var(--ep-radius-lg);
+  padding: 20px 22px;
+  gap: 8px;
+}
+.stat--ink .stat__label { color: var(--ep-slate-400); }
+.stat--ink .stat__value { color: var(--ep-paper-50); }
+.stat--ink .stat__unit  { color: var(--ep-slate-300); }
+.stat--ink .stat__subtitle   { color: var(--ep-slate-400); }
+.stat--ink .stat__delta { background: rgba(46,156,106,0.18); color: #6FCFA3; }
+.stat--ink .stat__delta--down { background: rgba(199,56,78,0.18); color: #F08596; }
+.stat--ink .stat__delta--flat { background: rgba(255,255,255,0.08); color: var(--ep-slate-300); }
+
+/* ---- Featured: yolk accent (use rarely, signature highlight) ---- */
+.stat--featured .stat__value { color: var(--ep-yolk-600); }
+.stat--featured.stat--card { border-left: 3px solid var(--ep-yolk-500); }
+
+/* ---- Compact size ---- */
+.stat--sm .stat__value { font-size: 28px; }
+.stat--sm .stat__unit  { font-size: 13px; }
+
+/* Inline sparkline (svg sized fluid) */
+.stat__spark { width: 100%; height: 28px; margin-top: 6px; }
+.stat__spark path { fill: none; stroke: var(--ep-blue-600); stroke-width: 1.5; }
+.stat__spark .area { fill: var(--ep-blue-100); stroke: none; }
+.stat--ink .stat__spark path { stroke: var(--ep-blue-400); }
+.stat--ink .stat__spark .area { fill: rgba(46,91,224,0.22); }

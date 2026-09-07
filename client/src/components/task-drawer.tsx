@@ -78,8 +78,8 @@ export function TaskDrawer({
         </div>
         <div className="drawer-body">
           {field('📌', 'Status', task.status)}
-          {field('⚡', 'Active form', task.activeForm || '—')}
-          {field('👤', 'Owner', task.owner || '—')}
+          {field('⚡', 'Active form', task.activeForm || 'none')}
+          {field('👤', 'Owner', task.owner || 'none')}
           {dependencyField('🔒', 'Blocked by', task.blockedBy || [], byId)}
           {dependencyField('🚧', 'Blocks', task.blocks || [], byId)}
           <section className="drawer-section">
@@ -134,7 +134,7 @@ export function TaskDrawer({
           </section>
           <section className="drawer-section">
             <div className="section-title">📝 Description</div>
-            <div className="prose prewrap">{task.description || '—'}</div>
+            <div className="prose prewrap">{task.description || 'none'}</div>
           </section>
           <TaskHistory task={task} />
         </div>
@@ -154,12 +154,12 @@ function dependencyField(
         const depTask = byId.get(String(id));
         return (
           <div className="dependency-item" key={String(id)}>
-            <span>{depTask ? `#${id} — ${depTask.subject}` : `#${id}`}</span>
+            <span>{depTask ? `#${id} - ${depTask.subject}` : `#${id}`}</span>
             {depTask ? <TaskLanguageBadge task={depTask} compact /> : null}
           </div>
         );
       })
-    : [<span key="empty">—</span>];
+    : [<span key="empty">none</span>];
 
   return (
     <div className="field">
@@ -173,7 +173,7 @@ function field(icon: string, label: string, value: unknown): ReactElement {
   return (
     <div className="field">
       <div className="field-label">{`${icon} ${label}`}</div>
-      <div className="field-value">{String(value ?? '—')}</div>
+      <div className="field-value">{String(value ?? 'none')}</div>
     </div>
   );
 }

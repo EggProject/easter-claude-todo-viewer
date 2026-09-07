@@ -426,7 +426,7 @@ describe('overlays module', () => {
       };
 
       render(React.createElement(RequiredModal));
-      expect(screen.getByText('Task #— updated')).toBeDefined();
+      expect(screen.getByText('Task #none updated')).toBeDefined();
       expect(screen.getByText('🧵 Session')).toBeDefined();
     });
 

@@ -13,4 +13,4 @@ while [[ $# -gt 0 ]]; do
     *) echo "❌ Unknown argument: $1" >&2; echo 'Usage: ./start-server.sh [--port N] [--log-file] [--log-output] [--client-origin URL]' >&2; exit 64 ;;
   esac
 done
-exec python3 -m server.main --port "$PORT" "${ARGS[@]}"
+exec python3 -m server.main --port "$PORT" ${ARGS[@]+"${ARGS[@]}"}
