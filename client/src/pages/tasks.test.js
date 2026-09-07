@@ -12,7 +12,11 @@ vi.mock('../app-context.js', () => ({
 
 vi.mock('../components/task-drawer.js', () => ({
   TaskDrawer: ({ base, tasks }) =>
-    React.createElement('div', { 'data-testid': 'mock-task-drawer', 'data-base': base, 'data-count': tasks?.length }),
+    React.createElement('div', {
+      'data-testid': 'mock-task-drawer',
+      'data-base': base,
+      'data-count': tasks?.length,
+    }),
 }));
 
 describe('TasksPage', () => {
@@ -94,11 +98,7 @@ describe('TasksPage', () => {
 
   function renderPage(initialEntries = ['/tasks']) {
     return render(
-      React.createElement(
-        MemoryRouter,
-        { initialEntries },
-        React.createElement(TasksPage, null),
-      ),
+      React.createElement(MemoryRouter, { initialEntries }, React.createElement(TasksPage, null)),
     );
   }
 
@@ -196,7 +196,9 @@ describe('TasksPage', () => {
 
     // To match other_status, mock normalizeStatusSelection
     const statusSelectModule = await import('../components/status-multiselect.js');
-    const spy = vi.spyOn(statusSelectModule, 'normalizeStatusSelection').mockReturnValue(new Set(['other_status']));
+    const spy = vi
+      .spyOn(statusSelectModule, 'normalizeStatusSelection')
+      .mockReturnValue(new Set(['other_status']));
 
     renderPage();
     await waitFor(() => {
@@ -210,8 +212,22 @@ describe('TasksPage', () => {
     mockApp.loadState.mockResolvedValueOnce({
       initialStatus: 'all',
       tasks: [
-        { uid: 't1', id: '10', sessionId: 'sess-alpha', subject: 'A', status: 'pending', blockedBy: [] },
-        { uid: 't2', id: '2', sessionId: 'sess-alpha', subject: 'B', status: 'pending', blockedBy: ['t1'] },
+        {
+          uid: 't1',
+          id: '10',
+          sessionId: 'sess-alpha',
+          subject: 'A',
+          status: 'pending',
+          blockedBy: [],
+        },
+        {
+          uid: 't2',
+          id: '2',
+          sessionId: 'sess-alpha',
+          subject: 'B',
+          status: 'pending',
+          blockedBy: ['t1'],
+        },
         { uid: 't3', id: '5', sessionId: 'sess-other', subject: 'C', status: 'completed' },
       ],
     });
@@ -290,7 +306,14 @@ describe('TasksPage', () => {
   it('covers SessionBadge fallback when session and sessionId are falsy', async () => {
     mockApp.loadState.mockResolvedValueOnce({
       tasks: [
-        { uid: 't-none', id: '99', sessionId: '', session: null, subject: 'No session task', status: 'in_progress' },
+        {
+          uid: 't-none',
+          id: '99',
+          sessionId: '',
+          session: null,
+          subject: 'No session task',
+          status: 'in_progress',
+        },
       ],
     });
 
@@ -313,6 +336,16 @@ describe('TasksPage', () => {
     });
   });
 
+  it('handles loadState rejecting with non-Error value', async () => {
+    mockApp.loadState.mockRejectedValueOnce('raw string error');
+    renderPage();
+    await waitFor(() => {
+      expect(mockApp.showModal).toHaveBeenCalledWith(
+        expect.objectContaining({ message: 'raw string error' }),
+      );
+    });
+  });
+
   it('handles empty task list', async () => {
     mockApp.loadState.mockResolvedValueOnce({
       tasks: [],
@@ -325,7 +358,12 @@ describe('TasksPage', () => {
 
   it('handles unmounting while loadState is pending', () => {
     let resolveLoad;
-    mockApp.loadState.mockImplementationOnce(() => new Promise(r => { resolveLoad = r; }));
+    mockApp.loadState.mockImplementationOnce(
+      () =>
+        new Promise((r) => {
+          resolveLoad = r;
+        }),
+    );
     const { unmount } = renderPage();
     unmount();
     resolveLoad({ tasks: [] });

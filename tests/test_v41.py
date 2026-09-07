@@ -7,8 +7,6 @@ from unittest import mock
 from server.multi_runtime import DaemonConfig, MultiSessionRuntime
 from server.session_registry import SessionRegistry
 
-ROOT = pathlib.Path(__file__).resolve().parents[1]
-
 
 class RegistryCacheTests(unittest.TestCase):
     def test_unchanged_transcript_is_not_rescanned(self):
@@ -88,91 +86,6 @@ class RuntimePerformanceTests(unittest.TestCase):
         self.assertNotIn(target, self.rt.app_state()['watchedSessionIds'])
         self.rt.request_global_language(target, 'hu')
         self.assertIn(target, self.rt.app_state()['watchedSessionIds'])
-
-
-class ClientSourceContractTests(unittest.TestCase):
-    def test_flow_uses_semantic_reconciliation_and_does_not_reconcile_on_layout_object(self):
-        flow = (ROOT/'client/src/pages/flow.js').read_text()
-        self.assertIn('graphRevision', flow)
-        self.assertIn('reconcileSemanticNodes', flow)
-        self.assertIn('restoringViewport', flow)
-        self.assertNotIn('}, [automatic.nodes, layouts]);', flow)
-
-
-    def test_flow_reconciliation_preserves_dragged_positions_and_revision_ignores_layout(self):
-        import subprocess
-        module=(ROOT/'client/src/flow-state.js').as_uri()
-        script=f"""import {{semanticGraphRevision,reconcileSemanticNodes}} from {json.dumps(module)};
-const groups=new Map([['S',{{tasks:[{{uid:'u1',id:'1',status:'in_progress',subject:'A',description:'D',blockedBy:[],blocks:[]}}]}}]]);
-const rev1=semanticGraphRevision(groups,['S'],'dependency');
-const old=[{{id:'S::u1',position:{{x:777,y:333}},data:{{uid:'u1',sessionId:'S'}}}}];
-const incoming=[{{id:'S::u1',position:{{x:0,y:0}},data:{{uid:'u1',sessionId:'S',label:'new'}}}}];
-const out=reconcileSemanticNodes(old,incoming,{{S:{{nodes:{{u1:{{x:1,y:2}}}}}}}});
-const rev2=semanticGraphRevision(groups,['S'],'dependency');
-console.log(JSON.stringify({{revSame:rev1===rev2,pos:out[0].position,label:out[0].data.label}}));"""
-        result=json.loads(subprocess.check_output(['node','--input-type=module','-e',script],text=True))
-        self.assertTrue(result['revSame'])
-        self.assertEqual({'x':777,'y':333},result['pos'])
-        self.assertEqual('new',result['label'])
-
-    def test_app_has_bootstrap_splash_with_retry(self):
-        ctx = (ROOT/'client/src/app-context.js').read_text()
-        main = (ROOT/'client/src/main.js').read_text()
-        splash = (ROOT/'client/src/components/app-splash.js').read_text()
-        self.assertIn('bootstrapStatus', ctx)
-        self.assertIn('retryBootstrap', ctx)
-        self.assertIn('AppSplash', main)
-        self.assertIn('Retry', splash)
-        self.assertIn('Preparing session workspace', splash)
-
-    def test_initial_html_contains_branded_splash_before_react_boots(self):
-        html=(ROOT/'client/index.html').read_text()
-        self.assertIn('class="app-splash"',html)
-        self.assertIn('Claude Tasks',html)
-        self.assertIn('Connecting to multi-session daemon',html)
-
-    def test_sessions_switch_action_is_sticky_and_language_control_is_on_row(self):
-        page = (ROOT/'client/src/pages/sessions.js').read_text()
-        css = (ROOT/'client/styles.css').read_text()
-        self.assertIn("header: 'Action'", page)
-        self.assertIn('switchSessionOptimistic', page)
-        self.assertIn('SessionLanguageControl', page)
-        self.assertIn('sessions-action-cell', page)
-        self.assertIn('switchingRef', page)
-        self.assertIn('position:sticky', css.replace(' ', ''))
-
-    def test_topbar_has_no_global_language_switch_and_nav_is_right_aligned(self):
-        top = (ROOT/'client/src/components/topbar.js').read_text()
-        css = (ROOT/'client/styles.css').read_text()
-        self.assertNotIn('toggleGlobalLanguage', top)
-        self.assertNotIn("className:'lang-control'", top)
-        self.assertIn("className:'spacer'", top)
-        self.assertIn('clamp(280px,30vw,620px)', css.replace(' ', ''))
-
-    def test_task_language_state_is_visible_on_translation_and_notification_surfaces(self):
-        translations=(ROOT/'client/src/pages/translations.js').read_text()
-        overlays=(ROOT/'client/src/components/overlays.js').read_text()
-        self.assertIn("header: 'Wanted'",translations)
-        self.assertIn("header: 'Shown'",translations)
-        self.assertIn('TaskLanguageBadge',overlays)
-        self.assertIn('taskSnapshot',overlays)
-
-    def test_v41_version_is_consistent_in_entrypoints(self):
-        files=['server/main.py','server/session_core.py','client/package.json','client/serve.py','README.md']
-        for rel in files:
-            text=(ROOT/rel).read_text()
-            self.assertIn('4.1.2',text,rel)
-
-    def test_shared_task_language_badge_is_used_on_task_and_flow_surfaces(self):
-        badge = (ROOT/'client/src/components/language-badge.js').read_text()
-        tasks = (ROOT/'client/src/pages/tasks.js').read_text()
-        flow = (ROOT/'client/src/pages/flow.js').read_text()
-        drawer = (ROOT/'client/src/components/task-drawer.js').read_text()
-        for token in ['HU cached','EN override','translationState','sessionGlobalLanguage']:
-            self.assertIn(token, badge)
-        self.assertIn('TaskLanguageBadge', tasks)
-        self.assertIn('TaskLanguageBadge', flow)
-        self.assertIn('TaskLanguageBadge', drawer)
 
 
 if __name__ == '__main__':

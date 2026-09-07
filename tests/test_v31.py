@@ -3,56 +3,6 @@ import server
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 
-class V31FrontendTests(unittest.TestCase):
-    def test_execution_route_redirects_to_flow_and_nav_removed(self):
-        router=(ROOT/'client/src/router.js').read_text()
-        topbar=(ROOT/'client/src/components/topbar.js').read_text()
-        self.assertIn("path:'/execution'", router)
-        self.assertIn("'/flow'", router)
-        self.assertNotIn("['/execution'", topbar)
-
-    def test_flow_is_draggable_persistent_and_wave_free(self):
-        flow=(ROOT/'client/src/pages/flow.js').read_text()
-        self.assertIn('applyNodeChanges', flow)
-        self.assertIn('onNodeDragStop', flow)
-        self.assertIn('/api/sessions/${encodeURIComponent(sessionId)}/flow-layout', flow)
-        self.assertIn('Reset layout', flow)
-        self.assertNotIn('Wave ', flow)
-        self.assertNotIn('YOU ARE HERE', flow)
-        self.assertNotIn('nodesDraggable:false', flow)
-
-    def test_tasks_status_filter_is_checkbox_multiselect(self):
-        tasks=(ROOT/'client/src/pages/tasks.js').read_text()
-        status=(ROOT/'client/src/components/status-multiselect.js').read_text()
-        self.assertIn('StatusMultiSelect', tasks)
-        self.assertIn("type: 'checkbox'", status)
-        self.assertIn('All', status)
-        self.assertNotIn("['all', 'in_progress'", tasks)
-        self.assertNotIn('Wave ', tasks)
-
-    def test_translations_detail_renders_inline_after_selected_row(self):
-        page=(ROOT/'client/src/pages/translations.js').read_text()
-        self.assertIn('translation-detail-row', page)
-        self.assertIn('colSpan', page)
-        self.assertNotIn("job&&h(JobDetail", page)
-
-    def test_settings_are_split_into_cards(self):
-        page=(ROOT/'client/src/pages/settings.js').read_text()
-        self.assertGreaterEqual(page.count('settings-card'), 2)
-        self.assertIn('Translation provider', page)
-        self.assertIn('Prompt management', page)
-
-    def test_topbar_live_status_is_dot_only_before_logo(self):
-        topbar=(ROOT/'client/src/components/topbar.js').read_text()
-        self.assertIn('connection-dot', topbar)
-        self.assertIn('aria-label', topbar)
-        self.assertNotIn(",a.live)", topbar)
-
-    def test_initial_connecting_state_uses_reconnecting_indicator(self):
-        topbar=(ROOT/'client/src/components/topbar.js').read_text()
-        self.assertIn("a.live==='CONNECTING'", topbar)
-        self.assertIn("?'reconnecting'", topbar)
-
 class V31BackendTests(unittest.TestCase):
     def setUp(self):
         self.tmp=tempfile.TemporaryDirectory(); base=pathlib.Path(self.tmp.name)
@@ -107,8 +57,6 @@ class V31BackendTests(unittest.TestCase):
         self.assertEqual('hu',task['languagePreference'])
         self.assertEqual('hu',task['desiredLanguage'])
 
-if __name__=='__main__': unittest.main()
-
 class V31LanguageFailureTests(unittest.TestCase):
     def setUp(self):
         self.tmp=tempfile.TemporaryDirectory(); base=pathlib.Path(self.tmp.name)
@@ -161,3 +109,7 @@ class V31TranscriptTimelineTests(unittest.TestCase):
                 self.assertEqual('2026-09-05T10:02:00+00:00',life['completedAt'])
                 self.assertEqual('transcript',life['source'])
             finally: rt.close()
+
+
+if __name__ == '__main__':
+    unittest.main()

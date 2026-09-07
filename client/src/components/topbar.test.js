@@ -25,11 +25,7 @@ describe('Topbar component', () => {
 
   function renderTopbar(initialEntries = ['/tasks']) {
     return render(
-      React.createElement(
-        MemoryRouter,
-        { initialEntries },
-        React.createElement(Topbar),
-      ),
+      React.createElement(MemoryRouter, { initialEntries }, React.createElement(Topbar)),
     );
   }
 
@@ -45,18 +41,24 @@ describe('Topbar component', () => {
   it('renders reconnecting status when live is CONNECTING or RECONNECTING', () => {
     mockApp.live = 'CONNECTING';
     const { unmount } = renderTopbar();
-    expect(screen.getByRole('status').getAttribute('title')).toBe('Reconnecting to multi-session daemon');
+    expect(screen.getByRole('status').getAttribute('title')).toBe(
+      'Reconnecting to multi-session daemon',
+    );
     unmount();
 
     mockApp.live = 'RECONNECTING';
     renderTopbar();
-    expect(screen.getByRole('status').getAttribute('title')).toBe('Reconnecting to multi-session daemon');
+    expect(screen.getByRole('status').getAttribute('title')).toBe(
+      'Reconnecting to multi-session daemon',
+    );
   });
 
   it('renders disconnected status when live is any other value', () => {
     mockApp.live = 'CLOSED';
     renderTopbar();
-    expect(screen.getByRole('status').getAttribute('title')).toBe('Disconnected from multi-session daemon');
+    expect(screen.getByRole('status').getAttribute('title')).toBe(
+      'Disconnected from multi-session daemon',
+    );
   });
 
   it('renders session button with label, shortId, and detailed tooltip when session exists', () => {

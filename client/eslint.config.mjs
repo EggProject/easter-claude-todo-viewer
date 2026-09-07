@@ -2,15 +2,27 @@ import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import reactPlugin from 'eslint-plugin-react';
 import reactHooksPlugin from 'eslint-plugin-react-hooks';
+import unicornPlugin from 'eslint-plugin-unicorn';
+import jsxA11yPlugin from 'eslint-plugin-jsx-a11y';
+import eslintConfigPrettier from 'eslint-config-prettier';
 import globals from 'globals';
 
 export default tseslint.config(
   {
-    ignores: ['coverage/**', 'node_modules/**', 'dist/**', 'build/**'],
+    ignores: [
+      'coverage/**',
+      'node_modules/**',
+      'dist/**',
+      'build/**',
+      'src/**/*.js',
+      '!src/**/*.test.js',
+    ],
   },
   js.configs.recommended,
   ...tseslint.configs.strictTypeChecked,
   ...tseslint.configs.stylisticTypeChecked,
+  unicornPlugin.configs['flat/recommended'],
+  jsxA11yPlugin.flatConfigs.recommended,
   {
     languageOptions: {
       globals: {
@@ -51,10 +63,88 @@ export default tseslint.config(
       // JS / TS rules
       'prefer-const': 'error',
       'no-var': 'error',
-      'eqeqeq': ['error', 'always', { null: 'ignore' }],
+      eqeqeq: ['error', 'always', { null: 'ignore' }],
       'no-empty': ['error', { allowEmptyCatch: true }],
       '@typescript-eslint/no-empty-function': ['error', { allow: ['arrowFunctions'] }],
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+      ],
+      '@typescript-eslint/prefer-nullish-coalescing': 'off',
+      '@typescript-eslint/no-confusing-void-expression': 'off',
+      '@typescript-eslint/no-unnecessary-condition': 'off',
+      '@typescript-eslint/no-unnecessary-type-conversion': 'off',
+      '@typescript-eslint/dot-notation': 'off',
+      '@typescript-eslint/array-type': 'off',
+      '@typescript-eslint/no-non-null-assertion': 'error',
+      '@typescript-eslint/consistent-type-assertions': ['error', { assertionStyle: 'never' }],
+      '@typescript-eslint/restrict-template-expressions': 'off',
+      '@typescript-eslint/no-base-to-string': 'off',
+      '@typescript-eslint/no-deprecated': 'off',
+      '@typescript-eslint/no-unused-expressions': [
+        'error',
+        { allowShortCircuit: true, allowTernary: true },
+      ],
+
+      // Unicorn rule overrides
+      'unicorn/prefer-math-constants': 'off',
+      'unicorn/prevent-abbreviations': 'off',
+      'unicorn/no-null': 'off',
+      'unicorn/filename-case': 'off',
+      'unicorn/no-nested-ternary': 'off',
+      'unicorn/logical-assignment-operators': 'off',
+      'unicorn/max-nested-calls': 'off',
+      'unicorn/prefer-global-this': 'off',
+      'unicorn/name-replacements': 'off',
+      'unicorn/explicit-length-check': 'off',
+      'unicorn/prefer-await': 'off',
+      'unicorn/consistent-boolean-name': 'off',
+      'unicorn/no-for-each': 'off',
+      'unicorn/no-array-sort': 'off',
+      'unicorn/prefer-add-event-listener': 'off',
+      'unicorn/no-useless-undefined': 'off',
+      'unicorn/no-await-expression-member': 'off',
+      'unicorn/prefer-simple-condition-first': 'off',
+      'unicorn/no-unreadable-for-of-expression': 'off',
+      'unicorn/no-negated-array-predicate': 'off',
+      'unicorn/no-useless-fallback-in-spread': 'off',
+      'unicorn/prefer-switch': 'off',
+      'unicorn/no-negated-condition': 'off',
+      'unicorn/consistent-function-scoping': 'off',
+      'unicorn/catch-error-name': 'off',
+      'unicorn/no-array-callback-reference': 'off',
+      'unicorn/prefer-query-selector': 'off',
+      'unicorn/consistent-optional-chaining': 'off',
+      'unicorn/prefer-split-limit': 'off',
+      'unicorn/no-declarations-before-early-exit': 'off',
+      'unicorn/prefer-array-find': 'off',
+      'unicorn/prefer-iterator-to-array': 'off',
+      'unicorn/prefer-single-call': 'off',
+      'unicorn/no-break-in-nested-loop': 'off',
+      'unicorn/no-top-level-assignment-in-function': 'off',
+      'unicorn/prefer-promise-with-resolvers': 'off',
+      'unicorn/prefer-at': 'off',
+      'unicorn/no-this-outside-of-class': 'off',
+      'unicorn/better-dom-traversing': 'off',
+      'unicorn/prefer-dom-node-append': 'off',
+      'unicorn/numeric-separators-style': 'off',
+      'unicorn/error-message': 'off',
+      'unicorn/no-nonstandard-builtin-properties': 'off',
+      'unicorn/no-unnecessary-global-this': 'off',
+      'unicorn/prefer-https': 'off',
+      'unicorn/no-typeof-undefined': 'off',
+      'unicorn/prefer-early-return': 'off',
+      'unicorn/no-global-object-property-assignment': 'off',
+      'unicorn/no-top-level-side-effects': 'off',
+      'unicorn/prefer-class-fields': 'off',
+      'unicorn/consistent-class-member-order': 'off',
+      'unicorn/prefer-scoped-selector': 'off',
+      'unicorn/single-line-block-comment-style': 'off',
+      'unicorn/no-useless-coercion': 'off',
+      'unicorn/prefer-string-slice': 'off',
+      'unicorn/number-literal-case': 'off',
+      'unicorn/prefer-code-point': 'off',
+      'unicorn/text-encoding-identifier-case': 'off',
     },
   },
   {
@@ -62,7 +152,7 @@ export default tseslint.config(
     ...tseslint.configs.disableTypeChecked,
   },
   {
-    files: ['**/*.test.js', 'test-setup.js'],
+    files: ['**/*.test.js', '**/*.test.ts', '**/*.test.tsx', 'test-setup.js', 'test-setup.ts'],
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-unsafe-assignment': 'off',
@@ -73,6 +163,7 @@ export default tseslint.config(
       '@typescript-eslint/no-extraneous-class': 'off',
       '@typescript-eslint/no-dynamic-delete': 'off',
       'no-empty': 'off',
+      'unicorn/consistent-function-scoping': 'off',
     },
   },
   {
@@ -82,4 +173,5 @@ export default tseslint.config(
       '@typescript-eslint/no-unsafe-member-access': 'off',
     },
   },
+  eslintConfigPrettier,
 );

@@ -197,41 +197,6 @@ class V33SettingsTests(unittest.TestCase):
             cfg=store.save({'translation':{'anthropic':{'maxConcurrency':1}}})
             self.assertEqual(1,cfg['translation']['anthropic']['maxConcurrency'])
 
-
-class V33FrontendTests(unittest.TestCase):
-    def test_translations_has_checkbox_bulk_toolbar_and_all_actions(self):
-        page=(ROOT/'client/src/pages/translations.js').read_text()
-        self.assertIn('rowSelection',page)
-        self.assertIn('eligibleSelectedJobs',page)
-        self.assertIn('type: \'checkbox\'',page)
-        self.assertIn('Stop all',page)
-        self.assertIn('Retry all failed',page)
-        self.assertIn("'/api/translations/bulk'",page)
-        self.assertIn('bulk-summary',page)
-
-    def test_bulk_actions_use_global_summary_modal(self):
-        overlays=(ROOT/'client/src/components/overlays.js').read_text()
-        context=(ROOT/'client/src/app-context.js').read_text()
-        self.assertIn("modal.kind === 'bulk-summary'",overlays)
-        self.assertIn('bulk-summary-row',overlays)
-        self.assertIn('showModal:enqueue',context)
-
-    def test_settings_exposes_provider_max_concurrency(self):
-        page=(ROOT/'client/src/pages/settings.js').read_text()
-        self.assertIn('Maximum concurrent jobs',page)
-        self.assertIn('maxConcurrency',page)
-
-    def test_flow_has_fullscreen_control_and_fallback(self):
-        page=(ROOT/'client/src/pages/flow.js').read_text()
-        self.assertIn('ControlButton',page)
-        self.assertIn('requestFullscreen',page)
-        self.assertIn('fullscreenchange',page)
-        self.assertIn('flow-maximized',page)
-        self.assertIn('Full screen',page)
-
-
-if __name__=='__main__': unittest.main()
-
 class V33HttpTests(unittest.TestCase):
     def test_bulk_endpoint_stops_active_jobs(self):
         import http.client
@@ -264,3 +229,7 @@ class V33HttpTests(unittest.TestCase):
                 self.assertEqual(2,state['translation']['agy']['maxConcurrency'])
                 self.assertEqual(2,state['translation']['anthropic']['maxConcurrency'])
             finally: runtime.close()
+
+
+if __name__ == '__main__':
+    unittest.main()

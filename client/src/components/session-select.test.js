@@ -6,7 +6,7 @@ import * as reactRouter from 'react-router';
 import { useSessionScope, SessionScopeSelect } from './session-select.js';
 import * as appContextModule from '../app-context.js';
 
-vi.mock('react-router', async importOriginal => {
+vi.mock('react-router', async (importOriginal) => {
   const actual = await importOriginal();
   return {
     ...actual,

@@ -56,9 +56,7 @@ describe('language-badge module', () => {
         label: 'EN override',
         title: 'This task is explicitly English while the session default is Hungarian',
       });
-      expect(
-        languageBadgeSpec({ viewLanguage: 'en', session: { globalLanguage: 'hu' } }),
-      ).toEqual({
+      expect(languageBadgeSpec({ viewLanguage: 'en', session: { globalLanguage: 'hu' } })).toEqual({
         key: 'en-override',
         label: 'EN override',
         title: 'This task is explicitly English while the session default is Hungarian',

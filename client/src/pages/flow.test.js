@@ -13,7 +13,16 @@ let mockRfInstance = {
 
 vi.mock('@xyflow/react', () => {
   return {
-    ReactFlow: ({ nodes, edges, onNodesChange, onNodeDragStop, onMoveEnd, onInit, onNodeClick, children }) => {
+    ReactFlow: ({
+      nodes,
+      edges,
+      onNodesChange,
+      onNodeDragStop,
+      onMoveEnd,
+      onInit,
+      onNodeClick,
+      children,
+    }) => {
       globalThis.__onNodeDragStop = onNodeDragStop;
       globalThis.__onMoveEnd = onMoveEnd;
       React.useEffect(() => {
@@ -23,45 +32,70 @@ vi.mock('@xyflow/react', () => {
       }, [onInit]);
       return React.createElement(
         'div',
-        { 'data-testid': 'mock-react-flow', 'data-node-count': nodes?.length, 'data-edge-count': edges?.length },
+        {
+          'data-testid': 'mock-react-flow',
+          'data-node-count': nodes?.length,
+          'data-edge-count': edges?.length,
+        },
         children,
-        nodes?.map(node =>
+        nodes?.map((node) =>
           React.createElement(
             'div',
             {
               key: node.id,
               'data-testid': `flow-node-${node.id}`,
-              onClick: e => onNodeClick?.(e, node),
+              onClick: (e) => onNodeClick?.(e, node),
               'data-uid': node.data?.uid,
               'data-session': node.data?.sessionId,
             },
             node.data?.label,
-            React.createElement('button', {
-              'data-testid': `drag-${node.id}`,
-              onClick: () => onNodeDragStop?.(null, node),
-            }, 'drag-stop'),
+            React.createElement(
+              'button',
+              {
+                'data-testid': `drag-${node.id}`,
+                onClick: () => onNodeDragStop?.(null, node),
+              },
+              'drag-stop',
+            ),
           ),
         ),
-        React.createElement('button', {
-          'data-testid': 'trigger-move-end',
-          onClick: () => onMoveEnd?.(null, { x: 10, y: 20, zoom: 1.5 }),
-        }, 'move-end'),
-        React.createElement('button', {
-          'data-testid': 'trigger-null-move-end',
-          onClick: () => onMoveEnd?.(null, null),
-        }, 'null-move-end'),
-        React.createElement('button', {
-          'data-testid': 'trigger-invalid-drag',
-          onClick: () => onNodeDragStop?.(null, { data: {} }),
-        }, 'invalid-drag'),
-        React.createElement('button', {
-          'data-testid': 'trigger-nodes-change',
-          onClick: () => onNodesChange?.([{ type: 'position', id: nodes?.[0]?.id }]),
-        }, 'nodes-change'),
+        React.createElement(
+          'button',
+          {
+            'data-testid': 'trigger-move-end',
+            onClick: () => onMoveEnd?.(null, { x: 10, y: 20, zoom: 1.5 }),
+          },
+          'move-end',
+        ),
+        React.createElement(
+          'button',
+          {
+            'data-testid': 'trigger-null-move-end',
+            onClick: () => onMoveEnd?.(null, null),
+          },
+          'null-move-end',
+        ),
+        React.createElement(
+          'button',
+          {
+            'data-testid': 'trigger-invalid-drag',
+            onClick: () => onNodeDragStop?.(null, { data: {} }),
+          },
+          'invalid-drag',
+        ),
+        React.createElement(
+          'button',
+          {
+            'data-testid': 'trigger-nodes-change',
+            onClick: () => onNodesChange?.([{ type: 'position', id: nodes?.[0]?.id }]),
+          },
+          'nodes-change',
+        ),
       );
     },
     Background: () => React.createElement('div', { 'data-testid': 'mock-background' }),
-    Controls: ({ children }) => React.createElement('div', { 'data-testid': 'mock-controls' }, children),
+    Controls: ({ children }) =>
+      React.createElement('div', { 'data-testid': 'mock-controls' }, children),
     ControlButton: ({ onClick, children, ...props }) => {
       globalThis.__toggleFullscreen = onClick;
       return React.createElement('button', { onClick, ...props }, children);
@@ -76,7 +110,7 @@ vi.mock('elkjs/lib/elk.bundled.js', () => {
   return {
     default: class MockELK {
       constructor() {
-        const layoutFn = vi.fn().mockImplementation(async graph => {
+        const layoutFn = vi.fn().mockImplementation(async (graph) => {
           return {
             children: (graph.children || []).map((c, i) => ({
               id: c.id,
@@ -93,7 +127,7 @@ vi.mock('elkjs/lib/elk.bundled.js', () => {
 });
 
 let mockSessionScopeOverride = null;
-vi.mock('../components/session-select.js', async importOriginal => {
+vi.mock('../components/session-select.js', async (importOriginal) => {
   const actual = await importOriginal();
   return {
     ...actual,
@@ -118,7 +152,11 @@ vi.mock('../api.js', () => ({
 
 vi.mock('../components/task-drawer.js', () => ({
   TaskDrawer: ({ base, tasks }) =>
-    React.createElement('div', { 'data-testid': 'mock-task-drawer', 'data-base': base, 'data-count': tasks?.length }),
+    React.createElement('div', {
+      'data-testid': 'mock-task-drawer',
+      'data-base': base,
+      'data-count': tasks?.length,
+    }),
 }));
 
 describe('FlowPage', () => {
@@ -208,9 +246,7 @@ describe('FlowPage', () => {
     mockApp = {
       revision: 1,
       currentSessionId: 'sess-1',
-      watchedSessions: [
-        { id: 'sess-1', label: 'Session One', summary: 'Summary One' },
-      ],
+      watchedSessions: [{ id: 'sess-1', label: 'Session One', summary: 'Summary One' }],
       sessionsState: {
         watchedSessionIds: ['sess-1'],
         sessions: [
@@ -235,11 +271,7 @@ describe('FlowPage', () => {
 
   function renderPage(initialEntries = ['/flow']) {
     return render(
-      React.createElement(
-        MemoryRouter,
-        { initialEntries },
-        React.createElement(FlowPage, null),
-      ),
+      React.createElement(MemoryRouter, { initialEntries }, React.createElement(FlowPage, null)),
     );
   }
 
@@ -335,7 +367,7 @@ describe('FlowPage', () => {
 
     // Wait for restoringViewport flag to clear after initial RAF
     await act(async () => {
-      await new Promise(r => setTimeout(r, 60));
+      await new Promise((r) => setTimeout(r, 60));
     });
 
     // Move end
@@ -382,7 +414,12 @@ describe('FlowPage', () => {
 
   it('handles unmounting while flow-layout request is in flight', () => {
     let resolveLayout;
-    vi.mocked(apiModule.getJSON).mockImplementationOnce(() => new Promise(r => { resolveLayout = r; }));
+    vi.mocked(apiModule.getJSON).mockImplementationOnce(
+      () =>
+        new Promise((r) => {
+          resolveLayout = r;
+        }),
+    );
     const { unmount } = renderPage();
     unmount();
     resolveLayout({ nodes: {}, viewport: null });
@@ -430,6 +467,19 @@ describe('FlowPage', () => {
         kind: 'error',
         title: 'Flow could not be loaded',
         message: 'Flow error',
+      });
+    });
+  });
+
+  it('displays error modal when loadState fails with non-Error value', async () => {
+    mockApp.loadState.mockRejectedValueOnce('Raw string flow error');
+    renderPage();
+
+    await waitFor(() => {
+      expect(mockApp.showModal).toHaveBeenCalledWith({
+        kind: 'error',
+        title: 'Flow could not be loaded',
+        message: 'Raw string flow error',
       });
     });
   });
@@ -556,7 +606,7 @@ describe('FlowPage', () => {
 
     // Test move end when restoringViewport is false to trigger postJSON error catch
     await act(async () => {
-      await new Promise(r => setTimeout(r, 60));
+      await new Promise((r) => setTimeout(r, 60));
     });
     const moveEndBtn = screen.getByTestId('trigger-move-end');
     fireEvent.click(moveEndBtn);
@@ -575,10 +625,42 @@ describe('FlowPage', () => {
       initialStatus: 'all',
       initialSort: '',
       tasks: [
-        { uid: 's1:non-num-1', id: 'foo', sessionId: 'sess-1', subject: 'Same Subject', status: 'pending', blockedBy: [], blocks: [] },
-        { uid: 's1:non-num-2', id: 'bar', sessionId: 'sess-1', subject: 'Same Subject', status: 'pending', blockedBy: [], blocks: [] },
-        { uid: 's1:num-1', id: '10', sessionId: 'sess-1', subject: 'Same Subject', status: 'pending', blockedBy: [], blocks: [] },
-        { uid: 's1:num-2', id: '10', sessionId: 'sess-1', subject: 'Same Subject', status: 'pending', blockedBy: [], blocks: [] },
+        {
+          uid: 's1:non-num-1',
+          id: 'foo',
+          sessionId: 'sess-1',
+          subject: 'Same Subject',
+          status: 'pending',
+          blockedBy: [],
+          blocks: [],
+        },
+        {
+          uid: 's1:non-num-2',
+          id: 'bar',
+          sessionId: 'sess-1',
+          subject: 'Same Subject',
+          status: 'pending',
+          blockedBy: [],
+          blocks: [],
+        },
+        {
+          uid: 's1:num-1',
+          id: '10',
+          sessionId: 'sess-1',
+          subject: 'Same Subject',
+          status: 'pending',
+          blockedBy: [],
+          blocks: [],
+        },
+        {
+          uid: 's1:num-2',
+          id: '10',
+          sessionId: 'sess-1',
+          subject: 'Same Subject',
+          status: 'pending',
+          blockedBy: [],
+          blocks: [],
+        },
       ],
     });
 
@@ -606,8 +688,24 @@ describe('FlowPage', () => {
     mockApp.loadState.mockResolvedValueOnce({
       initialStatus: 'all',
       tasks: [
-        { uid: 's1:disc-a', id: 'same-id', sessionId: 'sess-1', subject: 'Disc A', status: 'pending', blockedBy: [], blocks: [] },
-        { uid: 's1:disc-b', id: 'same-id', sessionId: 'sess-1', subject: 'Disc B', status: 'pending', blockedBy: [], blocks: [] },
+        {
+          uid: 's1:disc-a',
+          id: 'same-id',
+          sessionId: 'sess-1',
+          subject: 'Disc A',
+          status: 'pending',
+          blockedBy: [],
+          blocks: [],
+        },
+        {
+          uid: 's1:disc-b',
+          id: 'same-id',
+          sessionId: 'sess-1',
+          subject: 'Disc B',
+          status: 'pending',
+          blockedBy: [],
+          blocks: [],
+        },
       ],
     });
 
@@ -628,8 +726,24 @@ describe('FlowPage', () => {
     mockApp.loadState.mockResolvedValueOnce({
       initialStatus: 'all',
       tasks: [
-        { uid: 's1:c1', id: '1', sessionId: 'sess-1', subject: 'C1', status: 'pending', blocks: ['2'], blockedBy: [] },
-        { uid: 's1:c2', id: '2', sessionId: 'sess-1', subject: 'C2', status: 'pending', blocks: [], blockedBy: ['1'] },
+        {
+          uid: 's1:c1',
+          id: '1',
+          sessionId: 'sess-1',
+          subject: 'C1',
+          status: 'pending',
+          blocks: ['2'],
+          blockedBy: [],
+        },
+        {
+          uid: 's1:c2',
+          id: '2',
+          sessionId: 'sess-1',
+          subject: 'C2',
+          status: 'pending',
+          blocks: [],
+          blockedBy: ['1'],
+        },
       ],
     });
 
@@ -668,7 +782,7 @@ describe('FlowPage', () => {
         sessionId: 'sess-1',
         session: { label: '', summary: 'Summary Fallback Exceeding Twenty Four Chars' },
         subject: '', // Falsy subject
-        status: '',  // Falsy status
+        status: '', // Falsy status
         blockedBy: [],
         blocks: ['2'],
         lifecycle: { completedAt: '2026-03-01T10:00:00Z' },
@@ -733,7 +847,9 @@ describe('FlowPage', () => {
   it('covers fullscreen toggle with element.requestFullscreen rejection and keydown ignore', async () => {
     const originalRequest = HTMLDivElement.prototype.requestFullscreen;
     try {
-      HTMLDivElement.prototype.requestFullscreen = vi.fn().mockRejectedValue(new Error('Fullscreen denied'));
+      HTMLDivElement.prototype.requestFullscreen = vi
+        .fn()
+        .mockRejectedValue(new Error('Fullscreen denied'));
 
       renderPage();
       await waitFor(() => {
@@ -806,7 +922,12 @@ describe('FlowPage', () => {
 
     // 2. Line 88: layout loading rejection when alive is false (unmounted)
     let rejectLayout;
-    vi.mocked(apiModule.getJSON).mockImplementationOnce(() => new Promise((_, rej) => { rejectLayout = rej; }));
+    vi.mocked(apiModule.getJSON).mockImplementationOnce(
+      () =>
+        new Promise((_, rej) => {
+          rejectLayout = rej;
+        }),
+    );
     const { unmount: unmount2 } = renderPage();
     unmount2();
     rejectLayout(new Error('unmounted layout error'));
@@ -851,7 +972,7 @@ describe('FlowPage', () => {
 
     // Wait for restoringViewport flag to clear after RAF
     await act(async () => {
-      await new Promise(r => setTimeout(r, 60));
+      await new Promise((r) => setTimeout(r, 60));
     });
 
     // onMoveEnd when savedLayouts.current[sessionId] is undefined covers line 123
@@ -975,7 +1096,7 @@ describe('FlowPage', () => {
       expect(screen.getByText('Task graph')).toBeDefined();
     });
     const autoArrangeBtn = screen.getByRole('button', { name: /auto arrange/i });
-    const reactPropKey = Object.keys(autoArrangeBtn).find(k => k.startsWith('__reactProps'));
+    const reactPropKey = Object.keys(autoArrangeBtn).find((k) => k.startsWith('__reactProps'));
     if (reactPropKey) {
       await autoArrangeBtn[reactPropKey].onClick();
     }
@@ -984,7 +1105,12 @@ describe('FlowPage', () => {
 
     // 2. Arranging is already true
     let resolveElk;
-    globalThis.__mockElkLayout = vi.fn().mockImplementation(() => new Promise(res => { resolveElk = res; }));
+    globalThis.__mockElkLayout = vi.fn().mockImplementation(
+      () =>
+        new Promise((res) => {
+          resolveElk = res;
+        }),
+    );
     mockApp.loadState.mockResolvedValueOnce({
       tasks: [...sampleTasks],
     });
@@ -993,7 +1119,7 @@ describe('FlowPage', () => {
       expect(screen.getByText('Connected Task 1')).toBeDefined();
     });
     const autoArrangeBtn2 = screen.getByRole('button', { name: /auto arrange/i });
-    const reactPropKey2 = Object.keys(autoArrangeBtn2).find(k => k.startsWith('__reactProps'));
+    const reactPropKey2 = Object.keys(autoArrangeBtn2).find((k) => k.startsWith('__reactProps'));
     if (reactPropKey2) {
       // First click sets arranging = true
       autoArrangeBtn2[reactPropKey2].onClick();
@@ -1049,15 +1175,19 @@ describe('FlowPage', () => {
       position: { x: 25, y: 35 },
     });
 
-    expect(apiModule.postJSON).toHaveBeenCalledWith(
-      '/api/sessions/sess-1/flow-layout',
-      { nodes: { 'u-no-lane': { x: 25, y: 35 } } },
-    );
+    expect(apiModule.postJSON).toHaveBeenCalledWith('/api/sessions/sess-1/flow-layout', {
+      nodes: { 'u-no-lane': { x: 25, y: 35 } },
+    });
   });
 
   it('covers lines 115 and 123 savedLayouts.current[sessionId] already defined', async () => {
     let resolveGetJSON;
-    vi.mocked(apiModule.getJSON).mockImplementationOnce(() => new Promise(res => { resolveGetJSON = res; }));
+    vi.mocked(apiModule.getJSON).mockImplementationOnce(
+      () =>
+        new Promise((res) => {
+          resolveGetJSON = res;
+        }),
+    );
 
     const { unmount } = renderPage();
 
@@ -1394,8 +1524,83 @@ describe('FlowPage', () => {
     mapGetSpy.mockRestore();
   });
 
+  it('covers shortId truncation with a long session identifier', async () => {
+    const longSessionId = 'very-long-flow-identifier-123456789';
+    mockApp.sessionsState.watchedSessionIds = [longSessionId];
+    mockApp.currentSessionId = longSessionId;
+    mockApp.sessionsState.sessions = [{ id: longSessionId, label: 'Long Session' }];
+
+    const longTask = {
+      uid: 'u-long-sess',
+      id: '1',
+      sessionId: longSessionId,
+      session: { label: 'Long Session' },
+      subject: 'Long Sess Task',
+      status: 'pending',
+      blocks: [],
+      blockedBy: [],
+    };
+
+    mockApp.loadState.mockResolvedValueOnce({
+      tasks: [longTask],
+    });
+
+    renderPage(['/flow']);
+    await waitFor(() => {
+      expect(screen.getByText('very-long-fl…')).toBeDefined();
+    });
+  });
+
+  it('covers shortTime with empty lifecycle and undefined fallback', async () => {
+    let startedCount = 0;
+    const taskEmptyLifecycle = {
+      uid: 'u-empty-lifecycle',
+      id: '1',
+      sessionId: 'sess-empty-lc',
+      session: { label: 'Empty LC' },
+      subject: 'Task Empty Lifecycle',
+      status: 'pending',
+      lifecycle: {},
+      blocks: [],
+      blockedBy: [],
+    };
+    const taskUndefinedStartedAt = {
+      uid: 'u-getter-lifecycle',
+      id: '2',
+      sessionId: 'sess-empty-lc',
+      session: { label: 'Empty LC' },
+      subject: 'Task Getter Lifecycle',
+      status: 'pending',
+      lifecycle: {
+        get startedAt() {
+          startedCount++;
+          return startedCount === 1 ? '2026-03-01T10:00:00Z' : undefined;
+        },
+      },
+      blocks: [],
+      blockedBy: [],
+    };
+
+    mockApp.sessionsState.watchedSessionIds = ['sess-empty-lc'];
+    mockApp.currentSessionId = 'sess-empty-lc';
+    mockApp.sessionsState.sessions = [{ id: 'sess-empty-lc', label: 'Empty LC' }];
+
+    mockApp.loadState.mockResolvedValueOnce({
+      tasks: [taskEmptyLifecycle, taskUndefinedStartedAt],
+    });
+
+    renderPage(['/flow']);
+    await waitFor(() => {
+      expect(screen.getByText('Task Empty Lifecycle')).toBeDefined();
+      expect(screen.getByText('Task Getter Lifecycle')).toBeDefined();
+    });
+  });
+
   describe('flow exported utilities', () => {
     it('nodeId formats taskId correctly', () => {
+      expect(nodeId(undefined)).toBe('session::');
+      expect(nodeId({ sessionId: 's1' })).toBe('s1::');
+      expect(nodeId({ uid: 'u1' })).toBe('session::u1');
       expect(nodeId({ sessionId: 's1', uid: 'u1' })).toBe('s1::u1');
       expect(nodeId({ sessionId: '', uid: 'u2' })).toBe('session::u2');
     });

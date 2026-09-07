@@ -10,9 +10,15 @@ import {
 describe('status-multiselect module', () => {
   describe('normalizeStatusSelection', () => {
     it('returns all status options when value is empty or includes all', () => {
-      expect(normalizeStatusSelection('')).toEqual(new Set(['in_progress', 'pending', 'completed', 'deleted']));
-      expect(normalizeStatusSelection(null)).toEqual(new Set(['in_progress', 'pending', 'completed', 'deleted']));
-      expect(normalizeStatusSelection('all')).toEqual(new Set(['in_progress', 'pending', 'completed', 'deleted']));
+      expect(normalizeStatusSelection('')).toEqual(
+        new Set(['in_progress', 'pending', 'completed', 'deleted']),
+      );
+      expect(normalizeStatusSelection(null)).toEqual(
+        new Set(['in_progress', 'pending', 'completed', 'deleted']),
+      );
+      expect(normalizeStatusSelection('all')).toEqual(
+        new Set(['in_progress', 'pending', 'completed', 'deleted']),
+      );
     });
 
     it('returns filtered set for valid status list', () => {
@@ -56,7 +62,9 @@ describe('status-multiselect module', () => {
       expect(allCheckbox.checked).toBe(false);
 
       fireEvent.click(allCheckbox);
-      expect(onChange).toHaveBeenCalledWith(new Set(['in_progress', 'pending', 'completed', 'deleted']));
+      expect(onChange).toHaveBeenCalledWith(
+        new Set(['in_progress', 'pending', 'completed', 'deleted']),
+      );
     });
 
     it('toggles individual status checkboxes on and off', () => {
@@ -79,7 +87,9 @@ describe('status-multiselect module', () => {
 
     it('closes menu on outside click and Escape key', () => {
       const onChange = vi.fn();
-      const { unmount } = render(React.createElement(StatusMultiSelect, { value: 'all', onChange }));
+      const { unmount } = render(
+        React.createElement(StatusMultiSelect, { value: 'all', onChange }),
+      );
 
       const button = screen.getByRole('button', { name: /Status · All/ });
       fireEvent.click(button);

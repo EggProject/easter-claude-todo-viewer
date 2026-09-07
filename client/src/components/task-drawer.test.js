@@ -27,7 +27,12 @@ describe('TaskDrawer component', () => {
     vi.mocked(appContextModule.useApp).mockReturnValue(mockApp);
   });
 
-  function renderDrawer({ initialEntry = '/tasks/task-1', path = '/tasks/:uid', scopedTasks = null, base = 'tasks' } = {}) {
+  function renderDrawer({
+    initialEntry = '/tasks/task-1',
+    path = '/tasks/:uid',
+    scopedTasks = null,
+    base = 'tasks',
+  } = {}) {
     return render(
       React.createElement(
         MemoryRouter,
@@ -82,16 +87,25 @@ describe('TaskDrawer component', () => {
     ];
     mockApp.state.tasks = tasks;
 
-    const r1 = renderDrawer({ initialEntry: '/tasks/sess-other/task-1', path: '/tasks/:sessionId/:uid' });
+    const r1 = renderDrawer({
+      initialEntry: '/tasks/sess-other/task-1',
+      path: '/tasks/:sessionId/:uid',
+    });
     expect(screen.getByText('Other Session Task')).toBeDefined();
     r1.unmount();
 
-    const r2 = renderDrawer({ initialEntry: '/tasks/sess-unknown/task-1', path: '/tasks/:sessionId/:uid' });
+    const r2 = renderDrawer({
+      initialEntry: '/tasks/sess-unknown/task-1',
+      path: '/tasks/:sessionId/:uid',
+    });
     expect(screen.getByText('Current Session Task')).toBeDefined();
     r2.unmount();
 
     mockApp.currentSessionId = 'sess-none';
-    const r3 = renderDrawer({ initialEntry: '/tasks/sess-unknown/task-1', path: '/tasks/:sessionId/:uid' });
+    const r3 = renderDrawer({
+      initialEntry: '/tasks/sess-unknown/task-1',
+      path: '/tasks/:sessionId/:uid',
+    });
     expect(screen.getByText('Other Session Task')).toBeDefined();
     r3.unmount();
   });
@@ -139,7 +153,9 @@ describe('TaskDrawer component', () => {
     expect(screen.getByText('#100')).toBeDefined(); // missing dependency in byId
     expect(screen.getByText('🌍 Translating')).toBeDefined();
     expect(
-      screen.getByText('Showing current English source until the Hungarian translation is ready.', { exact: false }),
+      screen.getByText('Showing current English source until the Hungarian translation is ready.', {
+        exact: false,
+      }),
     ).toBeDefined();
 
     // Click language switch
@@ -180,7 +196,15 @@ describe('TaskDrawer component', () => {
   });
 
   it('handles translation state labels across all states', () => {
-    const states = ['ready', 'missing', 'queued', 'validating', 'retrying', 'canceling', 'custom_val'];
+    const states = [
+      'ready',
+      'missing',
+      'queued',
+      'validating',
+      'retrying',
+      'canceling',
+      'custom_val',
+    ];
     for (const state of states) {
       const tasks = [
         {
@@ -202,9 +226,7 @@ describe('TaskDrawer component', () => {
   });
 
   it('closes drawer on close button click, backdrop click, and Escape key', () => {
-    const tasks = [
-      { uid: 'task-1', id: '1', sessionId: 'sess-1', subject: 'Close Test' },
-    ];
+    const tasks = [{ uid: 'task-1', id: '1', sessionId: 'sess-1', subject: 'Close Test' }];
 
     const { unmount } = renderDrawer({
       initialEntry: '/tasks/sess-1/task-1',
@@ -265,7 +287,9 @@ describe('TaskDrawer component', () => {
     });
 
     expect(
-      screen.getByText('🇬🇧 Showing current English source until the Hungarian translation is ready.'),
+      screen.getByText(
+        '🇬🇧 Showing current English source until the Hungarian translation is ready.',
+      ),
     ).toBeDefined();
     expect(screen.getByText('unknown_stage')).toBeDefined();
     expect(screen.getByText('🧵 session')).toBeDefined();

@@ -140,10 +140,16 @@ describe('overlays module', () => {
           sessionId: 's1',
           changes: [{ field: 'extra', before: 'x', after: 'y' }],
         },
+        {
+          id: 'ev-custom',
+          kind: 'custom_other',
+          sessionId: 's1',
+          changes: [{ field: 'custom_field', before: '1', after: '2' }],
+        },
       ];
 
       render(React.createElement(NotificationSidebar));
-      expect(screen.getByText('4 matching event(s)')).toBeDefined();
+      expect(screen.getByText('5 matching event(s)')).toBeDefined();
     });
   });
 
@@ -162,8 +168,14 @@ describe('overlays module', () => {
             id: 'ev-1',
             taskId: '42',
             title: 'Refactor Auth',
-            taskSnapshot: { viewLanguage: 'hu', effectiveLanguage: 'hu', translationState: 'ready' },
-            changes: [{ field: 'status', label: 'Status', before: 'pending', after: 'in_progress' }],
+            taskSnapshot: {
+              viewLanguage: 'hu',
+              effectiveLanguage: 'hu',
+              translationState: 'ready',
+            },
+            changes: [
+              { field: 'status', label: 'Status', before: 'pending', after: 'in_progress' },
+            ],
           },
         ],
       };
@@ -203,7 +215,9 @@ describe('overlays module', () => {
       expect(screen.getByText('Task #99 could not be translated')).toBeDefined();
       expect(screen.getByText('Ollama timed out during translation')).toBeDefined();
       expect(
-        screen.getByText('Run the server with --log-output --log-file for detailed diagnostics.', { exact: false }),
+        screen.getByText('Run the server with --log-output --log-file for detailed diagnostics.', {
+          exact: false,
+        }),
       ).toBeDefined();
     });
 
@@ -220,7 +234,11 @@ describe('overlays module', () => {
           skippedActive: 1,
           skippedTerminal: 1,
           errors: [
-            { sessionId: 'sess-long-string-to-compact-properly', jobId: 'job-1', message: 'API rate limit' },
+            {
+              sessionId: 'sess-long-string-to-compact-properly',
+              jobId: 'job-1',
+              message: 'API rate limit',
+            },
           ],
         },
       };
@@ -308,7 +326,9 @@ describe('overlays module', () => {
     it('covers formatDate with throw/invalid date and compact formatting', () => {
       mockApp.sidebar = true;
       const throwingDateObj = {
-        toString() { throw new Error('date toString fail'); },
+        toString() {
+          throw new Error('date toString fail');
+        },
       };
       // Date spy to force catch in formatDate
       const spy = vi.spyOn(Date.prototype, 'toLocaleString').mockImplementationOnce(() => {
@@ -492,6 +512,31 @@ describe('overlays module', () => {
 
       render(React.createElement(RequiredModal));
       expect(screen.getByText('Errors · 1')).toBeDefined();
+    });
+
+    it('renders bulk summary errors with missing sessionId, missing jobId, and missing message', () => {
+      expect.extend({
+        toBeInTheDocument(received) {
+          const pass = Boolean(
+            received && received.ownerDocument && received.ownerDocument.body.contains(received),
+          );
+          return {
+            pass,
+            message: () => `expected element ${pass ? 'not ' : ''}to be in document`,
+          };
+        },
+      });
+
+      mockApp.modal = {
+        kind: 'bulk-summary',
+        summary: {
+          selected: 1,
+          errors: [{}],
+        },
+      };
+
+      render(React.createElement(RequiredModal));
+      expect(screen.getByText(/job:/)).toBeInTheDocument();
     });
   });
 });

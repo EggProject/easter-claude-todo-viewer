@@ -7,7 +7,8 @@ export default defineConfig({
     setupFiles: ['./test-setup.js'],
     coverage: {
       provider: 'v8',
-      include: ['src/**/*.{js,jsx}'],
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: ['src/**/*.test.*'],
       reporter: ['text', 'html', 'json-summary', 'json'],
       thresholds: {
         lines: 100,

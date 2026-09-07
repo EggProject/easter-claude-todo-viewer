@@ -16,11 +16,11 @@ vi.mock('../api.js', () => ({
 
 let capturedTableOptions;
 let mockPlaceholderHeader = false;
-vi.mock('@tanstack/react-table', async importOriginal => {
+vi.mock('@tanstack/react-table', async (importOriginal) => {
   const actual = await importOriginal();
   return {
     ...actual,
-    useReactTable: options => {
+    useReactTable: (options) => {
       capturedTableOptions = options;
       const table = actual.useReactTable(options);
       if (mockPlaceholderHeader) {
@@ -29,7 +29,7 @@ vi.mock('@tanstack/react-table', async importOriginal => {
           ...table,
           getHeaderGroups: () => {
             const groups = origGetHeaderGroups();
-            return groups.map(g => ({
+            return groups.map((g) => ({
               ...g,
               headers: g.headers.map((hdr, i) => (i === 0 ? { ...hdr, isPlaceholder: true } : hdr)),
             }));
@@ -311,14 +311,14 @@ describe('TranslationsPage', () => {
     fireEvent.click(expandBtn2);
 
     const stopBtns = screen.getAllByRole('button', { name: '■ Stop' });
-    const rowStopBtn = stopBtns.find(b => b.closest('.actions'));
+    const rowStopBtn = stopBtns.find((b) => b.closest('.actions'));
     expect(rowStopBtn).toBeDefined();
     fireEvent.click(rowStopBtn);
     expect(mockApp.cancelJob).toHaveBeenCalledWith('sess-2', 'job-3');
 
     // Retry validation_failed job (job-2)
     const retryBtns = screen.getAllByRole('button', { name: '↻ Retry' });
-    const rowRetryBtn = retryBtns.find(b => b.closest('.actions'));
+    const rowRetryBtn = retryBtns.find((b) => b.closest('.actions'));
     expect(rowRetryBtn).toBeDefined();
     fireEvent.click(rowRetryBtn);
     expect(mockApp.retryJob).toHaveBeenCalledWith('sess-1', 'job-2');
@@ -326,10 +326,16 @@ describe('TranslationsPage', () => {
     // Delete job (job-1) with confirm
     const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
     const deleteBtns = screen.getAllByRole('button', { name: '🗑 Delete' });
-    const rowDeleteBtn = deleteBtns.find(b => b.closest('.actions'));
+    const rowDeleteBtn = deleteBtns.find((b) => b.closest('.actions'));
     expect(rowDeleteBtn).toBeDefined();
     fireEvent.click(rowDeleteBtn);
     expect(mockApp.deleteJob).toHaveBeenCalledWith('sess-1', 'job-1');
+
+    // Cancel delete job when confirm returns false
+    confirmSpy.mockReturnValue(false);
+    mockApp.deleteJob.mockClear();
+    fireEvent.click(rowDeleteBtn);
+    expect(mockApp.deleteJob).not.toHaveBeenCalled();
 
     // View job
     const viewBtns = screen.getAllByRole('button', { name: '👁 View' });
@@ -371,7 +377,9 @@ describe('TranslationsPage', () => {
     renderPage();
 
     // Select all visible rows via header checkbox
-    const headerCheckbox = screen.getByRole('checkbox', { name: 'Select all visible task translation rows' });
+    const headerCheckbox = screen.getByRole('checkbox', {
+      name: 'Select all visible task translation rows',
+    });
     fireEvent.click(headerCheckbox);
 
     // Expand tasks so versions are visible and select individual version
@@ -380,7 +388,7 @@ describe('TranslationsPage', () => {
 
     // Trigger bulk retry on selected
     const retryBtns = screen.getAllByRole('button', { name: '↻ Retry' });
-    const bulkRetryBtn = retryBtns.find(b => b.closest('.bulk-actions'));
+    const bulkRetryBtn = retryBtns.find((b) => b.closest('.bulk-actions'));
     expect(bulkRetryBtn).toBeDefined();
     fireEvent.click(bulkRetryBtn);
 
@@ -393,7 +401,7 @@ describe('TranslationsPage', () => {
 
     // Trigger bulk stop on selected
     const stopBtns = screen.getAllByRole('button', { name: '■ Stop' });
-    const bulkStopBtn = stopBtns.find(b => b.closest('.bulk-actions'));
+    const bulkStopBtn = stopBtns.find((b) => b.closest('.bulk-actions'));
     expect(bulkStopBtn).toBeDefined();
     fireEvent.click(bulkStopBtn);
 
@@ -407,7 +415,7 @@ describe('TranslationsPage', () => {
     // Trigger bulk delete on selected with confirm
     const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
     const deleteBtns = screen.getAllByRole('button', { name: '🗑 Delete' });
-    const bulkDeleteBtn = deleteBtns.find(b => b.closest('.bulk-actions'));
+    const bulkDeleteBtn = deleteBtns.find((b) => b.closest('.bulk-actions'));
     expect(bulkDeleteBtn).toBeDefined();
     fireEvent.click(bulkDeleteBtn);
 
@@ -469,15 +477,20 @@ describe('TranslationsPage', () => {
     renderPage();
 
     // Select all to enable bulk buttons
-    const headerCheckbox = screen.getByRole('checkbox', { name: 'Select all visible task translation rows' });
+    const headerCheckbox = screen.getByRole('checkbox', {
+      name: 'Select all visible task translation rows',
+    });
     fireEvent.click(headerCheckbox);
 
     const deleteBtns = screen.getAllByRole('button', { name: '🗑 Delete' });
-    const bulkDeleteBtn = deleteBtns.find(b => b.closest('.bulk-actions'));
+    const bulkDeleteBtn = deleteBtns.find((b) => b.closest('.bulk-actions'));
     expect(bulkDeleteBtn).toBeDefined();
     fireEvent.click(bulkDeleteBtn);
 
-    expect(apiModule.postJSON).not.toHaveBeenCalledWith('/api/translations/bulk', expect.objectContaining({ action: 'delete' }));
+    expect(apiModule.postJSON).not.toHaveBeenCalledWith(
+      '/api/translations/bulk',
+      expect.objectContaining({ action: 'delete' }),
+    );
     confirmSpy.mockRestore();
   });
 
@@ -487,7 +500,10 @@ describe('TranslationsPage', () => {
 
     const stopAllBtn = screen.getByRole('button', { name: '■ Stop all' });
     fireEvent.click(stopAllBtn);
-    expect(apiModule.postJSON).toHaveBeenCalledWith('/api/translations/bulk', expect.objectContaining({ action: 'stop_all' }));
+    expect(apiModule.postJSON).toHaveBeenCalledWith(
+      '/api/translations/bulk',
+      expect.objectContaining({ action: 'stop_all' }),
+    );
   });
 
   it('handles active job duration without finishedAt, formatDate error, and rowSelection cleanup', () => {
@@ -564,9 +580,9 @@ describe('TranslationsPage', () => {
   it('handles function updater for table onGlobalFilterChange and onSortingChange and row selection cleanup', () => {
     const { rerender } = renderPage();
     act(() => {
-      capturedTableOptions.onGlobalFilterChange(old => 'func-query');
-      capturedTableOptions.onSortingChange(old => [{ id: 'taskId', desc: true }]);
-      capturedTableOptions.onRowSelectionChange(old => ({
+      capturedTableOptions.onGlobalFilterChange((old) => 'func-query');
+      capturedTableOptions.onSortingChange((old) => [{ id: 'taskId', desc: true }]);
+      capturedTableOptions.onRowSelectionChange((old) => ({
         'job:sess-1:job-1': true,
         'task:sess-1:task-u1': true,
         'orphan-id': true,
@@ -673,12 +689,12 @@ describe('TranslationsPage', () => {
 
   it('covers runBulk when bulkBusy is true and line 92 summary fallback', async () => {
     let resolveBulk;
-    const bulkPromise = new Promise(r => { resolveBulk = r; });
+    const bulkPromise = new Promise((r) => {
+      resolveBulk = r;
+    });
     apiModule.postJSON.mockImplementationOnce(() => bulkPromise);
 
-    mockApp.jobs = [
-      { id: 'j-active', sessionId: 'sess-1', status: 'translating' },
-    ];
+    mockApp.jobs = [{ id: 'j-active', sessionId: 'sess-1', status: 'translating' }];
     mockApp.translationCatalog = [
       {
         kind: 'task',
@@ -694,7 +710,7 @@ describe('TranslationsPage', () => {
     fireEvent.click(stopAllBtn); // Sets bulkBusy = true
 
     // Click again while bulkBusy is true to cover line 86 if (bulkBusy) return;
-    const propsKey = Object.keys(stopAllBtn).find(k => k.startsWith('__reactProps'));
+    const propsKey = Object.keys(stopAllBtn).find((k) => k.startsWith('__reactProps'));
     if (propsKey && stopAllBtn[propsKey]?.onClick) {
       stopAllBtn[propsKey].onClick();
     }
@@ -776,7 +792,7 @@ describe('TranslationsPage', () => {
       },
     ];
 
-    const makeRow = r => ({
+    const makeRow = (r) => ({
       original: r,
       getValue: () => '',
       getIsSelected: () => false,
@@ -790,12 +806,12 @@ describe('TranslationsPage', () => {
 
     for (const col of columns) {
       if (col.accessorFn) {
-        taskRows.forEach(r => col.accessorFn({ ...r, original: r }));
-        versionRows.forEach(r => col.accessorFn({ ...r, original: r }));
+        taskRows.forEach((r) => col.accessorFn({ ...r, original: r }));
+        versionRows.forEach((r) => col.accessorFn({ ...r, original: r }));
       }
       if (col.cell) {
-        taskRows.forEach(r => col.cell({ row: makeRow(r) }));
-        versionRows.forEach(r => col.cell({ row: makeRow(r) }));
+        taskRows.forEach((r) => col.cell({ row: makeRow(r) }));
+        versionRows.forEach((r) => col.cell({ row: makeRow(r) }));
       }
     }
   });
@@ -834,11 +850,11 @@ describe('TranslationsPage', () => {
     expect(screen.getByText('sess-id-only')).toBeDefined();
 
     // Call onSortingChange with function and non-function
-    capturedTableOptions.onSortingChange(prev => [{ id: 'taskId', desc: true }]);
+    capturedTableOptions.onSortingChange((prev) => [{ id: 'taskId', desc: true }]);
     capturedTableOptions.onSortingChange([{ id: 'taskId', desc: false }]);
 
     // Call onGlobalFilterChange with function and non-function
-    capturedTableOptions.onGlobalFilterChange(prev => 'fn-filter');
+    capturedTableOptions.onGlobalFilterChange((prev) => 'fn-filter');
     capturedTableOptions.onGlobalFilterChange('direct-filter');
 
     // Test globalFilterFn with empty/null filterValue
@@ -871,7 +887,10 @@ describe('TranslationsPage', () => {
         children: null,
       },
     ];
-    const { unmount: unmountNotFound } = renderPage('/translations/sess-1/job-nonexistent', '/translations/:sessionId/:jobId');
+    const { unmount: unmountNotFound } = renderPage(
+      '/translations/sess-1/job-nonexistent',
+      '/translations/:sessionId/:jobId',
+    );
     expect(screen.getByText('Task translation history')).toBeDefined();
     unmountNotFound();
 
@@ -895,7 +914,10 @@ describe('TranslationsPage', () => {
       },
     ];
     mockApp.jobs = [targetJob];
-    const { unmount: unmountFound } = renderPage('/translations/sess-1/job-found-target', '/translations/:sessionId/:jobId');
+    const { unmount: unmountFound } = renderPage(
+      '/translations/sess-1/job-found-target',
+      '/translations/:sessionId/:jobId',
+    );
     expect(screen.getByText('🔬 TRANSLATION DEBUG')).toBeDefined();
     unmountFound();
   });
@@ -1015,7 +1037,10 @@ describe('TranslationsPage', () => {
     ];
     mockApp.jobs = [complexJob];
 
-    const { unmount } = renderPage('/translations/sess-1/job-complex', '/translations/:sessionId/:jobId');
+    const { unmount } = renderPage(
+      '/translations/sess-1/job-complex',
+      '/translations/:sessionId/:jobId',
+    );
     expect(screen.getByText('🔬 TRANSLATION DEBUG')).toBeDefined();
     unmount();
   });
@@ -1077,11 +1102,17 @@ describe('TranslationsPage', () => {
     ];
     mockApp.jobs = [jobWithFinished, jobTimings];
 
-    const { unmount: unmount1 } = renderPage('/translations/sess-1/job-finished', '/translations/:sessionId/:jobId');
+    const { unmount: unmount1 } = renderPage(
+      '/translations/sess-1/job-finished',
+      '/translations/:sessionId/:jobId',
+    );
     expect(screen.getByText('🔬 TRANSLATION DEBUG')).toBeDefined();
     unmount1();
 
-    const { unmount } = renderPage('/translations/sess-1/job-timings', '/translations/:sessionId/:jobId');
+    const { unmount } = renderPage(
+      '/translations/sess-1/job-timings',
+      '/translations/:sessionId/:jobId',
+    );
     expect(screen.getByText('🔬 TRANSLATION DEBUG')).toBeDefined();
     unmount();
 
@@ -1109,8 +1140,58 @@ describe('TranslationsPage', () => {
     ];
     mockApp.jobs = [jobNoStart];
 
-    const { unmount: unmount2 } = renderPage('/translations/sess-1/job-no-start', '/translations/:sessionId/:jobId');
+    const { unmount: unmount2 } = renderPage(
+      '/translations/sess-1/job-no-start',
+      '/translations/:sessionId/:jobId',
+    );
     expect(screen.getByText('🔬 TRANSLATION DEBUG')).toBeDefined();
     unmount2();
+  });
+
+  it('covers debug drawer with attempt missing validator and structured object payloads', () => {
+    const jobWithObjectPayloads = {
+      id: 'job-obj-payload',
+      sessionId: 'sess-1',
+      taskId: 'task-obj',
+      kind: 'version',
+      status: 'completed',
+      startedAt: '2026-01-01T00:00:00Z',
+      finishedAt: '2026-01-01T00:00:05Z',
+      durationSeconds: 5,
+      attempts: [
+        {
+          index: 1,
+          translator: {
+            agentInstructions: { role: 'translator' },
+            exactPrompt: { text: 'Translate prompt' },
+            rawResponse: { payload: 123 },
+            durationSeconds: 2.5,
+            usage: { totalTokens: 100 },
+          },
+        },
+      ],
+    };
+
+    mockApp.translationCatalog = [
+      {
+        kind: 'task',
+        sessionId: 'sess-1',
+        uid: 't-obj',
+        taskId: '1',
+        children: [jobWithObjectPayloads],
+      },
+    ];
+    mockApp.jobs = [jobWithObjectPayloads];
+
+    const { unmount } = renderPage(
+      '/translations/sess-1/job-obj-payload',
+      '/translations/:sessionId/:jobId',
+    );
+    expect(screen.getByText('🔬 TRANSLATION DEBUG')).toBeDefined();
+    expect(
+      screen.getByText('Skipped — deterministic precheck rejected this candidate.'),
+    ).toBeDefined();
+    expect(screen.getByText('🧰 Raw provider payload · developer view')).toBeDefined();
+    unmount();
   });
 });

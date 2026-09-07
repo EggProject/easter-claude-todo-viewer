@@ -41,7 +41,11 @@ describe('flow-state module', () => {
         ['sess-partial', { tasks: [{ uid: 'p:1', id: '1' }] }],
       ]);
 
-      const rev = semanticGraphRevision(groups, ['sess-empty', 'sess-missing', 'sess-partial'], 'asc');
+      const rev = semanticGraphRevision(
+        groups,
+        ['sess-empty', 'sess-missing', 'sess-partial'],
+        'asc',
+      );
       const parsed = JSON.parse(rev);
       expect(parsed.payload[0][1]).toEqual([]);
       expect(parsed.payload[1][1]).toEqual([]);
@@ -57,12 +61,8 @@ describe('flow-state module', () => {
     });
 
     it('preserves position of previously placed nodes', () => {
-      const previous = [
-        { id: 'node-1', position: { x: 100, y: 200 } },
-      ];
-      const incoming = [
-        { id: 'node-1', position: { x: 0, y: 0 }, data: { uid: 'u1' } },
-      ];
+      const previous = [{ id: 'node-1', position: { x: 100, y: 200 } }];
+      const incoming = [{ id: 'node-1', position: { x: 0, y: 0 }, data: { uid: 'u1' } }];
 
       const result = reconcileSemanticNodes(previous, incoming, {});
       expect(result[0].position).toEqual({ x: 100, y: 200 });

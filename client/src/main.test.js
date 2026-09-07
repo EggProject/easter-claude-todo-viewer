@@ -1,6 +1,6 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, fireEvent } from '@testing-library/react';
 
 describe('main module and BootstrapGate', () => {
   let rootContainer;
@@ -29,7 +29,12 @@ describe('main module and BootstrapGate', () => {
     }));
 
     vi.doMock('./components/app-splash.js', () => ({
-      AppSplash: ({ error }) => React.createElement('div', { 'data-testid': 'splash-error' }, String(error)),
+      AppSplash: ({ error, onRetry }) =>
+        React.createElement(
+          'button',
+          { 'data-testid': 'splash-error', onClick: onRetry },
+          String(error),
+        ),
     }));
 
     vi.doMock('./router.js', () => ({
@@ -42,6 +47,9 @@ describe('main module and BootstrapGate', () => {
       expect(screen.getByTestId('splash-error')).toBeDefined();
       expect(screen.getByText('Connection refused')).toBeDefined();
     });
+
+    fireEvent.click(screen.getByTestId('splash-error'));
+    expect(retryBootstrap).toHaveBeenCalled();
   });
 
   it('renders loading splash when bootstrapStatus is loading / not ready', async () => {
@@ -54,7 +62,8 @@ describe('main module and BootstrapGate', () => {
     }));
 
     vi.doMock('./components/app-splash.js', () => ({
-      AppSplash: ({ phase }) => React.createElement('div', { 'data-testid': 'splash-loading' }, phase),
+      AppSplash: ({ phase }) =>
+        React.createElement('div', { 'data-testid': 'splash-loading' }, phase),
     }));
 
     vi.doMock('./router.js', () => ({
@@ -78,11 +87,13 @@ describe('main module and BootstrapGate', () => {
     }));
 
     vi.doMock('./components/app-splash.js', () => ({
-      AppSplash: ({ phase }) => React.createElement('div', { 'data-testid': 'splash-loading' }, phase),
+      AppSplash: ({ phase }) =>
+        React.createElement('div', { 'data-testid': 'splash-loading' }, phase),
     }));
 
     vi.doMock('./router.js', () => ({
-      default: () => React.createElement('div', { 'data-testid': 'active-router' }, 'Active Router'),
+      default: () =>
+        React.createElement('div', { 'data-testid': 'active-router' }, 'Active Router'),
     }));
 
     await import('./main.js');
@@ -90,5 +101,10 @@ describe('main module and BootstrapGate', () => {
     await waitFor(() => {
       expect(screen.getByTestId('active-router')).toBeDefined();
     });
+  });
+
+  it('does not crash when root element is absent', async () => {
+    rootContainer?.remove();
+    await import('./main.js');
   });
 });

@@ -102,7 +102,7 @@ describe('filter-state module', () => {
     it('updates state using functional updater and saves to localStorage', () => {
       const { result } = renderHook(() => usePersistentLocalState('counter', 10));
       act(() => {
-        result.current[1](prev => prev + 5);
+        result.current[1]((prev) => prev + 5);
       });
       expect(result.current[0]).toBe(15);
       expect(JSON.parse(window.localStorage.getItem('counter'))).toBe(15);
@@ -148,6 +148,18 @@ describe('filter-state module', () => {
       expect(result.current[0]).toEqual({ status: 'all' });
     });
 
+    it('ignores non-string values stored in localStorage JSON', () => {
+      window.localStorage.setItem(
+        'claude-todos:filters:tasks',
+        JSON.stringify({ q: 123, sort: true, status: 'in_progress' }),
+      );
+      const defaults = { status: 'all', q: '', sort: 'dependency' };
+      const { result } = renderHook(() => usePersistentPageFilters('tasks', defaults), {
+        wrapper: createWrapper(['/']),
+      });
+      expect(result.current[0]).toEqual({ status: 'in_progress', q: '', sort: 'dependency' });
+    });
+
     it('updates filter, updates localStorage and searchParams', () => {
       const defaults = { status: 'all', sort: 'newest' };
       const { result } = renderHook(
@@ -167,9 +179,9 @@ describe('filter-state module', () => {
 
       expect(result.current.filters.status).toBe('in_progress');
       expect(result.current.searchParams.get('status')).toBe('in_progress');
-      expect(
-        JSON.parse(window.localStorage.getItem('claude-todos:filters:tasks')),
-      ).toMatchObject({ status: 'in_progress' });
+      expect(JSON.parse(window.localStorage.getItem('claude-todos:filters:tasks'))).toMatchObject({
+        status: 'in_progress',
+      });
     });
 
     it('removes search param when filter value equals default value', () => {

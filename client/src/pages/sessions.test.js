@@ -7,7 +7,7 @@ import * as appContextModule from '../app-context.js';
 import * as tanstackTableModule from '@tanstack/react-table';
 import * as filterStateModule from '../filter-state.js';
 
-vi.mock('@tanstack/react-table', async importOriginal => {
+vi.mock('@tanstack/react-table', async (importOriginal) => {
   const actual = await importOriginal();
   return {
     ...actual,
@@ -83,10 +83,10 @@ describe('SessionsPage', () => {
     {
       id: 'session-no-label',
       label: '',
-      summary: 'No label summary',
-      cwd: '/home/user/project-delta',
-      gitBranch: 'feature/delta',
-      firstPrompt: 'Delta prompt',
+      summary: '',
+      cwd: '',
+      gitBranch: '',
+      firstPrompt: '',
       watched: false,
       current: false,
       globalLanguage: 'en',
@@ -117,13 +117,7 @@ describe('SessionsPage', () => {
   });
 
   function renderPage() {
-    return render(
-      React.createElement(
-        MemoryRouter,
-        null,
-        React.createElement(SessionsPage, null),
-      ),
-    );
+    return render(React.createElement(MemoryRouter, null, React.createElement(SessionsPage, null)));
   }
 
   it('renders table headers, rows, and session details properly', () => {
@@ -171,7 +165,7 @@ describe('SessionsPage', () => {
   it('handles sorting columns clicking header buttons', () => {
     renderPage();
     const thButtons = screen.getAllByRole('button');
-    const nameHeaderBtn = thButtons.find(b => b.textContent?.includes('Name / summary'));
+    const nameHeaderBtn = thButtons.find((b) => b.textContent?.includes('Name / summary'));
     expect(nameHeaderBtn).toBeDefined();
 
     // Toggle sort on Name / summary
@@ -183,7 +177,7 @@ describe('SessionsPage', () => {
     expect(nameHeaderBtn.textContent).toMatch(/[↑↓]/);
 
     // Toggle other headers like ID, Watch, Created
-    const idHeaderBtn = thButtons.find(b => b.textContent?.includes('Session ID'));
+    const idHeaderBtn = thButtons.find((b) => b.textContent?.includes('Session ID'));
     if (idHeaderBtn) {
       fireEvent.click(idHeaderBtn);
     }
@@ -211,25 +205,55 @@ describe('SessionsPage', () => {
 
   it('handles switching session with optimistic update and guards against double-click', async () => {
     let resolveSwitch;
-    const switchPromise = new Promise(resolve => {
+    const switchPromise = new Promise((resolve) => {
       resolveSwitch = resolve;
     });
     mockApp.switchSessionOptimistic.mockReturnValue(switchPromise);
 
     renderPage();
     const switchButtons = screen.getAllByRole('button', { name: '⇄ Switch' });
-    const betaSwitchBtn = switchButtons[0];
+    const firstSwitchBtn = switchButtons[0];
 
-    // Dispatch two synchronous click events without waiting to simulate native double-click
-    betaSwitchBtn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
-    betaSwitchBtn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+    fireEvent.click(firstSwitchBtn);
 
+    // Verify optimistic update and disabled state guarding against double-click
+    const switchingBtn = screen.getByRole('button', { name: 'Switching…' });
+    expect(switchingBtn.disabled).toBe(true);
     expect(mockApp.switchSessionOptimistic).toHaveBeenCalledTimes(1);
 
     // Resolve switch
-    await act(async () => {
-      resolveSwitch();
-      await switchPromise;
+    resolveSwitch();
+    await waitFor(() => {
+      expect(screen.queryByRole('button', { name: 'Switching…' })).toBeNull();
+    });
+  });
+
+  it('guards against concurrent switch when a switch is already active', async () => {
+    let resolveSwitch;
+    const switchPromise = new Promise((resolve) => {
+      resolveSwitch = resolve;
+    });
+    mockApp.switchSessionOptimistic.mockReturnValue(switchPromise);
+    mockApp.sessionsState.sessions = [
+      { id: 'sess-1', label: 'One', current: true },
+      { id: 'sess-2', label: 'Two', current: false },
+      { id: 'sess-3', label: 'Three', current: false },
+    ];
+
+    renderPage();
+    const switchButtons = screen.getAllByRole('button', { name: '⇄ Switch' });
+    expect(switchButtons).toHaveLength(2);
+
+    fireEvent.click(switchButtons[0]);
+    const nextSwitch = screen.getByRole('button', { name: '⇄ Switch' });
+    fireEvent.click(nextSwitch);
+
+    expect(mockApp.switchSessionOptimistic).toHaveBeenCalledTimes(1);
+    expect(mockApp.switchSessionOptimistic).toHaveBeenCalledWith('sess-2');
+
+    resolveSwitch();
+    await waitFor(() => {
+      expect(screen.queryByRole('button', { name: 'Switching…' })).toBeNull();
     });
   });
 
@@ -290,7 +314,7 @@ describe('SessionsPage', () => {
     let capturedSetFilter;
     vi.spyOn(filterStateModule, 'usePersistentPageFilters').mockImplementation((page, defaults) => {
       const [state, setState] = React.useState(defaults);
-      capturedSetFilter = (key, val) => setState(prev => ({ ...prev, [key]: val }));
+      capturedSetFilter = (key, val) => setState((prev) => ({ ...prev, [key]: val }));
       return [state, capturedSetFilter];
     });
 
@@ -298,33 +322,33 @@ describe('SessionsPage', () => {
     const thButtons = screen.getAllByRole('button');
 
     // Click 'Watch' header to trigger watched accessorFn
-    const watchHeaderBtn = thButtons.find(b => b.textContent?.includes('Watch'));
+    const watchHeaderBtn = thButtons.find((b) => b.textContent?.includes('Watch'));
     if (watchHeaderBtn) {
       fireEvent.click(watchHeaderBtn);
       fireEvent.click(watchHeaderBtn);
     }
 
     // Click 'Current' header to trigger current accessorFn
-    const currentHeaderBtn = thButtons.find(b => b.textContent?.includes('Current'));
+    const currentHeaderBtn = thButtons.find((b) => b.textContent?.includes('Current'));
     if (currentHeaderBtn) {
       fireEvent.click(currentHeaderBtn);
       fireEvent.click(currentHeaderBtn);
     }
 
     // Click 'Language' header to trigger language accessorFn
-    const langHeaderBtn = thButtons.find(b => b.textContent?.includes('Language'));
+    const langHeaderBtn = thButtons.find((b) => b.textContent?.includes('Language'));
     if (langHeaderBtn) {
       fireEvent.click(langHeaderBtn);
       fireEvent.click(langHeaderBtn);
     }
 
     // Click 'Name / summary' to trigger label accessorFn with both label and fallback id
-    const nameHeaderBtn = thButtons.find(b => b.textContent?.includes('Name / summary'));
+    const nameHeaderBtn = thButtons.find((b) => b.textContent?.includes('Name / summary'));
     if (nameHeaderBtn) {
       fireEvent.click(nameHeaderBtn);
     }
 
-    const msgCountBtn = thButtons.find(b => b.textContent?.includes('Messages'));
+    const msgCountBtn = thButtons.find((b) => b.textContent?.includes('Messages'));
     if (msgCountBtn) {
       fireEvent.click(msgCountBtn);
     }
@@ -332,7 +356,7 @@ describe('SessionsPage', () => {
 
   it('verifies switching text is rendered during active session switch', async () => {
     let resolveSwitch;
-    const switchPromise = new Promise(resolve => {
+    const switchPromise = new Promise((resolve) => {
       resolveSwitch = resolve;
     });
     mockApp.switchSessionOptimistic.mockReturnValue(switchPromise);
@@ -344,21 +368,14 @@ describe('SessionsPage', () => {
     // Button text changes to Switching…
     expect(screen.getByRole('button', { name: 'Switching…' })).toBeDefined();
 
-    await act(async () => {
-      resolveSwitch();
-      await switchPromise;
+    resolveSwitch();
+    await waitFor(() => {
+      expect(screen.queryByRole('button', { name: 'Switching…' })).toBeNull();
     });
   });
 
   it('covers non-function setSorting updater, missing label, isPlaceholder header, and null session id', () => {
     let capturedOnSortingChange;
-    vi.mocked(tanstackTableModule.useReactTable).mockImplementationOnce(options => {
-      capturedOnSortingChange = options.onSortingChange;
-      const actualModule = vi.importActual('@tanstack/react-table');
-      // Use original useReactTable implementation
-      const table = tanstackTableModule.useReactTable.getMockImplementation()(options);
-      return table;
-    });
 
     // Test session with empty label and null id
     mockApp.sessionsState.sessions = [
@@ -377,7 +394,7 @@ describe('SessionsPage', () => {
     // Spy to inject placeholder header
     const origUseReactTable = tanstackTableModule.useReactTable;
     let injectedTable = null;
-    vi.mocked(tanstackTableModule.useReactTable).mockImplementation(options => {
+    vi.mocked(tanstackTableModule.useReactTable).mockImplementation((options) => {
       capturedOnSortingChange = options.onSortingChange;
       // Get table instance from normal mock or implementation
       const table = vi.importActual('@tanstack/react-table');

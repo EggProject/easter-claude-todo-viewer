@@ -23,7 +23,7 @@ describe('filter-state SSR', () => {
     }
 
     const html = renderToString(
-      React.createElement(MemoryRouter, { initialEntries: ['/'] }, React.createElement(TestComp))
+      React.createElement(MemoryRouter, { initialEntries: ['/'] }, React.createElement(TestComp)),
     );
 
     expect(html).toContain('default-val:initial');
@@ -44,7 +44,7 @@ describe('filter-state SSR', () => {
       if (!ranRef.current) {
         ranRef.current = true;
         setLocal('updated-val');
-        setLocal(prev => prev + '-functional');
+        setLocal((prev) => prev + '-functional');
       }
       return React.createElement('div', null, local);
     }

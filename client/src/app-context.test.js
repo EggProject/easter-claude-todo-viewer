@@ -1,6 +1,7 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, act, waitFor } from '@testing-library/react';
+import * as appContextModule from './app-context.js';
 import { AppProvider, useApp } from './app-context.js';
 import { EventSourceMock } from '../test-setup.js';
 
@@ -81,7 +82,7 @@ describe('app-context module', () => {
       React.createElement(
         AppProvider,
         null,
-        React.createElement(TestConsumer, { onApp: app => (latestApp = app) }),
+        React.createElement(TestConsumer, { onApp: (app) => (latestApp = app) }),
       ),
     );
 
@@ -96,7 +97,7 @@ describe('app-context module', () => {
   });
 
   it('handles bootstrap when currentSessionId is null', async () => {
-    mockFetch.mockImplementation(async url => {
+    mockFetch.mockImplementation(async (url) => {
       if (String(url).includes('/api/sessions')) {
         return {
           ok: true,
@@ -111,7 +112,7 @@ describe('app-context module', () => {
       React.createElement(
         AppProvider,
         null,
-        React.createElement(TestConsumer, { onApp: app => (latestApp = app) }),
+        React.createElement(TestConsumer, { onApp: (app) => (latestApp = app) }),
       ),
     );
 
@@ -123,7 +124,7 @@ describe('app-context module', () => {
   });
 
   it('sets bootstrap error status when initial session load fails', async () => {
-    mockFetch.mockImplementation(async url => {
+    mockFetch.mockImplementation(async (url) => {
       if (String(url).includes('/api/sessions')) {
         return { ok: false, status: 503, json: async () => ({ error: 'Service Unavailable' }) };
       }
@@ -135,7 +136,7 @@ describe('app-context module', () => {
       React.createElement(
         AppProvider,
         null,
-        React.createElement(TestConsumer, { onApp: app => (latestApp = app) }),
+        React.createElement(TestConsumer, { onApp: (app) => (latestApp = app) }),
       ),
     );
 
@@ -154,7 +155,7 @@ describe('app-context module', () => {
 
   it('handles background heavy data load failure with modal notification', async () => {
     let callCount = 0;
-    mockFetch.mockImplementation(async url => {
+    mockFetch.mockImplementation(async (url) => {
       const urlStr = String(url);
       if (urlStr.includes('/api/history')) {
         callCount++;
@@ -169,7 +170,7 @@ describe('app-context module', () => {
       React.createElement(
         AppProvider,
         null,
-        React.createElement(TestConsumer, { onApp: app => (latestApp = app) }),
+        React.createElement(TestConsumer, { onApp: (app) => (latestApp = app) }),
       ),
     );
 
@@ -185,7 +186,7 @@ describe('app-context module', () => {
       React.createElement(
         AppProvider,
         null,
-        React.createElement(TestConsumer, { onApp: app => (latestApp = app) }),
+        React.createElement(TestConsumer, { onApp: (app) => (latestApp = app) }),
       ),
     );
 
@@ -215,7 +216,7 @@ describe('app-context module', () => {
       React.createElement(
         AppProvider,
         null,
-        React.createElement(TestConsumer, { onApp: app => (latestApp = app) }),
+        React.createElement(TestConsumer, { onApp: (app) => (latestApp = app) }),
       ),
     );
 
@@ -273,7 +274,7 @@ describe('app-context module', () => {
       React.createElement(
         AppProvider,
         null,
-        React.createElement(TestConsumer, { onApp: app => (latestApp = app) }),
+        React.createElement(TestConsumer, { onApp: (app) => (latestApp = app) }),
       ),
     );
 
@@ -289,7 +290,7 @@ describe('app-context module', () => {
     );
 
     // Failure path
-    mockFetch.mockImplementation(async url => {
+    mockFetch.mockImplementation(async (url) => {
       if (String(url).includes('/switch')) {
         return { ok: false, status: 500, json: async () => ({ error: 'Switch rejected' }) };
       }
@@ -308,7 +309,7 @@ describe('app-context module', () => {
       React.createElement(
         AppProvider,
         null,
-        React.createElement(TestConsumer, { onApp: app => (latestApp = app) }),
+        React.createElement(TestConsumer, { onApp: (app) => (latestApp = app) }),
       ),
     );
 
@@ -329,7 +330,7 @@ describe('app-context module', () => {
     });
 
     // Failure path
-    mockFetch.mockImplementation(async url => {
+    mockFetch.mockImplementation(async (url) => {
       if (String(url).includes('/language')) {
         return { ok: false, status: 400, json: async () => ({ error: 'Unsupported language' }) };
       }
@@ -337,7 +338,9 @@ describe('app-context module', () => {
     });
 
     await act(async () => {
-      await expect(latestApp.setSessionLanguage('sess-1', 'invalid')).rejects.toThrow('Unsupported language');
+      await expect(latestApp.setSessionLanguage('sess-1', 'invalid')).rejects.toThrow(
+        'Unsupported language',
+      );
     });
     expect(latestApp.modal?.title).toBe('Session language change failed');
   });
@@ -348,7 +351,7 @@ describe('app-context module', () => {
       React.createElement(
         AppProvider,
         null,
-        React.createElement(TestConsumer, { onApp: app => (latestApp = app) }),
+        React.createElement(TestConsumer, { onApp: (app) => (latestApp = app) }),
       ),
     );
 
@@ -359,8 +362,14 @@ describe('app-context module', () => {
       await latestApp.setSessionWatched('sess-2', true);
       await latestApp.setSessionWatched('sess-2', false);
     });
-    expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining('/api/sessions/sess-2/watch'), expect.objectContaining({ method: 'POST' }));
-    expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining('/api/sessions/sess-2/watch'), expect.objectContaining({ method: 'DELETE' }));
+    expect(mockFetch).toHaveBeenCalledWith(
+      expect.stringContaining('/api/sessions/sess-2/watch'),
+      expect.objectContaining({ method: 'POST' }),
+    );
+    expect(mockFetch).toHaveBeenCalledWith(
+      expect.stringContaining('/api/sessions/sess-2/watch'),
+      expect.objectContaining({ method: 'DELETE' }),
+    );
 
     // cancelSessionLanguage
     await act(async () => {
@@ -407,7 +416,7 @@ describe('app-context module', () => {
       React.createElement(
         AppProvider,
         null,
-        React.createElement(TestConsumer, { onApp: app => (latestApp = app) }),
+        React.createElement(TestConsumer, { onApp: (app) => (latestApp = app) }),
       ),
     );
 
@@ -437,7 +446,7 @@ describe('app-context module', () => {
     });
 
     // Test refreshPrompts with null prompts in response
-    mockFetch.mockImplementation(async url => {
+    mockFetch.mockImplementation(async (url) => {
       if (String(url).includes('/api/prompts')) {
         return { ok: true, json: async () => ({ prompts: null }) };
       }
@@ -465,7 +474,7 @@ describe('app-context module', () => {
     String.prototype.find = Array.prototype.find;
     String.prototype.filter = Array.prototype.filter;
     try {
-      mockFetch.mockImplementation(async url => {
+      mockFetch.mockImplementation(async (url) => {
         if (String(url).includes('/api/sessions')) {
           return {
             ok: true,
@@ -480,7 +489,7 @@ describe('app-context module', () => {
         React.createElement(
           AppProvider,
           null,
-          React.createElement(TestConsumer, { onApp: app => (latestApp = app) }),
+          React.createElement(TestConsumer, { onApp: (app) => (latestApp = app) }),
         ),
       );
 
@@ -512,7 +521,7 @@ describe('app-context module', () => {
       React.createElement(
         AppProvider,
         null,
-        React.createElement(TestConsumer, { onApp: app => (latestApp = app) }),
+        React.createElement(TestConsumer, { onApp: (app) => (latestApp = app) }),
       ),
     );
 
@@ -533,5 +542,138 @@ describe('app-context module', () => {
     await act(async () => {
       await latestApp.setSessionLanguage('sess-1', 'en');
     });
+  });
+
+  it('throws error when useApp is called outside AppProvider', () => {
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const TestComp = () => {
+      appContextModule.useApp();
+      return null;
+    };
+    expect(() => render(React.createElement(TestComp))).toThrow(
+      'useApp must be used within an AppProvider',
+    );
+    consoleSpy.mockRestore();
+  });
+
+  it('covers parse functions with fallback, null, undefined, number, or non-record inputs', () => {
+    const {
+      parseSessionsState,
+      parseAppState,
+      parseHistory,
+      parseJobs,
+      parseCatalog,
+      parseSettings,
+      parsePrompts,
+    } = appContextModule;
+
+    expect(parseSessionsState(null)).toEqual({
+      sessions: [],
+      currentSessionId: null,
+      watchedSessionIds: [],
+    });
+    expect(parseSessionsState(123)).toEqual({
+      sessions: [],
+      currentSessionId: null,
+      watchedSessionIds: [],
+    });
+    expect(parseSessionsState({ sessions: null, watchedSessionIds: null })).toEqual({
+      sessions: [],
+      currentSessionId: null,
+      watchedSessionIds: [],
+    });
+    expect(
+      parseSessionsState({
+        sessions: [{ id: 's1' }],
+        currentSessionId: 's1',
+        watchedSessionIds: ['s1', 123],
+      }),
+    ).toEqual({
+      sessions: [{ id: 's1' }],
+      currentSessionId: 's1',
+      watchedSessionIds: ['s1'],
+    });
+
+    expect(parseAppState(null)).toBeNull();
+    expect(parseAppState(123)).toBeNull();
+    expect(parseAppState({ tasks: [] })).toEqual({ tasks: [] });
+
+    expect(parseHistory(null)).toEqual([]);
+    expect(parseHistory({ history: 'invalid' })).toEqual([]);
+    expect(parseHistory({ history: [{ id: 'h1' }] })).toEqual([{ id: 'h1' }]);
+
+    expect(parseJobs(null)).toEqual([]);
+    expect(parseJobs({ jobs: 'invalid' })).toEqual([]);
+    expect(parseJobs({ jobs: [{ id: 'j1', sessionId: 's1', status: 'completed' }] })).toHaveLength(
+      1,
+    );
+
+    expect(parseCatalog(null)).toEqual([]);
+    expect(parseCatalog({ tasks: 'invalid' })).toEqual([]);
+    expect(parseCatalog({ tasks: [{ kind: 'task', id: '1' }] })).toHaveLength(1);
+
+    expect(parseSettings(null)).toBeNull();
+    expect(parseSettings(123)).toBeNull();
+    expect(parseSettings({ translation: {} })).toEqual({ translation: {} });
+
+    expect(parsePrompts(null)).toEqual([]);
+    expect(parsePrompts({ prompts: 'invalid' })).toEqual([]);
+    expect(parsePrompts({ prompts: [{ id: 'p1' }] })).toEqual([{ id: 'p1' }]);
+  });
+
+  it('formats non-Error string rejection in switchSessionOptimistic and setSessionLanguage', async () => {
+    let latestApp = null;
+    render(
+      React.createElement(
+        AppProvider,
+        null,
+        React.createElement(TestConsumer, { onApp: (app) => (latestApp = app) }),
+      ),
+    );
+
+    await waitFor(() => expect(latestApp.bootstrapStatus).toBe('ready'));
+
+    mockFetch.mockImplementation(async (url) => {
+      const urlStr = String(url);
+      if (urlStr.includes('/api/sessions/sess-fail/switch')) {
+        throw 'Session switch error string';
+      }
+      if (urlStr.includes('/api/sessions/sess-fail/language')) {
+        throw 'Session language error string';
+      }
+      return { ok: true, json: async () => ({}) };
+    });
+
+    await act(async () => {
+      await expect(latestApp.switchSessionOptimistic('sess-fail')).rejects.toBe(
+        'Session switch error string',
+      );
+    });
+
+    expect(latestApp.modal).toEqual(
+      expect.objectContaining({
+        kind: 'error',
+        title: 'Session switch failed',
+        message: 'Session switch error string',
+      }),
+    );
+
+    act(() => {
+      latestApp.acknowledge();
+    });
+
+    await act(async () => {
+      await expect(latestApp.setSessionLanguage('sess-fail', 'hu')).rejects.toBe(
+        'Session language error string',
+      );
+    });
+
+    expect(latestApp.modal).toEqual(
+      expect.objectContaining({
+        kind: 'error',
+        title: 'Session language change failed',
+        message: 'Session language error string',
+      }),
+    );
   });
 });

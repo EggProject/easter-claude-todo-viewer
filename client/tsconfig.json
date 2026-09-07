@@ -7,16 +7,11 @@
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
-    "allowJs": true,
-    "checkJs": false,
-    "noEmit": true,
+    "outDir": "dist",
+    "rootDir": "src",
+    "noEmit": false,
     "skipLibCheck": true,
     "isolatedModules": true
   },
-  "include": [
-    "src/**/*",
-    "vitest.config.js",
-    "test-setup.js",
-    "eslint.config.mjs"
-  ]
+  "include": ["src/**/*.ts", "src/**/*.tsx"]
 }

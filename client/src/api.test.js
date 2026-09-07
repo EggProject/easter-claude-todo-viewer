@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import * as apiModule from './api.js';
 import { API_BASE, apiUrl, api, getJSON, postJSON, patchJSON, deleteJSON } from './api.js';
 
 describe('api module', () => {
@@ -85,6 +86,22 @@ describe('api module', () => {
           },
         }),
       );
+    });
+
+    it('handles Headers instance and entries array in options.headers', async () => {
+      const fetchMock = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({ ok: true }),
+      });
+      vi.stubGlobal('fetch', fetchMock);
+
+      await apiModule.api('/test-headers-instance', {
+        headers: new Headers({ 'x-custom-header': 'value1' }),
+      });
+      await apiModule.api('/test-headers-array', {
+        headers: [['x-custom-header-2', 'value2']],
+      });
     });
 
     it('handles non-json response gracefully', async () => {

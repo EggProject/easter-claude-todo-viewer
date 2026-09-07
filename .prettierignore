@@ -1,0 +1,12 @@
+node_modules
+dist
+coverage
+.turbo
+.agents
+.idea
+docs
+claude_todos
+htmlcov
+pnpm-lock.yaml
+*.md
+client/coverage

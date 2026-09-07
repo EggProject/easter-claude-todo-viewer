@@ -28,7 +28,7 @@ describe('session-select SSR', () => {
     }
 
     const html = renderToString(
-      React.createElement(MemoryRouter, { initialEntries: ['/'] }, React.createElement(TestComp))
+      React.createElement(MemoryRouter, { initialEntries: ['/'] }, React.createElement(TestComp)),
     );
     expect(html).toContain('sess-1');
   });

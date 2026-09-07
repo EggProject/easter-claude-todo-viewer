@@ -92,12 +92,15 @@ describe('SettingsPage', () => {
     fireEvent.click(saveButtons[0]);
 
     await waitFor(() => {
-      expect(apiModule.postJSON).toHaveBeenCalledWith('/api/settings', expect.objectContaining({
-        translation: expect.objectContaining({
-          provider: 'agy',
-          agy: { model: 'omlx-small', maxConcurrency: 4 },
+      expect(apiModule.postJSON).toHaveBeenCalledWith(
+        '/api/settings',
+        expect.objectContaining({
+          translation: expect.objectContaining({
+            provider: 'agy',
+            agy: { model: 'omlx-small', maxConcurrency: 4 },
+          }),
         }),
-      }));
+      );
       expect(screen.getByText('✅ Settings saved')).toBeDefined();
       expect(mockApp.refreshSettings).toHaveBeenCalled();
     });
@@ -132,25 +135,32 @@ describe('SettingsPage', () => {
 
     // Test connection button
     vi.mocked(apiModule.postJSON).mockResolvedValueOnce({
-      models: [{ id: 'claude-3-5-sonnet-20241022' }],
-      count: 1,
+      models: [
+        { id: 'claude-3-5-sonnet-20241022', label: 'Claude 3.5 Sonnet' },
+        { id: 'claude-no-label' },
+      ],
+      count: 0,
     });
     const testBtn = screen.getByRole('button', { name: /Test connection/i });
     fireEvent.click(testBtn);
 
     await waitFor(() => {
-      expect(screen.getByText(/Connection OK/i)).toBeDefined();
+      expect(screen.getByText(/Connection OK · 0 model\(s\)/i)).toBeDefined();
     });
 
     // Refresh models button
     vi.mocked(apiModule.postJSON).mockResolvedValueOnce({
-      models: [{ id: 'claude-3-5-sonnet-20241022' }],
+      models: [
+        { id: 'claude-3-5-sonnet-20241022', label: 'Claude 3.5 Sonnet' },
+        { id: 'claude-no-label' },
+      ],
+      count: 2,
     });
     const refreshBtn = screen.getByRole('button', { name: /Refresh models/i });
     fireEvent.click(refreshBtn);
 
     await waitFor(() => {
-      expect(screen.getByText(/model\(s\) discovered/i)).toBeDefined();
+      expect(screen.getByText(/2 model\(s\) discovered/i)).toBeDefined();
     });
 
     // Save with API key
@@ -159,15 +169,18 @@ describe('SettingsPage', () => {
     fireEvent.click(saveBtn);
 
     await waitFor(() => {
-      expect(apiModule.postJSON).toHaveBeenCalledWith('/api/settings', expect.objectContaining({
-        translation: expect.objectContaining({
-          provider: 'anthropic',
-          anthropic: expect.objectContaining({
-            apiKey: 'sk-ant-test-key',
-            baseUrl: 'https://api.anthropic.com',
+      expect(apiModule.postJSON).toHaveBeenCalledWith(
+        '/api/settings',
+        expect.objectContaining({
+          translation: expect.objectContaining({
+            provider: 'anthropic',
+            anthropic: expect.objectContaining({
+              apiKey: 'sk-ant-test-key',
+              baseUrl: 'https://api.anthropic.com',
+            }),
           }),
         }),
-      }));
+      );
     });
   });
 
@@ -216,9 +229,12 @@ describe('SettingsPage', () => {
     fireEvent.click(savePromptBtn);
 
     await waitFor(() => {
-      expect(apiModule.postJSON).toHaveBeenCalledWith('/api/settings', expect.objectContaining({
-        prompts: { autoMigrate: false },
-      }));
+      expect(apiModule.postJSON).toHaveBeenCalledWith(
+        '/api/settings',
+        expect.objectContaining({
+          prompts: { autoMigrate: false },
+        }),
+      );
     });
   });
 
@@ -258,11 +274,14 @@ describe('SettingsPage', () => {
     fireEvent.click(saveBtn);
 
     await waitFor(() => {
-      expect(apiModule.postJSON).toHaveBeenCalledWith('/api/settings', expect.objectContaining({
-        translation: expect.objectContaining({
-          provider: 'anthropic',
+      expect(apiModule.postJSON).toHaveBeenCalledWith(
+        '/api/settings',
+        expect.objectContaining({
+          translation: expect.objectContaining({
+            provider: 'anthropic',
+          }),
         }),
-      }));
+      );
     });
 
     // Test concurrency input with empty string / clamped values
@@ -278,7 +297,7 @@ describe('SettingsPage', () => {
     vi.mocked(apiModule.getJSON).mockResolvedValueOnce({}); // Covers d.models || [] in line 12
     mockApp.settings = {
       translation: null, // tr fallback
-      prompts: null,     // form.prompts fallback
+      prompts: null, // form.prompts fallback
     };
 
     renderPage();
@@ -303,9 +322,7 @@ describe('SettingsPage', () => {
   it('covers anthropic models without label, empty model, missing d.models, and discover without args', async () => {
     // Model option with no label (triggers m.label || m.id)
     vi.mocked(apiModule.getJSON).mockResolvedValueOnce({
-      models: [
-        { id: 'custom-model-without-label' },
-      ],
+      models: [{ id: 'custom-model-without-label' }],
     });
 
     mockApp.settings = {
@@ -343,7 +360,12 @@ describe('SettingsPage', () => {
 
   it('covers unmounting during anthropic models getJSON fetch', () => {
     let resolveGet;
-    vi.mocked(apiModule.getJSON).mockImplementationOnce(() => new Promise(r => { resolveGet = r; }));
+    vi.mocked(apiModule.getJSON).mockImplementationOnce(
+      () =>
+        new Promise((r) => {
+          resolveGet = r;
+        }),
+    );
 
     mockApp.settings = {
       translation: {
@@ -357,4 +379,3 @@ describe('SettingsPage', () => {
     resolveGet({ models: [] });
   });
 });
-

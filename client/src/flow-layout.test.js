@@ -1,9 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import {
-  numericNodeId,
-  disconnectedColumnCount,
-  packDisconnectedNodes,
-} from './flow-layout.js';
+import { numericNodeId, disconnectedColumnCount, packDisconnectedNodes } from './flow-layout.js';
 
 describe('flow-layout module', () => {
   describe('numericNodeId', () => {
@@ -98,7 +94,7 @@ describe('flow-layout module', () => {
       const result = packDisconnectedNodes(connected, disconnected, 1600, options);
       expect(result).toHaveLength(4);
       // rightEdge = 300 + 200 = 500, startX = 500 + 260 = 760
-      const d1 = result.find(n => n.id === 'd1');
+      const d1 = result.find((n) => n.id === 'd1');
       expect(d1.position.x).toBe(760);
       expect(d1.position.y).toBe(20);
     });

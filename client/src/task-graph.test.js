@@ -23,7 +23,7 @@ describe('task-graph module', () => {
       ];
 
       const graph = buildGraph(tasks);
-      expect(graph.topo.map(t => t.id)).toEqual(['1', '2', '3']);
+      expect(graph.topo.map((t) => t.id)).toEqual(['1', '2', '3']);
       expect(graph.parents.get('s:2').has('s:1')).toBe(true);
       expect(graph.children.get('s:1').has('s:2')).toBe(true);
       expect(graph.ready(tasks[0])).toBe(true); // task 2 has completed parent task 1
@@ -31,9 +31,7 @@ describe('task-graph module', () => {
     });
 
     it('ignores self-referencing and missing target dependency edges', () => {
-      const tasks = [
-        { uid: 's:1', id: '1', storeId: 's', blockedBy: ['1', '999'], blocks: ['1'] },
-      ];
+      const tasks = [{ uid: 's:1', id: '1', storeId: 's', blockedBy: ['1', '999'], blocks: ['1'] }];
       const graph = buildGraph(tasks);
       expect(graph.parents.get('s:1').size).toBe(0);
       expect(graph.children.get('s:1').size).toBe(0);
@@ -47,7 +45,7 @@ describe('task-graph module', () => {
       ];
       const graph = buildGraph(tasks);
       expect(graph.topo).toHaveLength(3);
-      expect(graph.topo.map(t => t.id)).toEqual(['0', '1', '2']);
+      expect(graph.topo.map((t) => t.id)).toEqual(['0', '1', '2']);
     });
 
     it('evaluates ready state with deleted parent tasks and missing parents', () => {
@@ -96,48 +94,54 @@ describe('task-graph module', () => {
 
       const ordered = timelineOrder([t6, t5, t4, t3, t2, t1]);
       // executed tasks come first (t1, t2), then observed tasks (t3, t4), then unexecuted/unobserved (t5, t6)
-      expect(ordered.map(t => t.id)).toEqual(['1', '2', '3', '4', '5', '6']);
+      expect(ordered.map((t) => t.id)).toEqual(['1', '2', '3', '4', '5', '6']);
     });
 
     it('compares execution times when both exist', () => {
       const a = { id: 'a', lifecycle: { startedAt: '2026-02-01' } };
       const b = { id: 'b', lifecycle: { startedAt: '2026-01-01' } };
-      expect(timelineOrder([a, b]).map(t => t.id)).toEqual(['b', 'a']);
+      expect(timelineOrder([a, b]).map((t) => t.id)).toEqual(['b', 'a']);
     });
 
     it('orders unexecuted after executed tasks (!ea && eb branch)', () => {
       const unexecuted = { id: '1' };
       const executed = { id: '2', lifecycle: { startedAt: '2026-01-01' } };
-      expect(timelineOrder([unexecuted, executed]).map(t => t.id)).toEqual(['2', '1']);
+      expect(timelineOrder([unexecuted, executed]).map((t) => t.id)).toEqual(['2', '1']);
     });
 
     it('handles identical execution times falling through to observed time', () => {
-      const a = { id: '1', lifecycle: { startedAt: '2026-01-01', createdAt: '2026-01-01T01:00:00Z' } };
-      const b = { id: '2', lifecycle: { startedAt: '2026-01-01', createdAt: '2026-01-01T02:00:00Z' } };
-      expect(timelineOrder([b, a]).map(t => t.id)).toEqual(['1', '2']);
+      const a = {
+        id: '1',
+        lifecycle: { startedAt: '2026-01-01', createdAt: '2026-01-01T01:00:00Z' },
+      };
+      const b = {
+        id: '2',
+        lifecycle: { startedAt: '2026-01-01', createdAt: '2026-01-01T02:00:00Z' },
+      };
+      expect(timelineOrder([b, a]).map((t) => t.id)).toEqual(['1', '2']);
     });
 
     it('handles one observed time vs none and stable compare fallback', () => {
       const a = { id: 'a', lifecycle: { createdAt: '2026-01-01' } };
       const b = { id: 'b' };
-      expect(timelineOrder([b, a]).map(t => t.id)).toEqual(['a', 'b']);
-      expect(timelineOrder([a, b]).map(t => t.id)).toEqual(['a', 'b']);
+      expect(timelineOrder([b, a]).map((t) => t.id)).toEqual(['a', 'b']);
+      expect(timelineOrder([a, b]).map((t) => t.id)).toEqual(['a', 'b']);
 
       // Non-numeric IDs with identical times
       const nonNumA = { id: 'task-z', lifecycle: { createdAt: '2026-01-01' } };
       const nonNumB = { id: 'task-a', lifecycle: { createdAt: '2026-01-01' } };
-      expect(timelineOrder([nonNumA, nonNumB]).map(t => t.id)).toEqual(['task-a', 'task-z']);
+      expect(timelineOrder([nonNumA, nonNumB]).map((t) => t.id)).toEqual(['task-a', 'task-z']);
 
       // Null task ID fallback
       const nullIdA = { id: null };
       const nullIdB = { id: '1' };
-      expect(timelineOrder([nullIdA, nullIdB]).map(t => t.id)).toEqual([null, '1']);
+      expect(timelineOrder([nullIdA, nullIdB]).map((t) => t.id)).toEqual([null, '1']);
     });
 
     it('falls back to stableTaskCompare when times are identical', () => {
       const a = { id: '2', lifecycle: { createdAt: '2026-01-01' } };
       const b = { id: '1', lifecycle: { createdAt: '2026-01-01' } };
-      expect(timelineOrder([a, b]).map(t => t.id)).toEqual(['1', '2']);
+      expect(timelineOrder([a, b]).map((t) => t.id)).toEqual(['1', '2']);
     });
   });
 
@@ -174,15 +178,15 @@ describe('task-graph module', () => {
       };
 
       const result = partitionFlowTasks(tasks, graph);
-      expect(result.connected.map(t => t.id)).toEqual(['1', '2']);
-      expect(result.disconnected.map(t => t.id)).toEqual(['3']);
+      expect(result.connected.map((t) => t.id)).toEqual(['1', '2']);
+      expect(result.disconnected.map((t) => t.id)).toEqual(['3']);
     });
 
     it('handles empty graph or missing maps', () => {
       const tasks = [{ uid: '1', id: '1' }];
       const result = partitionFlowTasks(tasks, null);
       expect(result.connected).toEqual([]);
-      expect(result.disconnected.map(t => t.id)).toEqual(['1']);
+      expect(result.disconnected.map((t) => t.id)).toEqual(['1']);
     });
   });
 
@@ -203,7 +207,7 @@ describe('task-graph module', () => {
         { uid: 's:3', id: '3', storeId: 's', blockedBy: ['1', '2'], status: 'pending' },
       ];
       const graph = buildGraph(tasks);
-      expect(graph.topo.map(t => t.id)).toEqual(['1', '2', '3']);
+      expect(graph.topo.map((t) => t.id)).toEqual(['1', '2', '3']);
     });
 
     it('covers dynamic uid for children.get || [] fallback', () => {
@@ -252,10 +256,7 @@ describe('task-graph module', () => {
     });
 
     it('covers !ea && eb in timelineOrder', () => {
-      const tasks = [
-        { id: 'e1', lifecycle: { startedAt: '2026-01-01T00:00:00Z' } },
-        { id: 'u1' },
-      ];
+      const tasks = [{ id: 'e1', lifecycle: { startedAt: '2026-01-01T00:00:00Z' } }, { id: 'u1' }];
       const ordered = timelineOrder(tasks);
       expect(ordered[0].id).toBe('e1');
       expect(ordered[1].id).toBe('u1');

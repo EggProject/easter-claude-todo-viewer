@@ -239,6 +239,39 @@ describe('PromptsPage', () => {
     unmount();
   });
 
+  it('handles non-Error string rejection in loading, saving, and restoring prompt', async () => {
+    vi.mocked(apiModule.getJSON).mockRejectedValueOnce('Raw string load error');
+    renderPage('/prompts/task-translator', '/prompts/:promptId');
+
+    await waitFor(() => {
+      expect(screen.getByText('Loading prompt…')).toBeDefined();
+    });
+
+    const { unmount } = renderPage('/prompts/task-translator', '/prompts/:promptId');
+    await waitFor(() => {
+      expect(screen.getByText('🧠 PROMPT EDITOR')).toBeDefined();
+    });
+
+    vi.mocked(apiModule.postJSON).mockRejectedValueOnce('Raw string save error');
+    const saveBtn = screen.getByRole('button', { name: '💾 Save' });
+    fireEvent.click(saveBtn);
+
+    await waitFor(() => {
+      expect(screen.getByText('❌ Raw string save error')).toBeDefined();
+    });
+
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+    vi.mocked(apiModule.postJSON).mockRejectedValueOnce('Raw string restore error');
+    const restoreBtn = screen.getByRole('button', { name: '↩ Restore builtin' });
+    fireEvent.click(restoreBtn);
+
+    await waitFor(() => {
+      expect(screen.getByText('❌ Raw string restore error')).toBeDefined();
+    });
+    confirmSpy.mockRestore();
+    unmount();
+  });
+
   it('renders diff fallback when diff is empty and handles empty conflicts/variables', async () => {
     vi.mocked(apiModule.getJSON).mockResolvedValueOnce({
       id: 'task-clean',
@@ -270,7 +303,12 @@ describe('PromptsPage', () => {
   it('handles unmounting during fetch and null body returns on save/restore', async () => {
     // Unmount during getJSON to trigger if (!active) return
     let resolveGet;
-    vi.mocked(apiModule.getJSON).mockImplementationOnce(() => new Promise(r => { resolveGet = r; }));
+    vi.mocked(apiModule.getJSON).mockImplementationOnce(
+      () =>
+        new Promise((r) => {
+          resolveGet = r;
+        }),
+    );
     const { unmount } = renderPage('/prompts/task-unmount', '/prompts/:promptId');
     unmount();
     resolveGet({ id: 'task-unmount' });
@@ -280,7 +318,7 @@ describe('PromptsPage', () => {
       id: 'task-nullbody',
       status: 'unknown_status_fallback',
       installedVersion: null,
-      body: 'initial',
+      body: null,
     });
     vi.mocked(apiModule.postJSON).mockResolvedValueOnce({ body: null });
 
@@ -314,7 +352,8 @@ describe('PromptsPage', () => {
       body: 'body',
       get conflicts() {
         conflictsAccessCount++;
-        if (conflictsAccessCount === 1) return [{ path: '/conflict.txt', content: 'conflict text' }];
+        if (conflictsAccessCount === 1)
+          return [{ path: '/conflict.txt', content: 'conflict text' }];
         return null;
       },
     };
@@ -325,5 +364,22 @@ describe('PromptsPage', () => {
       expect(screen.getByText('⚠ Migration conflict')).toBeDefined();
     });
     r3.unmount();
+  });
+
+  it('renders prompt detail with null metric values', async () => {
+    vi.mocked(apiModule.getJSON).mockResolvedValueOnce({
+      id: 'task-null-metrics',
+      body: 'Prompt body with null metrics',
+      installedVersion: null,
+      builtinVersion: null,
+      status: null,
+      path: null,
+    });
+
+    const { unmount } = renderPage('/prompts/task-null-metrics', '/prompts/:promptId');
+    await waitFor(() => {
+      expect(screen.getByText('🧠 PROMPT EDITOR')).toBeDefined();
+    });
+    unmount();
   });
 });
