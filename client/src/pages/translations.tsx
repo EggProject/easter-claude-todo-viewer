@@ -14,6 +14,7 @@ import {
   SortingState,
   useReactTable,
 } from '@tanstack/react-table';
+import { Layers, Trash2, Eye, Search, Microscope, Copy, Puzzle, Wrench } from 'lucide-react';
 import { useApp } from '../app-context.js';
 import { postJSON } from '../api.js';
 import {
@@ -204,7 +205,7 @@ export default function TranslationsPage(): ReactElement {
     <div className="page">
       <div className="page-heading">
         <div>
-          <div className="eyebrow">🌍 TRANSLATIONS</div>
+          <div className="eyebrow">TRANSLATIONS</div>
           <h1>Task translation history</h1>
           <p className="muted">
             One parent row per task; expand it to inspect every text-version translation lifecycle.
@@ -234,7 +235,7 @@ export default function TranslationsPage(): ReactElement {
       </div>
       <div className="translation-bulk-toolbar">
         <div className="selection-summary">
-          <strong>{`☑ ${selectedCount.toString()} lifecycle(s) selected`}</strong>
+          <strong>{`${selectedCount.toString()} lifecycle(s) selected`}</strong>
           <span className="muted">{`${visibleLeafCount.toString()} visible lifecycle(s)`}</span>
         </div>
         <div className="bulk-actions">
@@ -255,11 +256,9 @@ export default function TranslationsPage(): ReactElement {
           <button
             className="mini danger ghost"
             disabled={!eligibleSelectedJobs.delete.length || bulkBusy}
-            onClick={() =>
-              void runBulk('delete', eligibleSelectedJobs.delete, '🗑 Delete completed')
-            }
+            onClick={() => void runBulk('delete', eligibleSelectedJobs.delete, 'Delete completed')}
           >
-            🗑 Delete
+            Delete
           </button>
         </div>
         <div className="bulk-actions global-bulk-actions">
@@ -361,7 +360,7 @@ function buildColumns(
             className="session-badge translation-session-badge"
             title={`${label}\n${row.original.sessionId}`}
           >
-            {`🧵 ${compactSession(label)}`}
+            <Layers size={14} strokeWidth={1.75} className="inline-icon" /> {compactSession(label)}
           </span>
         );
       },
@@ -391,13 +390,15 @@ function buildColumns(
       id: 'trigger',
       header: 'Trigger',
       accessorFn: (row) => (row.kind === 'version' ? row.trigger || '' : ''),
-      cell: ({ row }) => (row.original.kind === 'version' ? row.original.trigger || 'none' : 'none'),
+      cell: ({ row }) =>
+        row.original.kind === 'version' ? row.original.trigger || 'none' : 'none',
     },
     {
       id: 'provider',
       header: 'Provider',
       accessorFn: (row) => (row.kind === 'version' ? row.provider || '' : ''),
-      cell: ({ row }) => (row.original.kind === 'version' ? row.original.provider || 'agy' : 'none'),
+      cell: ({ row }) =>
+        row.original.kind === 'version' ? row.original.provider || 'agy' : 'none',
     },
     {
       id: 'model',
@@ -581,7 +582,7 @@ function actionButtons(
           }
         }}
       >
-        🗑 Delete
+        <Trash2 size={16} strokeWidth={1.75} /> Delete
       </button>,
     );
   }
@@ -595,7 +596,7 @@ function actionButtons(
         )
       }
     >
-      👁 View
+      <Eye size={16} strokeWidth={1.75} /> View
     </button>,
   );
   return <div className="actions">{buttons}</div>;
@@ -666,29 +667,31 @@ function JobDetail({ job, onClose }: { job: TranslationJob; onClose: () => void 
     <div className="detail-card">
       <div className="detail-head">
         <div>
-          <div className="eyebrow">🔬 TRANSLATION DEBUG</div>
+          <div className="eyebrow">
+            <Microscope size={14} strokeWidth={1.75} className="inline-icon" /> TRANSLATION DEBUG
+          </div>
           <h2>
             {`Task #${job.taskId} · v${String(job.versionNumber || '?')} · ${statusLabel(job.status)}`}
           </h2>
         </div>
         <button className="icon-btn" onClick={onClose}>
-          ✕
+          Close
         </button>
       </div>
       <div className="detail-grid">
-        {metric('🆔 Job', job.id)}
-        {metric('🧬 Fingerprint', job.textFingerprint)}
-        {metric('🔌 Provider', job.provider || 'agy')}
-        {metric('🤖 Model', job.model)}
-        {metric('🎯 Trigger', job.trigger)}
-        {metric('🔁 Run', job.run || 1)}
-        {metric('⏱ Duration', duration(job))}
+        {metric('Job', job.id)}
+        {metric('Fingerprint', job.textFingerprint)}
+        {metric('Provider', job.provider || 'agy')}
+        {metric('Model', job.model)}
+        {metric('Trigger', job.trigger)}
+        {metric('Run', job.run || 1)}
+        {metric('Duration', duration(job))}
       </div>
       {job.error ? section('❌ Error', job.error, 'error-panel') : null}
       {runs.map((run, runIndex) => (
         <section className="run" key={runIndex}>
           <h3>
-            {`🏃 Run ${(run.run || runIndex + 1).toString()}${runIndex === runs.length - 1 ? ' · current' : ''}${run.trigger ? ` · ${run.trigger}` : ''}`}
+            {`Run ${(run.run || runIndex + 1).toString()}${runIndex === runs.length - 1 ? ' · current' : ''}${run.trigger ? ` · ${run.trigger}` : ''}`}
           </h3>
           {(run.attempts || []).map((attempt, index) => (
             <Attempt attempt={attempt} index={index + 1} key={index} />
@@ -705,37 +708,62 @@ function Attempt({ attempt, index }: { attempt: TranslationAttempt; index: numbe
   return (
     <div className="attempt">
       <h4>{`Attempt ${index.toString()}`}</h4>
-      {section('🌍 Translator instructions', translator.agentInstructions)}
-      {section('✉️ Exact prompt sent', translator.exactPrompt)}
-      {section('📥 Protected source', prettySource(translator.protectedSource))}
-      {section('📤 Exact model output', humanModelOutput(translator, 'translator'))}
-      {rawSection('🧰 Raw provider payload', translator.rawResponse)}
+      {section('Translator instructions', translator.agentInstructions)}
+      {section('Exact prompt sent', translator.exactPrompt)}
+      {section('Protected source', prettySource(translator.protectedSource))}
+      {section('Exact model output', humanModelOutput(translator, 'translator'))}
+      {rawSection(
+        <>
+          <Wrench size={16} strokeWidth={1.75} className="inline-icon" /> Raw provider payload
+        </>,
+        translator.rawResponse,
+      )}
       {section(
-        '🧩 Parsed translation',
+        <>
+          <Puzzle size={16} strokeWidth={1.75} className="inline-icon" /> Parsed translation
+        </>,
         prettyCandidate(translator.parsedCandidateRestored || translator.structuredOutput),
       )}
       {checks(translator.deterministicChecks)}
       {validator && Object.keys(validator).length > 0 ? (
         <>
-          {section('🔎 Validator instructions', validator.agentInstructions)}
-          {section('✉️ Exact validator prompt', validator.exactPrompt)}
-          {section('📤 Exact validator output', humanModelOutput(validator, 'validator'))}
-          {rawSection('🧰 Raw validator provider payload', validator.rawResponse)}
           {section(
-            '🧾 Validator verdict',
+            <>
+              <Search size={16} strokeWidth={1.75} className="inline-icon" /> Validator instructions
+            </>,
+            validator.agentInstructions,
+          )}
+          {section('Exact validator prompt', validator.exactPrompt)}
+          {section('Exact validator output', humanModelOutput(validator, 'validator'))}
+          {rawSection(
+            <>
+              <Wrench size={16} strokeWidth={1.75} className="inline-icon" /> Raw validator provider
+              payload
+            </>,
+            validator.rawResponse,
+          )}
+          {section(
+            <>
+              <Search size={16} strokeWidth={1.75} className="inline-icon" /> Validator verdict
+            </>,
             prettyVerdict(validator.parsedVerdict || validator.structuredOutput),
           )}
         </>
       ) : (
-        section('🔎 Validator', 'Skipped - deterministic precheck rejected this candidate.')
+        section(
+          <>
+            <Search size={16} strokeWidth={1.75} className="inline-icon" /> Validator
+          </>,
+          'Skipped - deterministic precheck rejected this candidate.',
+        )
       )}
       {attempt.issues && attempt.issues.length > 0
-        ? section('⚠ Issues', attempt.issues.map((item) => `• ${item}`).join('\n'), 'warning-panel')
+        ? section('Issues', attempt.issues.map((item) => `• ${item}`).join('\n'), 'warning-panel')
         : null}
       <div className="usage-row">
-        {metric('⏱ Translator', `${Number(translator.durationSeconds || 0).toFixed(2)}s`)}
-        {metric('🧮 Translator tokens', usage(translator.usage))}
-        {validator ? metric('🧮 Validator tokens', usage(validator.usage)) : null}
+        {metric('Translator', `${Number(translator.durationSeconds || 0).toFixed(2)}s`)}
+        {metric('Translator tokens', usage(translator.usage))}
+        {validator ? metric('Validator tokens', usage(validator.usage)) : null}
       </div>
     </div>
   );
@@ -764,15 +792,15 @@ function humanModelOutput(meta: TranslationAgentMeta | undefined, kind: string):
   return typeof meta?.rawResponse === 'string' ? meta.rawResponse : 'none';
 }
 
-function rawSection(title: string, text: unknown): ReactElement | null {
+function rawSection(title: React.ReactNode, text: unknown): ReactElement | null {
   if (text == null || text === '') return null;
   const content = typeof text === 'string' ? text : JSON.stringify(text, null, 2);
   return (
     <details className="diag raw-payload">
-      <summary>{`${title} · developer view`}</summary>
+      <summary>{title} · developer view</summary>
       <div className="diag-title">
         <button className="copy" onClick={() => void navigator.clipboard?.writeText(content)}>
-          📋 Copy raw
+          <Copy size={16} strokeWidth={1.75} /> Copy raw
         </button>
       </div>
       <pre>{content}</pre>
@@ -785,7 +813,7 @@ function checks(
 ): ReactElement | null {
   if (!value) return null;
   return section(
-    value.valid ? '✅ Deterministic checks' : '❌ Deterministic checks',
+    value.valid ? '✅ Deterministic checks passed' : '❌ Deterministic checks failed',
     value.valid
       ? 'All deterministic structure/protected-span checks passed.'
       : (value.issues || []).map((item) => `• ${String(item)}`).join('\n'),
@@ -793,7 +821,7 @@ function checks(
   );
 }
 
-function section(title: string, text: unknown, className = ''): ReactElement | null {
+function section(title: React.ReactNode, text: unknown, className = ''): ReactElement | null {
   if (text == null || text === '') return null;
   const content = typeof text === 'string' ? text : JSON.stringify(text, null, 2);
   return (
@@ -801,7 +829,7 @@ function section(title: string, text: unknown, className = ''): ReactElement | n
       <div className="diag-title">
         {title}
         <button className="copy" onClick={() => void navigator.clipboard?.writeText(content)}>
-          📋 Copy
+          <Copy size={16} strokeWidth={1.75} /> Copy
         </button>
       </div>
       <pre>{content}</pre>
@@ -841,10 +869,10 @@ const prettyVerdict = (value: unknown): string => {
 const statusLabel = (status: string | undefined = ''): string => {
   const labels: Record<string, string> = {
     success: '✅ success',
-    validation_failed: '⚠ validation failed',
+    validation_failed: '❌ validation failed',
     error: '❌ error',
     canceled: '🛑 canceled',
-    interrupted: '⛔ interrupted',
+    interrupted: '🛑 interrupted',
     translating: '🌍 translating',
     validating: '🔎 validating',
     retrying: '🔁 retrying',

@@ -145,7 +145,7 @@ describe('TaskDrawer component', () => {
       scopedTasks: tasks,
     });
 
-    expect(screen.getByText('🧵 Session One')).toBeDefined();
+    expect(screen.getByText('Session One')).toBeDefined();
     expect(screen.getByText('Main Task Subject')).toBeDefined();
     expect(screen.getByText('Executing tests')).toBeDefined();
     expect(screen.getByText('claude')).toBeDefined();
@@ -190,7 +190,7 @@ describe('TaskDrawer component', () => {
       scopedTasks: tasks,
     });
 
-    expect(screen.getByText('🧵 sess-bare')).toBeDefined();
+    expect(screen.getByText('sess-bare')).toBeDefined();
     expect(screen.getByText('⚠ Failed')).toBeDefined();
     expect(screen.getByText('LLM timeout', { exact: false })).toBeDefined();
   });
@@ -235,7 +235,7 @@ describe('TaskDrawer component', () => {
     });
 
     // Close button click
-    const closeBtn = screen.getByRole('button', { name: '✕' });
+    const closeBtn = screen.getByRole('button', { name: 'Close' });
     fireEvent.click(closeBtn);
     expect(screen.getByText('Tasks Root Page')).toBeDefined();
 
@@ -287,12 +287,10 @@ describe('TaskDrawer component', () => {
     });
 
     expect(
-      screen.getByText(
-        '🇬🇧 Showing current English source until the Hungarian translation is ready.',
-      ),
+      screen.getByText('Showing current English source until the Hungarian translation is ready.'),
     ).toBeDefined();
     expect(screen.getByText('unknown_stage')).toBeDefined();
-    expect(screen.getByText('🧵 session')).toBeDefined();
+    expect(screen.getByText('session')).toBeDefined();
 
     unmount();
 

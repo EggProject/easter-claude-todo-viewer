@@ -81,7 +81,10 @@ export function StatusMultiSelect({ value, onChange }: StatusMultiSelectProps): 
                 checked={selected.has(status)}
                 onChange={() => toggle(status)}
               />
-              <span>{label}</span>
+              <span>
+                <span className={`status-dot ${status}`} />
+                {label}
+              </span>
             </label>
           ))}
         </div>

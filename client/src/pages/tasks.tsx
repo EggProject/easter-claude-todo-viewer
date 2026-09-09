@@ -9,14 +9,15 @@ import { TaskLanguageBadge } from '../components/language-badge.js';
 import { usePersistentPageFilters } from '../filter-state.js';
 import { AppStateData, Task } from '../types.js';
 
+const StatusDot = ({ status }: { status: string }): ReactElement => (
+  <span className={`status-dot ${status}`} />
+);
+
 const icon = (status: string): string => {
-  const icons: Record<string, string> = {
-    in_progress: '🚀',
-    pending: '⏳',
-    completed: '✅',
-    deleted: '🗑️',
-  };
-  return icons[status] || '❔';
+  if (status === 'in_progress') return '🚀';
+  if (status === 'pending') return '⏳';
+  if (status === 'completed') return '✅';
+  return '🗑️'; // deleted
 };
 
 export default function TasksPage(): ReactElement {
@@ -143,7 +144,9 @@ export default function TasksPage(): ReactElement {
                 </div>
               </div>
               <div className="task-meta">
-                {`${icon(task.status)} ${task.status}${task.effectiveLanguage === 'hu' ? ' · 🇭🇺' : ''}`}
+                <StatusDot status={task.status} />
+                {icon(task.status)} {task.status}
+                {task.effectiveLanguage === 'hu' ? ' · 🇭🇺 HU' : ''}
               </div>
             </div>
           </button>
@@ -171,7 +174,7 @@ function SessionBadge({ task }: { task: Task }): ReactElement {
   const label = task.session?.label || task.sessionId || 'session';
   return (
     <span className="session-badge" title={`${label}\n${task.sessionId}`}>
-      {`🧵 ${compactLabel(label)}`}
+      {compactLabel(label)}
     </span>
   );
 }

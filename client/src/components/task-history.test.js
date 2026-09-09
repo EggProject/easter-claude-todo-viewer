@@ -82,7 +82,7 @@ describe('TaskHistory component', () => {
     // Clear search
     fireEvent.change(input, { target: { value: '' } });
 
-    // Toggle origin chip off
+    // Toggle Origin filter
     const translationChip = screen.getByLabelText('🌐 Translation');
     fireEvent.click(translationChip);
     expect(screen.queryByText('Hungarian translation ready')).toBeNull();

@@ -1,4 +1,5 @@
 import React, { ReactElement, useEffect, useState } from 'react';
+import { Settings as SettingsIcon, Plug, FlaskConical, Save, Brain, FileEdit } from 'lucide-react';
 import { useApp } from '../app-context.js';
 import { getJSON, postJSON } from '../api.js';
 import { Settings, isRecord, errorMessage } from '../types.js';
@@ -183,7 +184,9 @@ export default function SettingsPage(): ReactElement {
     <div className="page settings-page">
       <div className="page-heading">
         <div>
-          <div className="eyebrow">⚙️ SETTINGS</div>
+          <div className="eyebrow">
+            <SettingsIcon size={14} className="inline-icon" /> Settings
+          </div>
           <h1>Configuration</h1>
         </div>
       </div>
@@ -191,10 +194,12 @@ export default function SettingsPage(): ReactElement {
         <section className="settings-card provider-card">
           <div className="settings-card-head">
             <div>
-              <div className="eyebrow">🌍 TRANSLATION</div>
+              <div className="eyebrow">Translation</div>
               <h2>Translation provider</h2>
             </div>
-            <span className="settings-card-icon">🔌</span>
+            <span className="settings-card-icon">
+              <Plug size={16} />
+            </span>
           </div>
           {label(
             'Provider',
@@ -258,24 +263,28 @@ export default function SettingsPage(): ReactElement {
                   {loadingModels ? '⟳ Loading…' : '↻ Refresh models'}
                 </button>
                 <button className="mini" disabled={loadingModels} onClick={() => void test()}>
-                  🧪 Test connection
+                  <FlaskConical size={14} className="inline-icon" /> Test connection
                 </button>
               </div>
             </>
           )}
           <div className="card-actions">
             <button className="primary" onClick={() => void save()}>
-              💾 Save provider settings
+              <Save size={14} className="inline-icon" /> Save provider settings
             </button>
           </div>
         </section>
         <section className="settings-card prompts-card">
           <div className="settings-card-head">
             <div>
-              <div className="eyebrow">🧠 PROMPTS</div>
+              <div className="eyebrow">
+                <Brain size={14} className="inline-icon" /> Prompts
+              </div>
               <h2>Prompt management</h2>
             </div>
-            <span className="settings-card-icon">📝</span>
+            <span className="settings-card-icon">
+              <FileEdit size={16} />
+            </span>
           </div>
           {label(
             'Automatically migrate built-in prompt updates',
@@ -291,7 +300,7 @@ export default function SettingsPage(): ReactElement {
           </p>
           <div className="card-actions">
             <button className="primary" onClick={() => void save()}>
-              💾 Save prompt settings
+              <Save size={14} className="inline-icon" /> Save prompt settings
             </button>
           </div>
         </section>

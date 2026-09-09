@@ -1,16 +1,26 @@
 import React, { ReactElement } from 'react';
 import { Link, NavLink } from 'react-router';
+import {
+  Layers,
+  ClipboardList,
+  Shuffle,
+  Globe,
+  Brain,
+  Settings as SettingsIcon,
+  Bell,
+  Bot,
+} from 'lucide-react';
 import { useApp } from '../app-context.js';
 import { Session, SessionsState } from '../types.js';
 
-const items: [string, string, string][] = [
-  ['/sessions', '🧵', 'Sessions'],
-  ['/tasks', '📋', 'Tasks'],
-  ['/flow', '🔀', 'Flow'],
-  ['/translations', '🌍', 'Translations'],
-  ['/prompts', '🧠', 'Prompts'],
-  ['/settings', '⚙️', 'Settings'],
-];
+const items = [
+  ['/sessions', Layers, 'Sessions'],
+  ['/tasks', ClipboardList, 'Tasks'],
+  ['/flow', Shuffle, 'Flow'],
+  ['/translations', Globe, 'Translations'],
+  ['/prompts', Brain, 'Prompts'],
+  ['/settings', SettingsIcon, 'Settings'],
+] as const;
 
 export function Topbar(): ReactElement {
   const a = useApp();
@@ -38,33 +48,38 @@ export function Topbar(): ReactElement {
           aria-label={connectionLabel}
           role="status"
         />
-        <span>🤖</span>
+        <Bot size={20} strokeWidth={1.75} />
         <strong>Claude Tasks</strong>
         <span className="version">v4.1.0</span>
       </div>
       {currentSession ? (
         <Link to="/sessions" className="session-button" title={tooltip}>
-          {`🧵 ${currentSession.label || shortId(currentSession.id)} · ${shortId(currentSession.id)}`}
+          <>
+            <Layers size={14} strokeWidth={1.75} className="inline-icon" />{' '}
+            {currentSession.label || shortId(currentSession.id)} · {shortId(currentSession.id)}
+          </>
         </Link>
       ) : (
         <Link to="/sessions" className="session-button">
-          🧵 Select session
+          <>
+            <Layers size={14} strokeWidth={1.75} className="inline-icon" /> Select session
+          </>
         </Link>
       )}
       <div className="spacer" />
       <nav className="nav">
-        {items.map(([to, icon, label]) => (
+        {items.map(([to, Icon, label]) => (
           <NavLink
             key={to}
             to={to}
             className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}
           >
-            {`${icon} ${label}`}
+            <Icon size={20} strokeWidth={1.75} className="inline-icon" /> {label}
           </NavLink>
         ))}
       </nav>
       <button className="icon-btn" onClick={() => a.setSidebar(true)} title="Common change history">
-        🔔
+        <Bell size={16} strokeWidth={1.75} />
       </button>
     </header>
   );

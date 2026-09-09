@@ -325,7 +325,7 @@ describe('TranslationsPage', () => {
 
     // Delete job (job-1) with confirm
     const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
-    const deleteBtns = screen.getAllByRole('button', { name: '🗑 Delete' });
+    const deleteBtns = screen.getAllByRole('button', { name: 'Delete' });
     const rowDeleteBtn = deleteBtns.find((b) => b.closest('.actions'));
     expect(rowDeleteBtn).toBeDefined();
     fireEvent.click(rowDeleteBtn);
@@ -338,7 +338,7 @@ describe('TranslationsPage', () => {
     expect(mockApp.deleteJob).not.toHaveBeenCalled();
 
     // View job
-    const viewBtns = screen.getAllByRole('button', { name: '👁 View' });
+    const viewBtns = screen.getAllByRole('button', { name: 'View' });
     fireEvent.click(viewBtns[0]);
 
     confirmSpy.mockRestore();
@@ -414,7 +414,7 @@ describe('TranslationsPage', () => {
 
     // Trigger bulk delete on selected with confirm
     const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
-    const deleteBtns = screen.getAllByRole('button', { name: '🗑 Delete' });
+    const deleteBtns = screen.getAllByRole('button', { name: 'Delete' });
     const bulkDeleteBtn = deleteBtns.find((b) => b.closest('.bulk-actions'));
     expect(bulkDeleteBtn).toBeDefined();
     fireEvent.click(bulkDeleteBtn);
@@ -454,21 +454,21 @@ describe('TranslationsPage', () => {
     renderPage('/translations/sess-1/job-2', '/translations/:sessionId/:jobId');
 
     // Debug panel rendered
-    expect(screen.getByText('🔬 TRANSLATION DEBUG')).toBeDefined();
+    expect(screen.getByText('TRANSLATION DEBUG')).toBeDefined();
     expect(screen.getByText(/Validator rejected structure/)).toBeDefined();
 
     // Copy regular diag
-    const copyButtons = screen.getAllByRole('button', { name: '📋 Copy' });
+    const copyButtons = screen.getAllByRole('button', { name: 'Copy' });
     fireEvent.click(copyButtons[0]);
     expect(navigator.clipboard.writeText).toHaveBeenCalled();
 
     // Copy raw payload button
-    const copyRawButtons = screen.getAllByRole('button', { name: '📋 Copy raw' });
+    const copyRawButtons = screen.getAllByRole('button', { name: 'Copy raw' });
     fireEvent.click(copyRawButtons[0]);
     expect(navigator.clipboard.writeText).toHaveBeenCalled();
 
     // Close debug panel
-    const closeBtn = screen.getByRole('button', { name: '✕' });
+    const closeBtn = screen.getByRole('button', { name: 'Close' });
     fireEvent.click(closeBtn);
   });
 
@@ -482,7 +482,7 @@ describe('TranslationsPage', () => {
     });
     fireEvent.click(headerCheckbox);
 
-    const deleteBtns = screen.getAllByRole('button', { name: '🗑 Delete' });
+    const deleteBtns = screen.getAllByRole('button', { name: 'Delete' });
     const bulkDeleteBtn = deleteBtns.find((b) => b.closest('.bulk-actions'));
     expect(bulkDeleteBtn).toBeDefined();
     fireEvent.click(bulkDeleteBtn);
@@ -682,7 +682,7 @@ describe('TranslationsPage', () => {
     mockApp.jobs = [jobVaried];
 
     renderPage('/translations/sess-1/job-varied', '/translations/:sessionId/:jobId');
-    expect(screen.getByText('🔬 TRANSLATION DEBUG')).toBeDefined();
+    expect(screen.getByText('TRANSLATION DEBUG')).toBeDefined();
     expect(screen.getAllByText(/Skipped.*deterministic precheck/).length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText('custom_status_xyz')).toBeDefined();
   });
@@ -847,7 +847,7 @@ describe('TranslationsPage', () => {
     const { unmount } = renderPage('/translations?session=');
     expect(screen.getByText('Task translation history')).toBeDefined();
     expect(screen.getByText('Summary only')).toBeDefined();
-    expect(screen.getByText('sess-id-only')).toBeDefined();
+    expect(screen.getAllByText('sess-id-only').length).toBeGreaterThan(0);
 
     // Call onSortingChange with function and non-function
     capturedTableOptions.onSortingChange((prev) => [{ id: 'taskId', desc: true }]);
@@ -918,7 +918,7 @@ describe('TranslationsPage', () => {
       '/translations/sess-1/job-found-target',
       '/translations/:sessionId/:jobId',
     );
-    expect(screen.getByText('🔬 TRANSLATION DEBUG')).toBeDefined();
+    expect(screen.getByText('TRANSLATION DEBUG')).toBeDefined();
     unmountFound();
   });
 
@@ -1041,7 +1041,7 @@ describe('TranslationsPage', () => {
       '/translations/sess-1/job-complex',
       '/translations/:sessionId/:jobId',
     );
-    expect(screen.getByText('🔬 TRANSLATION DEBUG')).toBeDefined();
+    expect(screen.getByText('TRANSLATION DEBUG')).toBeDefined();
     unmount();
   });
 
@@ -1106,14 +1106,14 @@ describe('TranslationsPage', () => {
       '/translations/sess-1/job-finished',
       '/translations/:sessionId/:jobId',
     );
-    expect(screen.getByText('🔬 TRANSLATION DEBUG')).toBeDefined();
+    expect(screen.getByText('TRANSLATION DEBUG')).toBeDefined();
     unmount1();
 
     const { unmount } = renderPage(
       '/translations/sess-1/job-timings',
       '/translations/:sessionId/:jobId',
     );
-    expect(screen.getByText('🔬 TRANSLATION DEBUG')).toBeDefined();
+    expect(screen.getByText('TRANSLATION DEBUG')).toBeDefined();
     unmount();
 
     // Job without startedAt
@@ -1144,7 +1144,7 @@ describe('TranslationsPage', () => {
       '/translations/sess-1/job-no-start',
       '/translations/:sessionId/:jobId',
     );
-    expect(screen.getByText('🔬 TRANSLATION DEBUG')).toBeDefined();
+    expect(screen.getByText('TRANSLATION DEBUG')).toBeDefined();
     unmount2();
   });
 
@@ -1187,11 +1187,11 @@ describe('TranslationsPage', () => {
       '/translations/sess-1/job-obj-payload',
       '/translations/:sessionId/:jobId',
     );
-    expect(screen.getByText('🔬 TRANSLATION DEBUG')).toBeDefined();
+    expect(screen.getByText('TRANSLATION DEBUG')).toBeDefined();
     expect(
       screen.getByText('Skipped - deterministic precheck rejected this candidate.'),
     ).toBeDefined();
-    expect(screen.getByText('🧰 Raw provider payload · developer view')).toBeDefined();
+    expect(screen.getByText(/Raw provider payload/)).toBeDefined();
     unmount();
   });
 });

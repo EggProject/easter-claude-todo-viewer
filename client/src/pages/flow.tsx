@@ -28,6 +28,7 @@ import { TaskDrawer } from '../components/task-drawer.js';
 import { StatusMultiSelect, normalizeStatusSelection } from '../components/status-multiselect.js';
 import { SessionScopeSelect, useSessionScope } from '../components/session-select.js';
 import { TaskLanguageBadge } from '../components/language-badge.js';
+import { Shuffle, Sparkles, Minimize2, Maximize2, Layers } from 'lucide-react';
 import {
   semanticGraphRevision,
   reconcileSemanticNodes,
@@ -399,7 +400,9 @@ export default function FlowPage(): ReactElement {
     <div className="page flow-page">
       <div className="page-heading compact">
         <div>
-          <div className="eyebrow">🔀 MULTI-SESSION TASK FLOW</div>
+          <div className="eyebrow">
+            <Shuffle size={14} strokeWidth={1.75} className="inline-icon" /> MULTI-SESSION TASK FLOW
+          </div>
           <h1>Task graph</h1>
           <p className="muted">
             Each selected session is a separate lane. Dependency edges never cross sessions.
@@ -413,7 +416,13 @@ export default function FlowPage(): ReactElement {
             }
             onClick={() => void autoArrange()}
           >
-            {arranging ? '⟳ Arranging…' : '✨ Auto arrange'}
+            {arranging ? (
+              '⟳ Arranging…'
+            ) : (
+              <>
+                <Sparkles size={16} strokeWidth={1.75} /> Auto arrange
+              </>
+            )}
           </button>
           <button className="mini" onClick={() => void resetLayout()}>
             ↺ Reset layout
@@ -469,7 +478,11 @@ export default function FlowPage(): ReactElement {
                 nativeFullscreen || fallbackFullscreen ? 'Exit full screen' : 'Full screen'
               }
             >
-              {nativeFullscreen || fallbackFullscreen ? '🗗' : '⛶'}
+              {nativeFullscreen || fallbackFullscreen ? (
+                <Minimize2 size={16} strokeWidth={1.75} />
+              ) : (
+                <Maximize2 size={16} strokeWidth={1.75} />
+              )}
             </ControlButton>
           </Controls>
           <MiniMap pannable zoomable />
@@ -543,7 +556,9 @@ function sessionHeaderNode(
       sessionId,
       label: (
         <div className="flow-session-header">
-          <strong>{`🧵 ${label}`}</strong>
+          <strong>
+            <Layers size={14} strokeWidth={1.75} className="inline-icon" /> {label}
+          </strong>
           <span className="mono">{shortId(sessionId)}</span>
         </div>
       ),
@@ -716,7 +731,8 @@ function buildFlow(
             <div className="flow-node-top">
               <span className="mono">{`#${task.id}`}</span>
               <span className="session-badge flow-session-badge" title={sessionId}>
-                {`🧵 ${compactLabel(session?.label || sessionId)}`}
+                <Layers size={14} strokeWidth={1.75} className="inline-icon" />{' '}
+                {compactLabel(session?.label || sessionId)}
               </span>
               {lifecycle.startedAt ? (
                 <span className="timeline-time" title={lifecycle.startedAt}>
@@ -753,7 +769,7 @@ function buildFlow(
         type: 'smoothstep',
         markerEnd: { type: MarkerType.ArrowClosed },
         animated: sourceTask?.status === 'in_progress',
-        style: { stroke: '#7f849c', strokeWidth: 2 },
+        style: { stroke: 'var(--ep-fg-faint)', strokeWidth: 2 },
       });
     }
   }

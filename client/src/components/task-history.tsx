@@ -2,6 +2,18 @@ import React, { ReactElement, useMemo, useState } from 'react';
 import ReactDiffViewer, { DiffMethod } from 'react-diff-viewer-continued';
 import { useApp } from '../app-context.js';
 import { HistoryChange, HistoryEvent, Task } from '../types.js';
+import {
+  Globe,
+  Sparkles,
+  Trash2,
+  FileEdit,
+  RefreshCw,
+  User,
+  File,
+  Lock,
+  Construction,
+  Pencil,
+} from 'lucide-react';
 
 const HISTORY_DEFAULTS = { defaultOpen: false };
 const ORIGIN_FILTERS: [string, string][] = [
@@ -9,35 +21,37 @@ const ORIGIN_FILTERS: [string, string][] = [
   ['translation', '🌐 Translation'],
 ];
 const CHANGE_FILTERS: [string, string][] = [
-  ['lifecycle', '✨ Lifecycle'],
-  ['status', '📌 Status'],
-  ['owner', '👤 Owner'],
-  ['dependency', '🔒 Dependency'],
-  ['text', '✍️ Text'],
-  ['other', '🧩 Other'],
+  ['lifecycle', 'Lifecycle'],
+  ['status', 'Status'],
+  ['owner', 'Owner'],
+  ['dependency', 'Dependency'],
+  ['text', 'Text'],
+  ['other', 'Other'],
 ];
 
-const DIFF_STYLES = {
+const DIFF_STYLES: Record<string, unknown> = {
   variables: {
-    dark: {
-      diffViewerBackground: '#11111b',
-      diffViewerColor: '#cdd6f4',
-      addedBackground: '#183323',
-      addedColor: '#a6e3a1',
-      removedBackground: '#3a1d29',
-      removedColor: '#f38ba8',
-      wordAddedBackground: '#255c3a',
-      wordRemovedBackground: '#6b253b',
-      addedGutterBackground: '#183323',
-      removedGutterBackground: '#3a1d29',
-      gutterBackground: '#181825',
-      gutterBackgroundDark: '#181825',
-      highlightBackground: '#313244',
-      highlightGutterBackground: '#313244',
-    },
+    diffViewerBackground: 'var(--ep-bg-sunken)',
+    diffViewerColor: 'var(--ep-fg)',
+    addedBackground: 'var(--ep-success-bg)',
+    addedColor: 'var(--ep-success)',
+    removedBackground: 'var(--ep-danger-bg)',
+    removedColor: 'var(--ep-danger)',
+    wordAddedBackground: 'var(--ep-success-bg)',
+    wordRemovedBackground: 'var(--ep-danger-bg)',
+    addedGutterBackground: 'var(--ep-success-bg)',
+    removedGutterBackground: 'var(--ep-danger-bg)',
+    gutterBackground: 'var(--ep-bg-elevated)',
+    gutterBackgroundDark: 'var(--ep-bg-elevated)',
+    highlightBackground: 'var(--ep-accent-bg)',
+    highlightGutterBackground: 'var(--ep-accent-bg)',
+    codeFoldGutterBackground: 'var(--ep-bg-elevated)',
+    codeFoldBackground: 'var(--ep-bg-elevated)',
+    emptyLineBackground: 'var(--ep-bg-sunken)',
+    codeFoldContentColor: 'var(--ep-fg-muted)',
   },
-  line: { fontSize: '12px', lineHeight: '1.55' },
-  contentText: { fontFamily: 'SFMono-Regular, Consolas, Liberation Mono, monospace' },
+  line: { fontSize: '14px', lineHeight: '1.55' },
+  contentText: { fontFamily: 'var(--ep-font-mono)' },
 };
 
 export interface TaskHistoryProps {
@@ -92,7 +106,7 @@ export function TaskHistory({ task }: TaskHistoryProps): ReactElement {
   return (
     <section className="drawer-section task-history">
       <div className="section-title history-title">
-        <span>{`🕘 History · ${matchingCount.toString()}`}</span>
+        <span>{`History · ${matchingCount.toString()}`}</span>
       </div>
       <div className="history-controls">
         <input
@@ -165,18 +179,19 @@ function HistoryEventCard({ event }: { event: HistoryEvent }): ReactElement {
   return (
     <details className={`history-event ${event.kind || ''}`} open={HISTORY_DEFAULTS.defaultOpen}>
       <summary>
-        <span className="history-event-icon">{icon}</span>
         <span className="history-event-main">
-          <strong>{title}</strong>
+          <strong>
+            {icon} {title}
+          </strong>
           <small>{formatTime(event.detectedAt)}</small>
         </span>
         <span className="history-event-source">{event.source === 'translation' ? 'HU' : 'EN'}</span>
       </summary>
       <div className="history-event-body">
         {event.source === 'translation' ? (
-          <div className="history-language-note hu">🌐 Translation completed - EN → HU</div>
+          <div className="history-language-note hu">Translation completed - EN → HU</div>
         ) : (
-          <div className="history-language-note en">🇬🇧 Original task event</div>
+          <div className="history-language-note en">Original task event</div>
         )}
         {(event.changes || []).map((change, index) => (
           <ChangeView
@@ -196,11 +211,12 @@ function HistoryEventCard({ event }: { event: HistoryEvent }): ReactElement {
 
 function ChangeView({ change }: { change: HistoryChange }): ReactElement {
   const textChange = change.field === 'subject' || change.field === 'description';
-  const icon = fieldIcon(change.field);
   if (textChange) {
     return (
       <section className="history-change text-change">
-        <div className="history-change-label">{`${icon} ${change.label || change.field}`}</div>
+        <div className="history-change-label">
+          {fieldIcon(change.field)} {change.label || change.field}
+        </div>
         <div className="history-diff-wrap">
           <ReactDiffViewer
             oldValue={stringify(change.before)}
@@ -217,7 +233,9 @@ function ChangeView({ change }: { change: HistoryChange }): ReactElement {
   }
   return (
     <section className="history-change simple-change">
-      <div className="history-change-label">{`${icon} ${change.label || change.field}`}</div>
+      <div className="history-change-label">
+        {fieldIcon(change.field)} {change.label || change.field}
+      </div>
       <div className="history-before-after">
         <div>
           <small>BEFORE</small>
@@ -253,16 +271,14 @@ function eventChangeTypes(event: HistoryEvent): Set<string> {
   return result;
 }
 
-function eventIcon(event: HistoryEvent): string {
-  if (event.kind === 'translated') return '🌐';
-  if (event.kind === 'created') return '✨';
-  if (event.kind === 'deleted') return '🗑️';
-  const fields = new Set((event.changes || []).map((change) => change.field));
-  if (fields.has('status')) return '📌';
-  if (fields.has('description') || fields.has('subject')) return '📝';
-  if (fields.has('blockedBy') || fields.has('blocks')) return '🔒';
-  if (fields.has('owner')) return '👤';
-  return '⚡';
+function eventIcon(event: HistoryEvent): ReactElement {
+  if (event.source === 'translation' || event.kind === 'translated')
+    return <Globe size={14} strokeWidth={1.75} className="inline-icon" />;
+  if (event.kind === 'created')
+    return <Sparkles size={14} strokeWidth={1.75} className="inline-icon" />;
+  if (event.kind === 'deleted')
+    return <Trash2 size={14} strokeWidth={1.75} className="inline-icon" />;
+  return <FileEdit size={14} strokeWidth={1.75} className="inline-icon" />;
 }
 
 function eventTitle(event: HistoryEvent): string {
@@ -276,19 +292,30 @@ function eventTitle(event: HistoryEvent): string {
   return `${changes.length.toString()} fields changed`;
 }
 
-function fieldIcon(field: string | undefined): string {
-  if (!field) return '🔹';
-  const icons: Record<string, string> = {
-    status: '📌',
-    subject: '🏷️',
-    description: '📝',
-    owner: '👤',
-    blockedBy: '🔒',
-    blocks: '🚧',
-    activeForm: '⚡',
-    metadata: '🧩',
-  };
-  return icons[field] || '🔹';
+function fieldIcon(field: string | undefined): ReactElement {
+  switch (field) {
+    case 'status': {
+      return <RefreshCw size={14} strokeWidth={1.75} className="inline-icon" />;
+    }
+    case 'owner': {
+      return <User size={14} strokeWidth={1.75} className="inline-icon" />;
+    }
+    case 'subject': {
+      return <FileEdit size={14} strokeWidth={1.75} className="inline-icon" />;
+    }
+    case 'description': {
+      return <File size={14} strokeWidth={1.75} className="inline-icon" />;
+    }
+    case 'blockedBy': {
+      return <Lock size={14} strokeWidth={1.75} className="inline-icon" />;
+    }
+    case 'blocks': {
+      return <Construction size={14} strokeWidth={1.75} className="inline-icon" />;
+    }
+    default: {
+      return <Pencil size={14} strokeWidth={1.75} className="inline-icon" />;
+    }
+  }
 }
 
 function searchable(event: HistoryEvent): string {

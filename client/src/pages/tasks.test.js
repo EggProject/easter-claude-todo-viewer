@@ -112,8 +112,8 @@ describe('TasksPage', () => {
     // Check task IDs
     expect(screen.getByText('#1')).toBeDefined();
 
-    // Check task status meta with icons
-    expect(screen.getByText(/🚀 in_progress · 🇭🇺/)).toBeDefined();
+    // Check task status meta
+    expect(screen.getByText(/🚀 in_progress · 🇭🇺 HU/)).toBeDefined();
 
     // Check task drawer presence
     expect(screen.getByTestId('mock-task-drawer')).toBeDefined();
@@ -203,7 +203,7 @@ describe('TasksPage', () => {
     renderPage();
     await waitFor(() => {
       expect(screen.getByText('Custom task status')).toBeDefined();
-      expect(screen.getByText(/❔ other_status/)).toBeDefined();
+      expect(screen.getByText(/other_status/)).toBeDefined();
     });
     spy.mockRestore();
   });

@@ -74,7 +74,7 @@ describe('overlays module', () => {
 
       const { unmount } = render(React.createElement(NotificationSidebar));
 
-      expect(screen.getByText('🔔 Session history')).toBeDefined();
+      expect(screen.getByText('Session history')).toBeDefined();
       expect(screen.getByText('3 matching event(s)')).toBeDefined();
 
       // Filter by session
@@ -101,7 +101,7 @@ describe('overlays module', () => {
       fireEvent.change(sortSelect, { target: { value: 'oldest' } });
 
       // Close via close button
-      const closeBtn = screen.getByRole('button', { name: '✕' });
+      const closeBtn = screen.getByRole('button', { name: 'Close' });
       fireEvent.click(closeBtn);
       expect(mockApp.setSidebar).toHaveBeenCalledWith(false);
 
@@ -183,7 +183,7 @@ describe('overlays module', () => {
       render(React.createElement(RequiredModal));
       expect(screen.getByText('✨ CLAUDE TASK UPDATE')).toBeDefined();
       expect(screen.getByText('Task #42 updated')).toBeDefined();
-      expect(screen.getByText('🧵 Primary')).toBeDefined();
+      expect(screen.getByText('Primary')).toBeDefined();
 
       const okBtn = screen.getByRole('button', { name: 'OK' });
       fireEvent.click(okBtn);
@@ -288,7 +288,7 @@ describe('overlays module', () => {
 
       render(React.createElement(RequiredModal));
       expect(screen.getByText('0 task updates')).toBeDefined();
-      expect(screen.getByText('🧵 sess-bare')).toBeDefined();
+      expect(screen.getByText('sess-bare')).toBeDefined();
     });
 
     it('renders modal with generic changes array when not notification', () => {
@@ -304,7 +304,7 @@ describe('overlays module', () => {
 
       render(React.createElement(RequiredModal));
       expect(screen.getByText('Custom Changes')).toBeDefined();
-      expect(screen.getByText('👤 Assignee')).toBeDefined();
+      expect(screen.getByText('Assignee')).toBeDefined();
     });
 
     it('renders bulk summary with minimal selected-only counters and bare error items', () => {
@@ -427,7 +427,7 @@ describe('overlays module', () => {
 
       render(React.createElement(RequiredModal));
       expect(screen.getByText('Task #none updated')).toBeDefined();
-      expect(screen.getByText('🧵 Session')).toBeDefined();
+      expect(screen.getByText('Session')).toBeDefined();
     });
 
     it('covers modal summary with no errors and error without sessionId', () => {

@@ -35,7 +35,7 @@ describe('Topbar component', () => {
     expect(screen.getByText('v4.1.0')).toBeDefined();
     const statusDot = screen.getByRole('status');
     expect(statusDot.getAttribute('title')).toBe('Connected to multi-session daemon');
-    expect(screen.getByText('🧵 Select session')).toBeDefined();
+    expect(screen.getByText('Select session')).toBeDefined();
   });
 
   it('renders reconnecting status when live is CONNECTING or RECONNECTING', () => {
@@ -126,6 +126,6 @@ describe('Topbar component', () => {
       label: null,
     };
     renderTopbar();
-    expect(screen.getAllByRole('link', { name: /🧵/ })[0]).toBeDefined();
+    expect(screen.getAllByRole('link', { name: /·/ })[0]).toBeDefined();
   });
 });

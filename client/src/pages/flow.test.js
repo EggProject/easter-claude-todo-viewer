@@ -323,7 +323,7 @@ describe('FlowPage', () => {
       expect(screen.getByText('Connected Task 1')).toBeDefined();
     });
 
-    const arrangeBtn = screen.getByRole('button', { name: '✨ Auto arrange' });
+    const arrangeBtn = screen.getByRole('button', { name: 'Auto arrange' });
     fireEvent.click(arrangeBtn);
 
     await waitFor(() => {
@@ -714,7 +714,7 @@ describe('FlowPage', () => {
       expect(screen.getByText('Disc A')).toBeDefined();
     });
 
-    const arrangeBtn = screen.getByRole('button', { name: '✨ Auto arrange' });
+    const arrangeBtn = screen.getByRole('button', { name: 'Auto arrange' });
     fireEvent.click(arrangeBtn);
 
     await waitFor(() => {
@@ -755,7 +755,7 @@ describe('FlowPage', () => {
       expect(screen.getByText('C1')).toBeDefined();
     });
 
-    const arrangeBtn = screen.getByRole('button', { name: '✨ Auto arrange' });
+    const arrangeBtn = screen.getByRole('button', { name: 'Auto arrange' });
     fireEvent.click(arrangeBtn);
 
     await waitFor(() => {
@@ -902,7 +902,7 @@ describe('FlowPage', () => {
     const origInnerWidth = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { value: 0, configurable: true });
 
-    const arrangeBtn = screen.getByRole('button', { name: '✨ Auto arrange' });
+    const arrangeBtn = screen.getByRole('button', { name: 'Auto arrange' });
     fireEvent.click(arrangeBtn);
 
     await waitFor(() => {
@@ -981,7 +981,7 @@ describe('FlowPage', () => {
     fireEvent.click(moveEndBtn);
 
     // autoArrange when savedLayouts.current[sessionId] is undefined covers line 176
-    const arrangeBtn = screen.getByRole('button', { name: '✨ Auto arrange' });
+    const arrangeBtn = screen.getByRole('button', { name: 'Auto arrange' });
     fireEvent.click(arrangeBtn);
 
     await waitFor(() => {

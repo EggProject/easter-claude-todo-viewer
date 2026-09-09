@@ -1,4 +1,5 @@
 import React, { ReactElement, useCallback, useMemo, useRef, useState } from 'react';
+import { Layers } from 'lucide-react';
 import {
   ColumnDef,
   flexRender,
@@ -73,7 +74,9 @@ export default function SessionsPage(): ReactElement {
     <div className="page sessions-page">
       <div className="page-heading">
         <div>
-          <div className="eyebrow">🧵 SESSIONS</div>
+          <div className="eyebrow">
+            <Layers size={14} className="inline-icon" /> Sessions
+          </div>
           <h1>Claude sessions</h1>
           <p className="muted">
             Choose one current session and any number of watched sessions. Session language is

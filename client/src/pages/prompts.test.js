@@ -138,7 +138,7 @@ describe('PromptsPage', () => {
     renderPage('/prompts/task-translator', '/prompts/:promptId');
 
     await waitFor(() => {
-      expect(screen.getByText('🧠 PROMPT EDITOR')).toBeDefined();
+      expect(screen.getByText('PROMPT EDITOR')).toBeDefined();
     });
 
     // Check editor details
@@ -154,7 +154,7 @@ describe('PromptsPage', () => {
     expect(textarea.value).toBe('Updated prompt content');
 
     // Save prompt
-    const saveBtn = screen.getByRole('button', { name: '💾 Save' });
+    const saveBtn = screen.getByRole('button', { name: 'Save' });
     fireEvent.click(saveBtn);
 
     await waitFor(() => {
@@ -169,11 +169,11 @@ describe('PromptsPage', () => {
     expect(screen.getByText('⚠ Migration conflict')).toBeDefined();
 
     // Check diff block
-    expect(screen.getByText('🔍 Diff vs builtin')).toBeDefined();
+    expect(screen.getByText('Diff vs builtin')).toBeDefined();
     expect(screen.getByText('+ Added custom guidance')).toBeDefined();
 
     // Close editor
-    const closeBtn = screen.getByRole('button', { name: '✕' });
+    const closeBtn = screen.getByRole('button', { name: 'Close' });
     fireEvent.click(closeBtn);
   });
 
@@ -182,10 +182,10 @@ describe('PromptsPage', () => {
     renderPage('/prompts/task-translator', '/prompts/:promptId');
 
     await waitFor(() => {
-      expect(screen.getByText('🧠 PROMPT EDITOR')).toBeDefined();
+      expect(screen.getByText('PROMPT EDITOR')).toBeDefined();
     });
 
-    const restoreBtn = screen.getByRole('button', { name: '↩ Restore builtin' });
+    const restoreBtn = screen.getByRole('button', { name: 'Restore builtin' });
     fireEvent.click(restoreBtn);
 
     await waitFor(() => {
@@ -214,12 +214,12 @@ describe('PromptsPage', () => {
     // Re-render with success load then test save and restore error
     const { unmount } = renderPage('/prompts/task-translator', '/prompts/:promptId');
     await waitFor(() => {
-      expect(screen.getByText('🧠 PROMPT EDITOR')).toBeDefined();
+      expect(screen.getByText('PROMPT EDITOR')).toBeDefined();
     });
 
     // Save failure
     vi.mocked(apiModule.postJSON).mockRejectedValueOnce(new Error('Save prompt failed'));
-    const saveBtn = screen.getByRole('button', { name: '💾 Save' });
+    const saveBtn = screen.getByRole('button', { name: 'Save' });
     fireEvent.click(saveBtn);
 
     await waitFor(() => {
@@ -229,7 +229,7 @@ describe('PromptsPage', () => {
     // Restore failure
     const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
     vi.mocked(apiModule.postJSON).mockRejectedValueOnce(new Error('Restore prompt failed'));
-    const restoreBtn = screen.getByRole('button', { name: '↩ Restore builtin' });
+    const restoreBtn = screen.getByRole('button', { name: 'Restore builtin' });
     fireEvent.click(restoreBtn);
 
     await waitFor(() => {
@@ -249,11 +249,11 @@ describe('PromptsPage', () => {
 
     const { unmount } = renderPage('/prompts/task-translator', '/prompts/:promptId');
     await waitFor(() => {
-      expect(screen.getByText('🧠 PROMPT EDITOR')).toBeDefined();
+      expect(screen.getByText('PROMPT EDITOR')).toBeDefined();
     });
 
     vi.mocked(apiModule.postJSON).mockRejectedValueOnce('Raw string save error');
-    const saveBtn = screen.getByRole('button', { name: '💾 Save' });
+    const saveBtn = screen.getByRole('button', { name: 'Save' });
     fireEvent.click(saveBtn);
 
     await waitFor(() => {
@@ -262,7 +262,7 @@ describe('PromptsPage', () => {
 
     const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
     vi.mocked(apiModule.postJSON).mockRejectedValueOnce('Raw string restore error');
-    const restoreBtn = screen.getByRole('button', { name: '↩ Restore builtin' });
+    const restoreBtn = screen.getByRole('button', { name: 'Restore builtin' });
     fireEvent.click(restoreBtn);
 
     await waitFor(() => {
@@ -290,8 +290,8 @@ describe('PromptsPage', () => {
     await waitFor(() => {
       expect(screen.getByText('No differences.')).toBeDefined();
     });
-    expect(screen.queryByText('🧩 Required variables:')).toBeNull();
-    expect(screen.queryByText('⚠ Migration conflict')).toBeNull();
+    expect(screen.queryByText(/Required variables:/)).toBeNull();
+    expect(screen.queryByText('Migration conflict')).toBeNull();
   });
 
   it('handles null app.prompts gracefully', () => {
@@ -327,7 +327,7 @@ describe('PromptsPage', () => {
       expect(screen.getByText('task-nullbody')).toBeDefined();
     });
 
-    const saveBtn = screen.getByRole('button', { name: '💾 Save' });
+    const saveBtn = screen.getByRole('button', { name: 'Save' });
     fireEvent.click(saveBtn);
     await waitFor(() => {
       expect(screen.getByText('✅ Saved')).toBeDefined();
@@ -336,7 +336,7 @@ describe('PromptsPage', () => {
     // Restore returning null body
     const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
     vi.mocked(apiModule.postJSON).mockResolvedValueOnce({ body: null });
-    const restoreBtn = screen.getByRole('button', { name: '↩ Restore builtin' });
+    const restoreBtn = screen.getByRole('button', { name: 'Restore builtin' });
     fireEvent.click(restoreBtn);
     await waitFor(() => {
       expect(screen.getByText('✅ Restored')).toBeDefined();
@@ -378,7 +378,7 @@ describe('PromptsPage', () => {
 
     const { unmount } = renderPage('/prompts/task-null-metrics', '/prompts/:promptId');
     await waitFor(() => {
-      expect(screen.getByText('🧠 PROMPT EDITOR')).toBeDefined();
+      expect(screen.getByText('PROMPT EDITOR')).toBeDefined();
     });
     unmount();
   });

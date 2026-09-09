@@ -1,4 +1,20 @@
 import React, { ReactElement, useEffect, useMemo } from 'react';
+import {
+  Bell,
+  Layers,
+  Globe,
+  Sparkles,
+  Trash2,
+  Pin,
+  FileEdit,
+  Lock,
+  User,
+  Puzzle,
+  Tag,
+  Zap,
+  ShieldAlert,
+  Construction,
+} from 'lucide-react';
 import { useApp } from '../app-context.js';
 import { TaskLanguageBadge } from './language-badge.js';
 import { usePersistentLocalState } from '../filter-state.js';
@@ -16,7 +32,9 @@ function changeRows(changes: HistoryChange[] = []): ReactElement[] {
       className="modal-change"
       key={`${change.field || change.label || 'change'}-${index.toString()}`}
     >
-      <b>{`${fieldIcon(change.field)} ${change.label || change.field || 'Change'}`}</b>
+      <b>
+        {fieldIcon(change.field)} {change.label || change.field || 'Change'}
+      </b>
       <div className="modal-change-values">
         <span className="before">{fmt(change.before)}</span>
         <span className="change-arrow" aria-hidden="true">
@@ -36,7 +54,7 @@ function notificationBlocks(events: HistoryEvent[] = []): ReactElement[] {
     >
       <div className="modal-task-title">
         <span>
-          {`${historyEventIcon(event)} #${event.taskId || 'none'} ${event.title || event.subject || ''}`.trim()}
+          {historyEventIcon(event)} #{event.taskId || 'none'} {event.title || event.subject || ''}
         </span>
         {event.taskSnapshot ? <TaskLanguageBadge task={event.taskSnapshot} compact /> : null}
       </div>
@@ -99,11 +117,13 @@ export function NotificationSidebar(): ReactElement | null {
       <aside className="sidebar open common-history-sidebar">
         <div className="side-head">
           <div>
-            <h3>🔔 Session history</h3>
+            <h3>
+              <Bell size={18} strokeWidth={1.75} className="inline-icon" /> Session history
+            </h3>
             <div className="muted small">{`${events.length.toString()} matching event(s)`}</div>
           </div>
           <button className="icon-btn" onClick={() => app.setSidebar(false)}>
-            ✕
+            Close
           </button>
         </div>
         <div className="history-sidebar-controls">
@@ -131,13 +151,13 @@ export function NotificationSidebar(): ReactElement | null {
             aria-label="Filter history event type"
           >
             <option value="all">All event types</option>
-            <option value="translation">🌐 Translation</option>
-            <option value="lifecycle">✨ Lifecycle</option>
-            <option value="status">📌 Status</option>
-            <option value="text">✍️ Text</option>
-            <option value="dependency">🔒 Dependency</option>
-            <option value="owner">👤 Owner</option>
-            <option value="other">🧩 Other</option>
+            <option value="translation">Translation</option>
+            <option value="lifecycle">Lifecycle</option>
+            <option value="status">Status</option>
+            <option value="text">Text</option>
+            <option value="dependency">Dependency</option>
+            <option value="owner">Owner</option>
+            <option value="other">Other</option>
           </select>
           <select
             value={historySort}
@@ -174,7 +194,8 @@ function HistoryCard({ event }: { event: HistoryEvent }): ReactElement {
         <span className="history-event-main">
           <div className="history-title-with-badge">
             <strong>
-              {`🧵 ${compact(sessionLabel)} · #${event.taskId || 'none'} · ${historyEventTitle(event)}`}
+              <Layers size={14} strokeWidth={1.75} className="inline-icon" />{' '}
+              {`${compact(sessionLabel)} · #${event.taskId || 'none'} · ${historyEventTitle(event)}`}
             </strong>
             {event.taskSnapshot ? <TaskLanguageBadge task={event.taskSnapshot} compact /> : null}
           </div>
@@ -185,8 +206,8 @@ function HistoryCard({ event }: { event: HistoryEvent }): ReactElement {
       <div className="history-event-body">
         <div className={`history-language-note ${event.source === 'translation' ? 'hu' : 'en'}`}>
           {event.source === 'translation'
-            ? '🌐 Translation completed - EN → HU'
-            : '🇬🇧 Original task event'}
+            ? 'Translation completed - EN → HU'
+            : 'EN Original task event'}
         </div>
         <div className="muted small mono">{event.sessionId || ''}</div>
         {(event.changes || []).map((change, index) => (
@@ -310,14 +331,16 @@ export function RequiredModal(): ReactElement | null {
             className="modal-session"
             title={`${modalSession.id || ''}\n${modalSession.cwd || ''}`}
           >
-            {`🧵 ${modalSession.label || modalSession.id || 'Session'}`}
+            <Layers size={14} strokeWidth={1.75} className="inline-icon" />{' '}
+            {modalSession.label || modalSession.id || 'Session'}
           </div>
         ) : null}
         <h2>{title}</h2>
         <div className="modal-list">{body}</div>
         {isError ? (
           <div className="debug-hint">
-            🧰 Run the server with --log-output --log-file for detailed diagnostics.
+            <ShieldAlert size={14} strokeWidth={1.75} className="inline-icon" /> Run the server with
+            --log-output --log-file for detailed diagnostics.
           </div>
         ) : null}
         <div className="modal-actions">
@@ -344,18 +367,20 @@ function historyEventType(event: HistoryEvent): HistoryEventType {
   return 'other';
 }
 
-function historyEventIcon(event: HistoryEvent): string {
-  const icons: Record<HistoryEventType, string> = {
-    translation: '🌐',
-    lifecycle: event.kind === 'deleted' ? '🗑️' : '✨',
-    status: '📌',
-    text: '✍️',
-    dependency: '🔒',
-    owner: '👤',
-    other: '🧩',
-  };
+function historyEventIcon(event: HistoryEvent): ReactElement {
   const type = historyEventType(event);
-  return icons[type] satisfies string;
+  if (type === 'translation') return <Globe size={14} strokeWidth={1.75} className="inline-icon" />;
+  if (type === 'lifecycle')
+    return event.kind === 'deleted' ? (
+      <Trash2 size={14} strokeWidth={1.75} className="inline-icon" />
+    ) : (
+      <Sparkles size={14} strokeWidth={1.75} className="inline-icon" />
+    );
+  if (type === 'status') return <Pin size={14} strokeWidth={1.75} className="inline-icon" />;
+  if (type === 'text') return <FileEdit size={14} strokeWidth={1.75} className="inline-icon" />;
+  if (type === 'dependency') return <Lock size={14} strokeWidth={1.75} className="inline-icon" />;
+  if (type === 'owner') return <User size={14} strokeWidth={1.75} className="inline-icon" />;
+  return <Puzzle size={14} strokeWidth={1.75} className="inline-icon" />;
 }
 
 function historyEventTitle(event: HistoryEvent): string {
@@ -368,19 +393,36 @@ function historyEventTitle(event: HistoryEvent): string {
     : `${changes.length.toString()} fields changed`;
 }
 
-function fieldIcon(field: string | undefined): string {
-  if (!field) return '🔹';
-  const icons: Record<string, string> = {
-    status: '📌',
-    subject: '🏷️',
-    description: '📝',
-    owner: '👤',
-    blockedBy: '🔒',
-    blocks: '🚧',
-    activeForm: '⚡',
-    metadata: '🧩',
-  };
-  return icons[field] || '🔹';
+function fieldIcon(field: string | undefined): ReactElement {
+  switch (field) {
+    case 'status': {
+      return <Pin size={14} strokeWidth={1.75} className="inline-icon" />;
+    }
+    case 'subject': {
+      return <Tag size={14} strokeWidth={1.75} className="inline-icon" />;
+    }
+    case 'description': {
+      return <FileEdit size={14} strokeWidth={1.75} className="inline-icon" />;
+    }
+    case 'owner': {
+      return <User size={14} strokeWidth={1.75} className="inline-icon" />;
+    }
+    case 'blockedBy': {
+      return <Lock size={14} strokeWidth={1.75} className="inline-icon" />;
+    }
+    case 'blocks': {
+      return <Construction size={14} strokeWidth={1.75} className="inline-icon" />;
+    }
+    case 'activeForm': {
+      return <Zap size={14} strokeWidth={1.75} className="inline-icon" />;
+    }
+    case 'metadata': {
+      return <Puzzle size={14} strokeWidth={1.75} className="inline-icon" />;
+    }
+    default: {
+      return <Puzzle size={14} strokeWidth={1.75} className="inline-icon" />;
+    }
+  }
 }
 
 function historySearchText(event: HistoryEvent): string {

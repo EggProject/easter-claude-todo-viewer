@@ -145,7 +145,7 @@ describe('SettingsPage', () => {
     fireEvent.click(testBtn);
 
     await waitFor(() => {
-      expect(screen.getByText(/Connection OK · 0 model\(s\)/i)).toBeDefined();
+      expect(screen.getByText(/✅ Connection OK · 0 model\(s\)/i)).toBeDefined();
     });
 
     // Refresh models button
@@ -160,7 +160,7 @@ describe('SettingsPage', () => {
     fireEvent.click(refreshBtn);
 
     await waitFor(() => {
-      expect(screen.getByText(/2 model\(s\) discovered/i)).toBeDefined();
+      expect(screen.getByText(/✅ 2 model\(s\) discovered/i)).toBeDefined();
     });
 
     // Save with API key
@@ -201,7 +201,7 @@ describe('SettingsPage', () => {
     fireEvent.click(testBtn);
 
     await waitFor(() => {
-      expect(screen.getByText(/Unauthorized/)).toBeDefined();
+      expect(screen.getByText(/❌ Unauthorized/)).toBeDefined();
     });
 
     // Save failure
@@ -210,7 +210,7 @@ describe('SettingsPage', () => {
     fireEvent.click(saveBtn);
 
     await waitFor(() => {
-      expect(screen.getByText(/Save failed/)).toBeDefined();
+      expect(screen.getByText(/❌ Save failed/)).toBeDefined();
     });
   });
 
@@ -265,7 +265,7 @@ describe('SettingsPage', () => {
     fireEvent.click(refreshBtn);
 
     await waitFor(() => {
-      expect(screen.getByText(/Refresh models failed/)).toBeDefined();
+      expect(screen.getByText(/❌ Refresh models failed/)).toBeDefined();
     });
 
     // Save with empty apiKey (tests false branch of if (anth.apiKey))
@@ -354,7 +354,7 @@ describe('SettingsPage', () => {
     fireEvent.click(refreshBtn);
 
     await waitFor(() => {
-      expect(screen.getByText(/0 model\(s\) discovered/)).toBeDefined();
+      expect(screen.getByText(/✅ 0 model\(s\) discovered/)).toBeDefined();
     });
   });
 

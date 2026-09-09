@@ -9,7 +9,7 @@ describe('AppSplash component', () => {
     expect(screen.getByText('Claude Tasks')).toBeDefined();
     expect(screen.getByText('multi-session workspace')).toBeDefined();
     expect(screen.getByText('Preparing session workspace')).toBeDefined();
-    expect(screen.getByText('🤖')).toBeDefined();
+    expect(container.querySelector('.splash-orb')).not.toBeNull();
     expect(container.querySelector('.app-splash.error')).toBeNull();
     expect(container.querySelector('.splash-spinner')).not.toBeNull();
   });

@@ -4,6 +4,7 @@ import { useApp } from '../app-context.js';
 import { TaskHistory } from './task-history.js';
 import { TaskLanguageBadge } from './language-badge.js';
 import { Task } from '../types.js';
+import { Layers, Pin, Zap, User, Lock, Construction, FileEdit } from 'lucide-react';
 
 export interface TaskDrawerProps {
   base: string;
@@ -64,7 +65,7 @@ export function TaskDrawer({
               className="drawer-session-badge"
               title={`${sessionLabel}\n${task.sessionId || ''}`}
             >
-              {`🧵 ${sessionLabel}`}
+              <Layers size={14} strokeWidth={1.75} className="inline-icon" /> {sessionLabel}
             </div>
             <div className="muted mono">{`#${task.id}`}</div>
             <div className="drawer-title-row">
@@ -73,20 +74,42 @@ export function TaskDrawer({
             </div>
           </div>
           <button className="icon-btn" onClick={close}>
-            ✕
+            Close
           </button>
         </div>
         <div className="drawer-body">
-          {field('📌', 'Status', task.status)}
-          {field('⚡', 'Active form', task.activeForm || 'none')}
-          {field('👤', 'Owner', task.owner || 'none')}
-          {dependencyField('🔒', 'Blocked by', task.blockedBy || [], byId)}
-          {dependencyField('🚧', 'Blocks', task.blocks || [], byId)}
+          {field(
+            <Pin size={14} strokeWidth={1.75} className="inline-icon" />,
+            'Status',
+            task.status,
+          )}
+          {field(
+            <Zap size={14} strokeWidth={1.75} className="inline-icon" />,
+            'Active form',
+            task.activeForm || 'none',
+          )}
+          {field(
+            <User size={14} strokeWidth={1.75} className="inline-icon" />,
+            'Owner',
+            task.owner || 'none',
+          )}
+          {dependencyField(
+            <Lock size={14} strokeWidth={1.75} className="inline-icon" />,
+            'Blocked by',
+            task.blockedBy || [],
+            byId,
+          )}
+          {dependencyField(
+            <Construction size={14} strokeWidth={1.75} className="inline-icon" />,
+            'Blocks',
+            task.blocks || [],
+            byId,
+          )}
           <section className="drawer-section">
             <div className="section-title">🌐 Task language</div>
             <div className="task-language-row">
               <div className="lang-control">
-                <span>EN</span>
+                <span>🇬🇧 EN</span>
                 <button
                   className={`switch ${task.viewLanguage === 'hu' ? 'on' : ''}`}
                   onClick={() => {
@@ -102,7 +125,7 @@ export function TaskDrawer({
                 >
                   <span />
                 </button>
-                <span>HU</span>
+                <span>🇭🇺 HU</span>
               </div>
               <span className={`translation-state ${task.translationState || 'missing'}`}>
                 {translationStateLabel(task)}
@@ -125,15 +148,17 @@ export function TaskDrawer({
             task.effectiveLanguage !== 'hu' &&
             !task.translationError ? (
               <div className="translation-fallback-note">
-                🇬🇧 Showing current English source until the Hungarian translation is ready.
+                Showing current English source until the Hungarian translation is ready.
               </div>
             ) : null}
             {task.translationError ? (
-              <div className="warning">⚠ HU unavailable: {task.translationError}</div>
+              <div className="warning">HU unavailable: {task.translationError}</div>
             ) : null}
           </section>
           <section className="drawer-section">
-            <div className="section-title">📝 Description</div>
+            <div className="section-title">
+              <FileEdit size={14} strokeWidth={1.75} className="inline-icon" /> Description
+            </div>
             <div className="prose prewrap">{task.description || 'none'}</div>
           </section>
           <TaskHistory task={task} />
@@ -144,7 +169,7 @@ export function TaskDrawer({
 }
 
 function dependencyField(
-  icon: string,
+  icon: React.ReactNode,
   label: string,
   ids: string[],
   byId: Map<string, Task>,
@@ -163,16 +188,20 @@ function dependencyField(
 
   return (
     <div className="field">
-      <div className="field-label">{`${icon} ${label}`}</div>
+      <div className="field-label">
+        {icon} {label}
+      </div>
       <div className="field-value dependency-list">{children}</div>
     </div>
   );
 }
 
-function field(icon: string, label: string, value: unknown): ReactElement {
+function field(icon: React.ReactNode, label: string, value: unknown): ReactElement {
   return (
     <div className="field">
-      <div className="field-label">{`${icon} ${label}`}</div>
+      <div className="field-label">
+        {icon} {label}
+      </div>
       <div className="field-value">{String(value ?? 'none')}</div>
     </div>
   );
