@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>EggProject — Button Group</title>
+  <script src="../../../eggproject-design/preview/_theme.js" defer></script>
+  <meta name="viewport" content="width=720" />
+  <link rel="stylesheet" href="button-group.css" />
+  <link rel="stylesheet" href="../button/button.css" />
+  <link rel="icon" href="../../../eggproject-design/assets/logo-mark.svg" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--ep-bg); color: var(--ep-fg); font-family: var(--ep-font-sans); padding: 40px; }
+    .page { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+    h1 { font: 400 36px/1.1 var(--ep-font-display); letter-spacing: -0.02em; }
+    h1 em { font-weight: 700; }
+    .lead { font: var(--ep-text-body); color: var(--ep-fg-muted); }
+    .label { font: var(--ep-text-overline); letter-spacing: var(--ep-track-overline); text-transform: uppercase; color: var(--ep-fg-subtle); }
+    .row { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1>Button Group · <em>fused actions</em></h1>
+    <p class="lead">Adjacent buttons with collapsed borders and outer-only rounding. Horizontal and vertical layouts.</p>
+    <span class="label">Secondary (default)</span>
+    <div class="row">
+      <div class="button-group" role="radiogroup" aria-label="Date range">
+        <button type="button" class="btn btn--secondary" role="radio" aria-checked="false" tabindex="-1">Day</button>
+        <button type="button" class="btn btn--secondary is-active" role="radio" aria-checked="true" tabindex="0">Week</button>
+        <button type="button" class="btn btn--secondary" role="radio" aria-checked="false" tabindex="-1">Month</button>
+        <button type="button" class="btn btn--secondary" role="radio" aria-checked="false" tabindex="-1">Quarter</button>
+      </div>
+    </div>
+    <span class="label">Ghost</span>
+    <div class="row">
+      <div class="button-group" role="radiogroup" aria-label="View layout">
+        <button type="button" class="btn btn--ghost" role="radio" aria-checked="false" tabindex="-1">List</button>
+        <button type="button" class="btn btn--ghost is-active" role="radio" aria-checked="true" tabindex="0">Grid</button>
+        <button type="button" class="btn btn--ghost" role="radio" aria-checked="false" tabindex="-1">Board</button>
+      </div>
+    </div>
+    <span class="label">Vertical</span>
+    <div class="row">
+      <div class="button-group button-group--vertical" role="group" aria-label="Project actions">
+        <button type="button" class="btn btn--secondary">New project</button>
+        <button type="button" class="btn btn--secondary">Import</button>
+        <button type="button" class="btn btn--secondary">Template</button>
+      </div>
+    </div>
+    <span class="label">Mixed (split button)</span>
+    <div class="row">
+      <div class="button-group" role="group" aria-label="Publish actions">
+        <button type="button" class="btn btn--primary">Publish</button>
+        <button type="button" class="btn btn--primary btn--icon" aria-label="More options">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="m3 5 4 4 4-4"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+  <script>
+    /* Radiogroup wiring — every [role="radiogroup"] handled independently.
+       Roving tabindex; focus moves = selects; circular Arrow/Home/End.
+       Enter/Space activate natively via the button click event. */
+    document.querySelectorAll('[role="radiogroup"]').forEach(function (group) {
+      var radios = Array.prototype.slice.call(group.querySelectorAll('[role="radio"]'));
+      function select(radio, focus) {
+        radios.forEach(function (r) {
+          var on = r === radio;
+          r.setAttribute('aria-checked', on ? 'true' : 'false');
+          r.setAttribute('tabindex', on ? '0' : '-1');
+          r.classList.toggle('is-active', on);
+        });
+        if (focus) radio.focus();
+      }
+      radios.forEach(function (radio, i) {
+        radio.addEventListener('click', function () { select(radio, true); });
+        radio.addEventListener('keydown', function (e) {
+          var last = radios.length - 1, next;
+          switch (e.key) {
+            case 'ArrowLeft': case 'ArrowUp':    next = i === 0 ? radios[last] : radios[i - 1]; break;
+            case 'ArrowRight': case 'ArrowDown':  next = i === last ? radios[0] : radios[i + 1]; break;
+            case 'Home': next = radios[0]; break;
+            case 'End':  next = radios[last]; break;
+            default: return;
+          }
+          e.preventDefault();
+          select(next, true);
+        });
+      });
+    });
+  </script>
+</body>
+</html>

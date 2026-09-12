@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>EggProject — Alert</title>
+  <script src="../../../eggproject-design/preview/_theme.js" defer></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="alert.css" />
+  <link rel="icon" href="../../../eggproject-design/assets/logo-mark.svg" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--ep-bg); color: var(--ep-fg); font-family: var(--ep-font-sans); padding: 40px; min-height: 100vh; }
+    .page { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+    h1 { font: 400 36px/1.1 var(--ep-font-display); letter-spacing: -0.02em; color: var(--ep-fg); margin-bottom: 4px; }
+ h1 em { font-weight: 700; }
+    .lead { font: var(--ep-text-body); color: var(--ep-fg-muted); max-width: 520px; margin-bottom: 14px; }
+    .label { font: var(--ep-text-overline); letter-spacing: var(--ep-track-overline); text-transform: uppercase; color: var(--ep-fg-subtle); margin-top: 10px; }
+    .banner-frame { background: var(--ep-bg-elevated); border: 1px solid var(--ep-border-subtle); border-radius: 12px; overflow: hidden; }
+    .banner-frame__body { padding: 24px; font: var(--ep-text-body); color: var(--ep-fg-muted); }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1>Alert · <em>inline status</em></h1>
+    <p class="lead">Persistent context for state that isn't ephemeral enough for a toast. Soft fills, subtle border-left, or dark ink for editorial CTAs.</p>
+
+    <span class="label">Soft variants</span>
+    <div class="alert alert--info">
+      <span class="alert__icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="10" cy="10" r="7"/><path d="M10 9v5M10 6.5v.01"/></svg></span>
+      <div class="alert__body">
+        <span class="alert__title">Draft saved on this device</span>
+        <span class="alert__message">Your changes will sync once you reconnect. <a class="alert__link" href="#">Sync now</a></span>
+      </div>
+    </div>
+    <div class="alert alert--success">
+      <span class="alert__icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7"/><path d="m7 10 2.2 2.2L13.5 8"/></svg></span>
+      <div class="alert__body">
+        <span class="alert__title">Invoice paid</span>
+        <span class="alert__message">Northbeam · €4,200 received on March 14.</span>
+      </div>
+    </div>
+    <div class="alert alert--warning">
+      <span class="alert__icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3 2.5 16h15z"/><path d="M10 8v4M10 14.5v.01"/></svg></span>
+      <div class="alert__body">
+        <span class="alert__title">2 invoices overdue</span>
+        <span class="alert__message">Halifax & Co. · €1,800 and Lumenwerk · €2,100 are past due.</span>
+        <div class="alert__actions">
+          <button class="alert__action alert__action--primary">Send reminders</button>
+          <button class="alert__action">Snooze</button>
+        </div>
+      </div>
+      <button class="alert__close" aria-label="Dismiss"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
+    </div>
+    <div class="alert alert--danger">
+      <span class="alert__icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="10" cy="10" r="7"/><path d="M7 7l6 6M13 7l-6 6"/></svg></span>
+      <div class="alert__body">
+        <span class="alert__title">Deploy failed</span>
+        <span class="alert__message">3 tests failing on main. <a class="alert__link" href="#">View logs</a></span>
+      </div>
+    </div>
+
+    <span class="label">Subtle tone — border-left only</span>
+    <div class="alert alert--subtle alert--info">
+      <span class="alert__icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="10" cy="10" r="7"/><path d="M10 9v5M10 6.5v.01"/></svg></span>
+      <div class="alert__body">
+        <span class="alert__title">Read-only mode</span>
+        <span class="alert__message">You're viewing a snapshot from March 14, 2026.</span>
+      </div>
+    </div>
+    <div class="alert alert--subtle alert--success">
+      <span class="alert__icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7"/><path d="m7 10 2.2 2.2L13.5 8"/></svg></span>
+      <div class="alert__body">
+        <span class="alert__title">All checks passed</span>
+        <span class="alert__message">Ready for production · v1.0.0</span>
+      </div>
+    </div>
+
+    <span class="label">Ink — for dark editorial surfaces</span>
+    <div class="alert alert--ink">
+      <span class="alert__icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="10" cy="10" r="7"/><path d="M10 9v5M10 6.5v.01"/></svg></span>
+      <div class="alert__body">
+        <span class="alert__title">New retainer slots open in Q3</span>
+        <span class="alert__message">Two engineering retainers became available. <a class="alert__link" href="#">Book a call →</a></span>
+      </div>
+      <button class="alert__close" aria-label="Dismiss"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
+    </div>
+
+    <span class="label">Banner — full-width, top of page</span>
+    <div class="banner-frame">
+      <div class="alert alert--warning alert--banner">
+        <span class="alert__icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3 2.5 16h15z"/><path d="M10 8v4M10 14.5v.01"/></svg></span>
+        <div class="alert__body">
+          <span class="alert__title">Scheduled maintenance · Sun 22:00 CET</span>
+          <span class="alert__message">The portal will be unavailable for approximately 30 minutes.</span>
+        </div>
+        <button class="alert__close" aria-label="Dismiss"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
+      </div>
+      <div class="banner-frame__body">Page content goes here.</div>
+    </div>
+  </div>
+</body>
+</html>

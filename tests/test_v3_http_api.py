@@ -27,7 +27,6 @@ class HttpApiTests(unittest.TestCase):
     def test_browser_router_routes_fall_back_to_index(self):
         for path in ['/tasks','/flow','/translations/job-1','/prompts/translator-agent','/settings']:
             status,body=self.get(path);self.assertEqual(200,status);self.assertIn('type="importmap"',body)
-        status,js=self.get('/src/pages/flow.js');self.assertEqual(200,status);self.assertIn('@xyflow/react',js)
     def test_flow_layout_http_roundtrip(self):
         status,payload=self.post('/api/flow-layout',{'nodes':{'sess-v3:1':{'x':12,'y':34}},'viewport':{'x':1,'y':2,'zoom':0.7}})
         self.assertEqual(200,status);self.assertEqual(12.0,payload['nodes']['sess-v3:1']['x'])

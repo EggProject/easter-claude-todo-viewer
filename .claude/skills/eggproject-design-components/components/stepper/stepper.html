@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>EggProject — Stepper</title>
+  <script src="../../../eggproject-design/preview/_theme.js" defer></script>
+  <meta name="viewport" content="width=860" />
+  <link rel="stylesheet" href="stepper.css" />
+  <link rel="icon" href="../../../eggproject-design/assets/logo-mark.svg" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--ep-bg); color: var(--ep-fg); font-family: var(--ep-font-sans); padding: 40px; }
+    .page { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+    .label { font: var(--ep-text-overline); letter-spacing: var(--ep-track-overline); text-transform: uppercase; color: var(--ep-fg-subtle); }
+    h1 { font: 400 36px/1.1 var(--ep-font-display); letter-spacing: -0.02em; color: var(--ep-fg); }
+ h1 em { font-weight: 700; }
+    .frame { background: var(--ep-bg-elevated); border: 1px solid var(--ep-border-subtle); border-radius: 12px; padding: 24px; }
+    .split { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1>Stepper · <em>linear progress</em></h1>
+
+    <span class="label">Horizontal · current = 2</span>
+    <div class="frame">
+      <ol class="stepper">
+        <li class="stepper__step stepper__step--complete">
+          <div class="stepper__header"><span class="stepper__node"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m3.5 8 3 3 6-6.5"/></svg></span><div class="stepper__text"><span class="stepper__label">Brief</span><span class="stepper__subtitle">Approved · Mar 4</span></div></div>
+          <span class="stepper__line"></span>
+        </li>
+        <li class="stepper__step stepper__step--complete">
+          <div class="stepper__header"><span class="stepper__node"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m3.5 8 3 3 6-6.5"/></svg></span><div class="stepper__text"><span class="stepper__label">Scope</span><span class="stepper__subtitle">Signed · Mar 8</span></div></div>
+          <span class="stepper__line"></span>
+        </li>
+        <li class="stepper__step stepper__step--current" aria-current="step">
+          <div class="stepper__header"><span class="stepper__node">3</span><div class="stepper__text"><span class="stepper__label">Build</span><span class="stepper__subtitle">In progress</span></div></div>
+          <span class="stepper__line"></span>
+        </li>
+        <li class="stepper__step stepper__step--pending">
+          <div class="stepper__header"><span class="stepper__node">4</span><div class="stepper__text"><span class="stepper__label">Review</span></div></div>
+          <span class="stepper__line"></span>
+        </li>
+        <li class="stepper__step stepper__step--pending">
+          <div class="stepper__header"><span class="stepper__node">5</span><div class="stepper__text"><span class="stepper__label">Ship</span></div></div>
+        </li>
+      </ol>
+    </div>
+
+    <div class="split">
+      <div>
+        <span class="label">Vertical with substeps</span>
+        <div class="frame" style="margin-top: 8px;">
+          <ol class="stepper stepper--vertical">
+            <li class="stepper__step stepper__step--complete">
+              <div class="stepper__header"><span class="stepper__node"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m3.5 8 3 3 6-6.5"/></svg></span><div class="stepper__text"><span class="stepper__label">Account</span><span class="stepper__subtitle">eszter@northbeam.co</span></div></div>
+              <span class="stepper__line"></span>
+            </li>
+            <li class="stepper__step stepper__step--complete">
+              <div class="stepper__header"><span class="stepper__node"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m3.5 8 3 3 6-6.5"/></svg></span><div class="stepper__text"><span class="stepper__label">Workspace</span><span class="stepper__subtitle">Northbeam HQ</span></div></div>
+              <span class="stepper__line"></span>
+            </li>
+            <li class="stepper__step stepper__step--current">
+              <div class="stepper__header"><span class="stepper__node">3</span><div class="stepper__text"><span class="stepper__label">Invite team</span><span class="stepper__subtitle">Recommended</span></div></div>
+              <span class="stepper__line"></span>
+            </li>
+            <li class="stepper__step stepper__step--pending">
+              <div class="stepper__header"><span class="stepper__node">4</span><div class="stepper__text"><span class="stepper__label">Connect billing</span></div></div>
+            </li>
+          </ol>
+        </div>
+      </div>
+      <div>
+        <span class="label">Dots variant — minimal</span>
+        <div class="frame" style="margin-top: 8px; padding: 32px 24px;">
+          <ol class="stepper stepper--dots">
+            <li class="stepper__step stepper__step--complete"><div class="stepper__header"><span class="stepper__node"></span><div class="stepper__text"><span class="stepper__label">1</span></div></div><span class="stepper__line"></span></li>
+            <li class="stepper__step stepper__step--complete"><div class="stepper__header"><span class="stepper__node"></span><div class="stepper__text"><span class="stepper__label">2</span></div></div><span class="stepper__line"></span></li>
+            <li class="stepper__step stepper__step--current"><div class="stepper__header"><span class="stepper__node"></span><div class="stepper__text"><span class="stepper__label">3</span></div></div><span class="stepper__line"></span></li>
+            <li class="stepper__step stepper__step--pending"><div class="stepper__header"><span class="stepper__node"></span><div class="stepper__text"><span class="stepper__label">4</span></div></div><span class="stepper__line"></span></li>
+            <li class="stepper__step stepper__step--pending"><div class="stepper__header"><span class="stepper__node"></span><div class="stepper__text"><span class="stepper__label">5</span></div></div></li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

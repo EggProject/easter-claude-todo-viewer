@@ -1,0 +1,227 @@
+@import url('../../../eggproject-design/colors_and_type.css');
+
+/* ============ Command Palette (⌘K) ============
+   Floating modal with a search input and a list of commands grouped by section.
+
+   .command-palette-overlay   — backdrop
+   .command-palette           — palette card
+   .command-palette__header     — search row with icon + input + esc hint
+   .command-palette__input    — input
+   .command-palette__list     — scroll list
+   .command-palette__group    — group container
+   .command-palette__label    — group label (uppercase)
+   .command-palette__item     — single command row
+   .command-palette__item.is-active
+   .command-palette__hint     — bottom hint bar with kbd
+============================================ */
+.command-palette-overlay {
+  position: fixed; inset: 0;
+  background: rgba(10, 18, 48, 0.42);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  z-index: 1000;
+  display: flex; align-items: flex-start; justify-content: center;
+  padding: 96px 24px 24px;
+}
+
+.command-palette {
+  width: 100%;
+  max-width: 640px;
+  max-height: calc(100vh - 120px);
+  background: var(--ep-bg-elevated);
+  border: 1px solid var(--ep-border-subtle);
+  border-radius: var(--ep-radius-xl);
+  box-shadow: var(--ep-shadow-xl);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+/* Programmatic fallback focus: the panel (tabIndex -1) only takes focus when there is no
+   usable tabbable target. Keep its elevation and add the system focus ring; never animated.
+   Only matches when the panel itself is focused, so it stays invisible while the input is. */
+.command-palette:focus-visible {
+  outline: none;
+  box-shadow: var(--ep-shadow-focus), var(--ep-shadow-xl);
+}
+
+.command-palette__header {
+  display: flex; align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--ep-divider);
+}
+.command-palette__header svg.command-palette__search {
+  width: 18px; height: 18px;
+  color: var(--ep-fg-muted);
+  flex-shrink: 0;
+}
+.command-palette__input {
+  flex: 1;
+  background: transparent;
+  border: 0;
+  outline: none;
+  font: 400 18px var(--ep-font-sans);
+  color: var(--ep-fg);
+  font-family: inherit;
+}
+.command-palette__input::placeholder { color: var(--ep-fg-placeholder); }
+/* Keyboard focus indicator — the input resets the UA outline, so restore a visible,
+   layout-neutral, non-animated ring using the system focus token. */
+.command-palette__input:focus-visible {
+  outline: none;
+  box-shadow: var(--ep-shadow-focus);
+}
+.command-palette__escape {
+  font: 500 11px var(--ep-font-mono);
+  background: var(--ep-bg-hover);
+  color: var(--ep-fg-muted);
+  border: 1px solid var(--ep-border);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.command-palette__list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.command-palette__group + .command-palette__group { margin-top: 4px; }
+
+.command-palette__label {
+  font: var(--ep-text-overline);
+  letter-spacing: var(--ep-track-overline);
+  text-transform: uppercase;
+  color: var(--ep-fg-subtle);
+  padding: 10px 12px 4px;
+}
+
+.command-palette__item {
+  display: flex; align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: var(--ep-radius-md);
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  font: 500 14px var(--ep-font-sans);
+  color: var(--ep-fg);
+  text-align: left;
+  width: 100%;
+  font-family: inherit;
+}
+/* Active option visual is driven by both the .is-active class and the ARIA state so the two
+   can never diverge; hovering an item also makes it active, so they always coincide. */
+.command-palette__item:hover,
+.command-palette__item.is-active,
+.command-palette__item[aria-selected="true"] { background: var(--ep-bg-hover); }
+.command-palette__icon {
+  width: 18px; height: 18px;
+  color: var(--ep-fg-muted);
+  flex-shrink: 0;
+}
+.command-palette__icon svg { width: 100%; height: 100%; }
+.command-palette__text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.command-palette__meta {
+  font: 500 12px var(--ep-font-mono);
+  color: var(--ep-fg-subtle);
+}
+.command-palette__shortcut {
+  display: inline-flex; align-items: center; gap: 2px;
+}
+.command-palette__shortcut kbd {
+  font: 500 11px var(--ep-font-mono);
+  background: var(--ep-bg-hover);
+  color: var(--ep-fg-muted);
+  border: 1px solid var(--ep-border);
+  padding: 1px 6px;
+  border-radius: 4px;
+  min-width: 18px;
+  text-align: center;
+}
+
+.command-palette__empty {
+  padding: 40px 24px;
+  text-align: center;
+  color: var(--ep-fg-subtle);
+  font: var(--ep-text-small);
+}
+.command-palette__empty strong { color: var(--ep-fg); font-weight: 500; }
+
+.command-palette__footer {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 18px;
+  border-top: 1px solid var(--ep-divider);
+  background: var(--ep-bg-sunken);
+  font: var(--ep-text-meta);
+  color: var(--ep-fg-subtle);
+}
+.command-palette__footer-pair { display: inline-flex; align-items: center; gap: 4px; }
+.command-palette__footer kbd {
+  font: 500 11px var(--ep-font-mono);
+  background: var(--ep-bg-elevated);
+  border: 1px solid var(--ep-border);
+  padding: 1px 6px;
+  border-radius: 4px;
+  color: var(--ep-fg-muted);
+}
+
+/* ---- Forced colors (Windows High Contrast etc.) ---- */
+/* System colors only; no tokens / hex / rgb / color-mix / alpha / forced-color-adjust / !important. */
+@media (forced-colors: active) {
+  /* Real surface + border so the modal layer separates without relying on the (ignored) shadow. */
+  .command-palette {
+    background: Canvas;
+    color: CanvasText;
+    border: 1px solid CanvasText;
+    box-shadow: none;
+  }
+  /* Programmatic panel fallback focus — shadow rings are dropped in forced colors. */
+  .command-palette:focus-visible {
+    box-shadow: none;
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+  /* Combobox input: legible surface, GrayText placeholder, Highlight outline on focus. */
+  .command-palette__input {
+    background: Canvas;
+    color: CanvasText;
+  }
+  .command-palette__input::placeholder { color: GrayText; }
+  .command-palette__input:focus-visible {
+    box-shadow: none;
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+  /* Group heading + empty state stay legible and never read as an option. */
+  .command-palette__label { color: GrayText; }
+  .command-palette__empty { color: CanvasText; }
+  /* Options: normal vs hover/active. aria-selected is the primary active-state source. */
+  .command-palette__item { background: Canvas; color: CanvasText; }
+  .command-palette__item:hover,
+  .command-palette__item.is-active,
+  .command-palette__item[aria-selected="true"] {
+    background: Highlight;
+    color: HighlightText;
+    outline: 2px solid HighlightText;
+    outline-offset: -2px;
+  }
+  /* Icon and the active row's meta/shortcut follow the row color (legible on Highlight). */
+  .command-palette__icon { color: currentColor; }
+  .command-palette__item:hover .command-palette__meta,
+  .command-palette__item.is-active .command-palette__meta,
+  .command-palette__item[aria-selected="true"] .command-palette__meta,
+  .command-palette__item:hover .command-palette__shortcut kbd,
+  .command-palette__item.is-active .command-palette__shortcut kbd,
+  .command-palette__item[aria-selected="true"] .command-palette__shortcut kbd {
+    color: HighlightText;
+    border-color: HighlightText;
+  }
+}
+
+/* ---- Reduced motion ---- */
+/* The palette ships with no entrance/exit animation; this neutralises any overlay/panel
+   fade/scale/translate defensively so reduced-motion users never get popup movement. */
+@media (prefers-reduced-motion: reduce) {
+  .command-palette-overlay,
+  .command-palette { animation: none; }
+}

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>EggProject — Charts</title>
+  <script src="../../../eggproject-design/preview/_theme.js" defer></script>
+  <meta name="viewport" content="width=1000" />
+  <link rel="stylesheet" href="charts.css" />
+  <link rel="icon" href="../../../eggproject-design/assets/logo-mark.svg" />
+  <style>
+    body { padding: 32px 24px; background: var(--ep-bg); }
+    .charts-stack { max-width: 1000px; margin: 0 auto; display: flex; flex-direction: column; gap: 48px; }
+    .charts-stack h2 {
+      font: 400 28px/1 var(--ep-font-display);
+      letter-spacing: var(--ep-track-tight);
+      color: var(--ep-fg);
+      margin: 0 0 12px;
+    }
+    .charts-stack h2 em { font-weight: 700; color: var(--ep-accent); font-style: normal; }
+    .charts-stack section { display: flex; flex-direction: column; }
+  </style>
+</head>
+<body>
+  <div class="charts-stack" data-screen-label="EggProject Charts">
+    <section>
+      <h2>Bar <em>chart</em></h2>
+      <div id="bar-root"></div>
+    </section>
+    <section>
+      <h2>Line <em>chart</em></h2>
+      <div id="line-root"></div>
+    </section>
+  </div>
+  <script src="../../assets/vendor/react.production.min.js"></script>
+  <script src="../../assets/vendor/react-dom.production.min.js"></script>
+  <script src="../../assets/vendor/babel.min.js"></script>
+  <script type="text/babel" src="BarChart.jsx"></script>
+  <script type="text/babel" src="LineChart.jsx"></script>
+  <script type="text/babel">
+    ReactDOM.createRoot(document.getElementById('bar-root')).render(<BarChart />);
+    ReactDOM.createRoot(document.getElementById('line-root')).render(<LineChart />);
+  </script>
+</body>
+</html>

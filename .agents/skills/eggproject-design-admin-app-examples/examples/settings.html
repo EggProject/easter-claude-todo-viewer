@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<!-- @dsCard group="Brand" name="Demo · Settings" subtitle="Top-nav settings · profile + prefs + appearance + team + danger" -->
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>EggProject — Settings</title>
+  <script src="../../eggproject-design/preview/_theme.js" defer></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" href="../../eggproject-design/assets/logo-mark.svg" />
+  <link rel="stylesheet" href="../../eggproject-design/colors_and_type.css" />
+  <link rel="stylesheet" href="../../eggproject-design-app-common/_shell.css" />
+  <link rel="stylesheet" href="../../eggproject-design-components/components/button/button.css" />
+  <link rel="stylesheet" href="../../eggproject-design-components/components/badge/badge.css" />
+  <link rel="stylesheet" href="../../eggproject-design-components/components/input/input.css" />
+  <link rel="stylesheet" href="../../eggproject-design-components/components/select/select.css" />
+  <link rel="stylesheet" href="../../eggproject-design-components/components/menu/menu.css" />
+  <link rel="stylesheet" href="../../eggproject-design-components/components/form-controls/form-controls.css" />
+  <link rel="stylesheet" href="../../eggproject-design-components/components/tabs/tabs.css" />
+  <link rel="stylesheet" href="../../eggproject-design-components/components/avatar/avatar.css" />
+  <link rel="stylesheet" href="../../eggproject-design-components/components/alert/alert.css" />
+  <link rel="stylesheet" href="../../eggproject-design-components/components/divider/divider.css" />
+  <link rel="stylesheet" href="../../eggproject-design-components/components/kbd/kbd.css" />
+  <link rel="stylesheet" href="../../eggproject-design-components/components/breadcrumb/breadcrumb.css" />
+  <link rel="stylesheet" href="../../eggproject-design-components/components/file-upload/file-upload.css" />
+  <style>
+    body { background: var(--ep-bg-sunken); }
+    .layout { max-width: 1080px; margin: 0 auto; padding: 32px 32px 80px; display: grid; grid-template-columns: 220px 1fr; gap: 40px; align-items: start; }
+    .nav-sidebar { position: sticky; top: 88px; display: flex; flex-direction: column; gap: 2px; }
+    .nav-sidebar__label { font: 500 11px var(--ep-font-sans); letter-spacing: var(--ep-track-overline); text-transform: uppercase; color: var(--ep-fg-subtle); padding: 0 10px 6px; }
+    .nav-sidebar__link { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: var(--ep-radius-md); font: 500 13px var(--ep-font-sans); color: var(--ep-fg-muted); text-decoration: none; transition: all var(--ep-dur-fast) var(--ep-ease-out); }
+    .nav-sidebar__link svg { width: 14px; height: 14px; }
+    .nav-sidebar__link:hover { color: var(--ep-fg); }
+    .nav-sidebar__link.is-on { color: var(--ep-fg); background: var(--ep-bg-elevated); box-shadow: var(--ep-shadow-xs); }
+    .nav-sidebar__link .pill { margin-left: auto; font: 500 10px var(--ep-font-mono); background: var(--ep-yolk-100); color: var(--ep-yolk-700); padding: 1px 6px; border-radius: 999px; }
+    .content { display: flex; flex-direction: column; gap: 28px; min-width: 0; }
+    .page-h { display: flex; flex-direction: column; gap: 6px; }
+    .page-h h1 { font: 400 36px/1.05 var(--ep-font-display); letter-spacing: -0.02em; color: var(--ep-fg); }
+    .page-h h1 em { font-weight: 700; }
+    .page-h p { font: 400 15px/1.55 var(--ep-font-sans); color: var(--ep-fg-muted); max-width: 60ch; }
+    .card { background: var(--ep-bg-elevated); border: 1px solid var(--ep-border-subtle); border-radius: var(--ep-radius-lg); box-shadow: var(--ep-shadow-sm); }
+    .card__header { padding: 20px 24px 16px; display: flex; flex-direction: column; gap: 4px; border-bottom: 1px solid var(--ep-divider); }
+    .card__header h2 { font: 600 16px var(--ep-font-sans); color: var(--ep-fg); }
+    .card__header p { font: 400 13.5px/1.5 var(--ep-font-sans); color: var(--ep-fg-muted); }
+    .card__body { padding: 22px 24px; }
+    .card__footer { padding: 14px 24px; border-top: 1px solid var(--ep-divider); background: var(--ep-bg-sunken); border-radius: 0 0 var(--ep-radius-lg) var(--ep-radius-lg); display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .card__footer__hint { font: var(--ep-text-meta); font-family: var(--ep-font-mono); color: var(--ep-fg-subtle); }
+    .field-row { display: flex; flex-direction: column; gap: 16px; }
+    .field-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .profile-header { display: flex; align-items: center; gap: 18px; padding-bottom: 18px; border-bottom: 1px solid var(--ep-divider); margin-bottom: 22px; }
+    .profile-header__avatar { width: 72px; height: 72px; border-radius: 50%; background: linear-gradient(135deg, var(--ep-accent), var(--ep-blue-400)); color: #fff; display: inline-flex; align-items: center; justify-content: center; font: 600 24px var(--ep-font-sans); flex-shrink: 0; }
+    .profile-header__name { font: 600 16px var(--ep-font-sans); color: var(--ep-fg); }
+    .profile-header__role { font: var(--ep-text-small); color: var(--ep-fg-muted); margin-top: 2px; }
+    .profile-header__actions { margin-left: auto; display: flex; gap: 8px; }
+    .preference-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--ep-divider); }
+    .preference-row:last-child { border-bottom: 0; }
+    .preference-row__body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+    .preference-row__title { font: 500 14px var(--ep-font-sans); color: var(--ep-fg); }
+    .preference-row__hint { font: 400 13px/1.45 var(--ep-font-sans); color: var(--ep-fg-muted); }
+    .preference-row__hint code { font: 500 12px var(--ep-font-mono); background: var(--ep-accent-bg); color: var(--ep-accent-fg); padding: 1px 6px; border-radius: 4px; }
+    .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .theme { border: 1.5px solid var(--ep-border); border-radius: var(--ep-radius-md); padding: 10px; cursor: pointer; transition: all var(--ep-dur-fast) var(--ep-ease-out); background: var(--ep-bg-elevated); }
+    .theme:hover { border-color: var(--ep-fg); }
+    .theme.is-on { border-color: var(--ep-accent); box-shadow: 0 0 0 3px var(--ep-blue-100); }
+    .theme__art { height: 64px; border-radius: var(--ep-radius-sm); display: flex; align-items: stretch; overflow: hidden; margin-bottom: 10px; }
+    .theme__art .a { width: 28%; }
+    .theme__art .b { flex: 1; padding: 8px; display: flex; flex-direction: column; gap: 4px; }
+    .theme__art .b .line { height: 4px; border-radius: 2px; background: var(--ep-bg-pressed); width: 80%; }
+    .theme__art .b .line.l { width: 60%; }
+    .theme__art--paper .a { background: var(--ep-bg-elevated); border-right: 1px solid var(--ep-divider); }
+    .theme__art--paper .b { background: var(--ep-bg-sunken); }
+    .theme__art--slate .a { background: var(--ep-bg-elevated); border-right: 1px solid var(--ep-divider); }
+    .theme__art--slate .b { background: var(--ep-bg-sunken); }
+    .theme__art--ink .a { background: #181F38; }
+    .theme__art--ink .b { background: var(--ep-ink-900); }
+    .theme__art--ink .b .line { background: rgba(255,255,255,0.18); }
+    .theme__name { display: flex; align-items: center; justify-content: space-between; font: 500 13px var(--ep-font-sans); color: var(--ep-fg); }
+    .theme__check { width: 16px; height: 16px; border-radius: 50%; background: var(--ep-accent); color: var(--ep-accent-on); display: inline-flex; align-items: center; justify-content: center; opacity: 0; }
+    .theme.is-on .theme__check { opacity: 1; }
+    .members { width: 100%; border-collapse: collapse; }
+    .members th, .members td { padding: 12px 0; border-bottom: 1px solid var(--ep-divider); text-align: left; vertical-align: middle; }
+    .members tr:last-child td { border-bottom: 0; }
+    .members th { font: 500 11px var(--ep-font-sans); letter-spacing: var(--ep-track-overline); text-transform: uppercase; color: var(--ep-fg-subtle); }
+    .member { display: flex; align-items: center; gap: 12px; }
+    .member strong { display: block; font: 500 14px var(--ep-font-sans); color: var(--ep-fg); }
+    .member small { font: var(--ep-text-meta); font-family: var(--ep-font-mono); color: var(--ep-fg-subtle); }
+    .role-btn { padding: 6px 10px; border-radius: var(--ep-radius-md); background: var(--ep-bg-hover); border: 1px solid var(--ep-border-subtle); font: 500 13px var(--ep-font-sans); color: var(--ep-fg); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+    .role-btn svg { width: 12px; height: 12px; color: var(--ep-fg-muted); }
+    .members td:last-child { text-align: right; }
+    .mem-th { display: inline-flex; align-items: center; gap: 5px; }
+    .mem-caret { color: var(--ep-fg-faint); flex: 0 0 auto; }
+    .danger { border-color: var(--ep-danger); background: var(--ep-bg-elevated); }
+    .danger .card__header h2 { color: var(--ep-danger); }
+    .danger-row { display: flex; align-items: center; gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--ep-divider); }
+    .danger-row:last-child { border-bottom: 0; }
+    .danger-row__body { flex: 1; }
+    .danger-row__title { font: 600 14px var(--ep-font-sans); color: var(--ep-fg); }
+    .danger-row__hint { font: 400 13px/1.45 var(--ep-font-sans); color: var(--ep-fg-muted); margin-top: 2px; }
+    /* The .tabs control here is real settings section-navigation (native <nav> + links), not a
+       Tabs widget, so the shared .tabs button recipe (button-only) does not match these <a>s —
+       mirror just the link appearance. The current section is marked by .is-on + aria-current;
+       the .is-on underline (not colour alone) carries the active state. */
+    .tabs a { display: inline-flex; align-items: center; gap: 8px; flex: 0 0 auto; white-space: nowrap;
+      padding: 12px 16px; margin-bottom: -1px; font: 500 14px var(--ep-font-sans); color: var(--ep-fg-muted);
+      text-decoration: none; border-bottom: 2px solid transparent;
+      transition: color var(--ep-dur-fast) var(--ep-ease-out); }
+    .tabs a:hover { color: var(--ep-fg); }
+    .tabs a.is-on { color: var(--ep-fg); border-bottom-color: var(--ep-blue-600); }
+    .tabs a:focus-visible { outline: none; box-shadow: var(--ep-shadow-focus); }
+    @media (forced-colors: active) {
+      .tabs a.is-on { border-bottom-color: Highlight; }
+      .tabs a:focus-visible { outline: 2px solid Highlight; outline-offset: -2px; box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-tn" data-screen-label="Settings">
+    <header class="app-tn__bar">
+      <a class="app-tn__brand" href="#">
+        <img src="../../eggproject-design/assets/logo-mark.svg" alt="" />
+        <b>EggProject</b>
+      </a>
+      <nav class="app-tn__navigation">
+        <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 9-7 9 7v9a2 2 0 0 1-2 2h-4v-7H9v7H5a2 2 0 0 1-2-2z"/></svg>Overview</a>
+        <a href="analytics.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18M7 14l3-3 4 4 5-6"/></svg>Analytics</a>
+        <a href="inbox.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13V7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6m-18 0 3.5 5h11L21 13"/></svg>Inbox <span class="pill">3</span></a>
+        <a href="billing.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 11h18M7 15h4"/></svg>Invoices</a>
+        <a class="is-on" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Settings</a>
+      </nav>
+      <div class="app-tn__actions">
+        <span class="design-mark-meta" style="text-transform: none; letter-spacing: 0;">Workspace · <strong style="color: var(--ep-fg);">EggProject Studio</strong></span>
+        <button class="ep-theme-toggle" type="button" data-ep-theme-toggle aria-label="Switch to dark theme">
+          <svg class="ep-theme-toggle__moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+          <svg class="ep-theme-toggle__sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        </button>
+        <span class="avatar avatar--sm avatar--blue">AK</span>
+      </div>
+    </header>
+
+    <div class="app-tn__main">
+      <div class="layout">
+        <aside class="nav-sidebar">
+          <span class="nav-sidebar__label">Account</span>
+          <a class="nav-sidebar__link is-on" href="#general"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="6" r="3"/><path d="M2 14a6 6 0 0 1 12 0"/></svg>Profile</a>
+          <a class="nav-sidebar__link" href="#prefs"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="2"/><path d="M13.3 10a1.1 1.1 0 0 0 .22 1.2l.04.04a1.33 1.33 0 1 1-1.88 1.88l-.04-.04a1.1 1.1 0 0 0-1.2-.22 1.1 1.1 0 0 0-.67 1V14a1.33 1.33 0 0 1-2.67 0v-.07a1.1 1.1 0 0 0-.66-1 1.1 1.1 0 0 0-1.2.22l-.05.04a1.33 1.33 0 1 1-1.88-1.88l.04-.04a1.1 1.1 0 0 0 .22-1.2 1.1 1.1 0 0 0-1-.67H2A1.33 1.33 0 0 1 2 6.67h.07a1.1 1.1 0 0 0 1-.67 1.1 1.1 0 0 0-.22-1.2L2.8 4.76a1.33 1.33 0 1 1 1.88-1.88l.05.04a1.1 1.1 0 0 0 1.2.22h.06a1.1 1.1 0 0 0 .66-1V2a1.33 1.33 0 0 1 2.67 0v.07a1.1 1.1 0 0 0 .67 1 1.1 1.1 0 0 0 1.2-.22l.04-.04a1.33 1.33 0 1 1 1.88 1.88l-.04.04a1.1 1.1 0 0 0-.22 1.2v.06a1.1 1.1 0 0 0 1 .66H14a1.33 1.33 0 0 1 0 2.67h-.07a1.1 1.1 0 0 0-1 .67z"/></svg>Preferences</a>
+          <a class="nav-sidebar__link" href="#appearance"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><path d="M8 2v12M2 8h12"/></svg>Appearance</a>
+          <span class="nav-sidebar__label" style="margin-top: 14px;">Workspace</span>
+          <a class="nav-sidebar__link" href="#team"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M11 14v-1a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v1M14 14v-1a2 2 0 0 0-1.5-1.93M11 2.13a2 2 0 0 1 0 3.87"/><circle cx="6.5" cy="5" r="2.5"/></svg>Team <span class="pill">8</span></a>
+          <a class="nav-sidebar__link" href="billing.html"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="12" height="9" rx="1.5"/><path d="M2 7h12M5 10h2.5"/></svg>Billing</a>
+        </aside>
+
+        <main class="content">
+          <header class="page-h">
+            <span class="design-mark-meta">Account / Profile</span>
+            <h1 id="settings-title">Account <em>settings</em></h1>
+            <p>Tweak how you appear in the studio, what we send you, and what the rest of the team sees.</p>
+          </header>
+
+          <nav class="tabs" aria-labelledby="settings-title">
+            <a class="is-on" href="#general" aria-current="location">Profile</a>
+            <a href="#prefs">Preferences</a>
+            <a href="#appearance">Appearance</a>
+            <a href="#prefs">Notifications</a>
+            <a href="#danger">Security <span class="tabs__count">2</span></a>
+          </nav>
+
+          <section class="card" id="general">
+            <header class="card__header"><h2>Public profile</h2><p>What clients see in the portal and what shows up in shared comments.</p></header>
+            <div class="card__body">
+              <div class="profile-header">
+                <span class="profile-header__avatar">AK</span>
+                <div><div class="profile-header__name">Anna Kovács</div><div class="profile-header__role">Director of Product · Northbeam</div></div>
+                <div class="profile-header__actions"><button class="btn btn--secondary btn--sm">Upload new</button><button class="btn btn--ghost btn--sm">Remove</button></div>
+              </div>
+              <div class="field-row">
+                <div class="field-row-2"><div class="field"><label class="field__label">First name</label><input class="input" value="Anna" /></div><div class="field"><label class="field__label">Last name</label><input class="input" value="Kovács" /></div></div>
+                <div class="field"><label class="field__label">Display name</label><input class="input" value="Anna" /></div>
+                <div class="field-row-2"><div class="field"><label class="field__label">Email</label><input class="input" value="anna@northbeam.co" /></div><div class="field"><label class="field__label" for="settings-timezone">Timezone</label><select id="settings-timezone" name="timezone" class="select"><option value="Europe/London">Europe / London (UTC+1)</option><option value="Europe/Budapest" selected>Europe / Budapest (UTC+2)</option><option value="America/New_York">America / New York (UTC-4)</option><option value="America/Los_Angeles">America / Los Angeles (UTC-7)</option><option value="Asia/Tokyo">Asia / Tokyo (UTC+9)</option></select></div></div>
+                <div class="field"><label class="field__label">Bio · optional</label><textarea class="input" rows="3" style="resize: vertical;">Product lead at Northbeam. Likes: tight specs, short meetings, a working build by Thursday.</textarea></div>
+              </div>
+            </div>
+            <footer class="card__footer"><span class="card__footer__hint">Last updated 4 May · saved automatically</span><div style="display: flex; gap: 8px;"><button class="btn btn--ghost btn--sm">Discard</button><button class="btn btn--primary btn--sm">Save changes</button></div></footer>
+          </section>
+
+          <section class="card" id="prefs">
+            <header class="card__header"><h2>Preferences</h2><p>Small things that change how the app feels day-to-day.</p></header>
+            <div class="card__body">
+              <div class="preference-row"><div class="preference-row__body"><span class="preference-row__title">Send weekly digest on Mondays</span><span class="preference-row__hint">Plain-text summary at 08:00 in your timezone.</span></div><label class="ctrl"><input class="ctrl__input" type="checkbox" checked /><span class="ctrl__switch"></span></label></div>
+              <div class="preference-row"><div class="preference-row__body"><span class="preference-row__title">Show "office hours" on my profile</span><span class="preference-row__hint">Clients see when you typically respond.</span></div><label class="ctrl"><input class="ctrl__input" type="checkbox" checked /><span class="ctrl__switch"></span></label></div>
+              <div class="preference-row"><div class="preference-row__body"><span class="preference-row__title">Group comments by thread</span><span class="preference-row__hint">Otherwise comments appear chronologically across all projects.</span></div><label class="ctrl"><input class="ctrl__input" type="checkbox" /><span class="ctrl__switch"></span></label></div>
+              <div class="preference-row"><div class="preference-row__body"><label class="preference-row__title" for="settings-auto-archive-period">Auto-archive threads after</label><span class="preference-row__hint" id="settings-auto-archive-hint">Resolved threads move out of inbox after a quiet period.</span></div><select id="settings-auto-archive-period" name="autoArchivePeriod" class="select select--sm" style="width: auto;" aria-describedby="settings-auto-archive-hint"><option value="7">7 days</option><option value="14" selected>14 days</option><option value="30">30 days</option><option value="90">90 days</option></select></div>
+            </div>
+          </section>
+
+          <section class="card" id="appearance">
+            <header class="card__header"><h2>Appearance</h2><p>Brand surface vs. tool surface.</p></header>
+            <div class="card__body">
+              <div class="theme-grid">
+                <div class="theme is-on"><div class="theme__art theme__art--paper"><div class="a"></div><div class="b"><div class="line"></div><div class="line l"></div><div class="line"></div></div></div><div class="theme__name">Paper cream<span class="theme__check"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m3 6 2 2 4-5"/></svg></span></div></div>
+                <div class="theme"><div class="theme__art theme__art--slate"><div class="a"></div><div class="b"><div class="line"></div><div class="line l"></div><div class="line"></div></div></div><div class="theme__name">Slate (default)<span class="theme__check"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m3 6 2 2 4-5"/></svg></span></div></div>
+                <div class="theme"><div class="theme__art theme__art--ink"><div class="a"></div><div class="b"><div class="line"></div><div class="line l"></div><div class="line"></div></div></div><div class="theme__name">Midnight ink<span class="theme__check"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m3 6 2 2 4-5"/></svg></span></div></div>
+              </div>
+              <div class="divider divider--label" style="margin: 22px 0 16px;">Density</div>
+              <div class="radio-group radio-group--row">
+                <label class="ctrl"><input class="ctrl__input" type="radio" name="density" /><span class="ctrl__radio"></span><span class="ctrl__text"><span class="ctrl__label">Comfortable</span></span></label>
+                <label class="ctrl"><input class="ctrl__input" type="radio" name="density" checked /><span class="ctrl__radio"></span><span class="ctrl__text"><span class="ctrl__label">Default</span></span></label>
+                <label class="ctrl"><input class="ctrl__input" type="radio" name="density" /><span class="ctrl__radio"></span><span class="ctrl__text"><span class="ctrl__label">Compact</span></span></label>
+              </div>
+            </div>
+          </section>
+
+          <section class="card" id="team">
+            <header class="card__header" style="display: flex; flex-direction: row; align-items: center; gap: 12px;"><div style="flex: 1;"><h2>Team · 8 members</h2><p>Studio admins, engineers, designers, and the back-office team.</p></div><button class="btn btn--ink btn--sm"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3v8m-4-4h8"/></svg>Invite member</button></header>
+            <div class="card__body" style="padding-top: 6px;"><div id="members-table-mount"></div></div>
+          </section>
+
+          <section class="card danger" id="danger" style="border-color: var(--ep-danger);">
+            <header class="card__header"><h2>Danger zone</h2><p>Two actions that need a second confirmation.</p></header>
+            <div class="card__body" style="padding-top: 4px;">
+              <div class="danger-row"><div class="danger-row__body"><div class="danger-row__title">Transfer workspace ownership</div><div class="danger-row__hint">You'll keep your admin seat. The new owner gets billing access and the workspace badge.</div></div><button class="btn btn--secondary btn--sm">Transfer…</button></div>
+              <div class="danger-row"><div class="danger-row__body"><div class="danger-row__title">Delete workspace</div><div class="danger-row__hint">Permanently removes projects, invoices, files, and the portal URL. There is no undo.</div></div><button class="btn btn--danger btn--sm">Delete EggProject Studio</button></div>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../eggproject-design-components/assets/vendor/react.production.min.js"></script>
+  <script src="../../eggproject-design-components/assets/vendor/react-dom.production.min.js"></script>
+  <script src="../../eggproject-design-components/assets/vendor/babel.min.js"></script>
+  <script src="../../eggproject-design-components/assets/vendor/react-table.production.min.js"></script>
+  <script type="text/babel" src="settings-members.jsx"></script>
+</body>
+</html>

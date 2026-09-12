@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>EggProject — Tabs</title>
+  <script src="../../../eggproject-design/preview/_theme.js" defer></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="tabs.css" />
+  <link rel="icon" href="../../../eggproject-design/assets/logo-mark.svg" />
+  <style>
+    /* Demo-page chrome only. No .tabs / .tabs-root / .tabs__panels / .tabs__panel / .tabs__count /
+       .seg / .pills / .is-on / [role="tab"] / [role="radio"] / [hidden] rules: the component owns
+       its CSS, focus-visible ring, hidden panels, forced-colors and reduced-motion. Nothing here
+       overrides component overflow, layout, height, selection or focus. */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--ep-bg); color: var(--ep-fg); font-family: var(--ep-font-sans); padding: 40px 24px; min-height: 100vh; }
+    .page { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 22px; }
+    header { display: flex; flex-direction: column; gap: 10px; }
+    h1 { font: 400 36px/1.1 var(--ep-font-display); letter-spacing: -0.02em; color: var(--ep-fg); }
+    h1 em { font-weight: 700; font-style: normal; color: var(--ep-accent); }
+    .lead { font: var(--ep-text-body); color: var(--ep-fg-muted); max-width: 68ch; text-wrap: pretty; }
+    code { font-family: var(--ep-font-mono); font-size: 0.92em; color: var(--ep-fg); }
+
+    .panel { display: flex; flex-direction: column; align-items: flex-start; gap: 12px;
+      background: var(--ep-bg-elevated); border: 1px solid var(--ep-border-subtle);
+      border-radius: var(--ep-radius-lg); padding: 20px 22px; }
+    .panel h2 { font: 600 16px var(--ep-font-sans); color: var(--ep-fg); }
+    .panel h3 { font: 600 13px var(--ep-font-sans); color: var(--ep-fg); margin-top: 6px; }
+
+    .panel-body { display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
+    .panel-body p { font: var(--ep-text-body); color: var(--ep-fg-muted); max-width: 66ch; text-wrap: pretty; }
+
+    .field { display: flex; flex-direction: column; gap: 6px; max-width: 360px; }
+    .field-label { font: 500 12px var(--ep-font-sans); letter-spacing: 0.04em; text-transform: uppercase; color: var(--ep-fg-muted); }
+    .field input { width: 100%; background: var(--ep-bg); color: var(--ep-fg);
+      border: 1px solid var(--ep-border); border-radius: var(--ep-radius-sm);
+      padding: 7px 10px; font: var(--ep-text-small); font-family: inherit; }
+    .field input:focus-visible { outline: none; box-shadow: var(--ep-shadow-focus); }
+
+    .link { color: var(--ep-accent); font: 500 13px var(--ep-font-sans); width: fit-content; }
+    .link:focus-visible { outline: none; box-shadow: var(--ep-shadow-focus); border-radius: var(--ep-radius-sm); }
+
+    .action { font: 500 13px var(--ep-font-sans); color: var(--ep-fg);
+      background: var(--ep-bg-hover); border: 1px solid var(--ep-border-subtle);
+      border-radius: var(--ep-radius-sm); padding: 6px 12px; cursor: pointer; width: fit-content; }
+    .action:hover { background: var(--ep-bg-pressed); }
+    .action:focus-visible { outline: none; box-shadow: var(--ep-shadow-focus); }
+
+    .demo-form { display: flex; flex-direction: column; gap: 14px; align-items: flex-start; width: 100%; }
+
+    .status { font: var(--ep-text-small); color: var(--ep-fg-muted);
+      border-top: 1px solid var(--ep-divider); padding-top: 10px; width: 100%; }
+    .status strong { color: var(--ep-fg); font-weight: 600; }
+
+    .hint { font: var(--ep-text-small); color: var(--ep-fg-muted); max-width: 72ch; text-wrap: pretty; }
+    .hint code, .hint strong { color: var(--ep-fg); }
+
+    .keys { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }
+    .keys li { font: var(--ep-text-small); color: var(--ep-fg-muted); max-width: 74ch; }
+
+    kbd { font: 600 11px var(--ep-font-mono); background: var(--ep-bg-hover);
+      border: 1px solid var(--ep-border-subtle); border-radius: var(--ep-radius-sm); padding: 1px 6px; color: var(--ep-fg); }
+
+    /* Width-constrained outer frame so the scrollable tablist can be exercised on a narrow
+       canvas. It only limits width; it never targets the component or its overflow. */
+    .demo-frame { width: 100%; max-width: 360px; border: 1px dashed var(--ep-border-subtle);
+      border-radius: var(--ep-radius-md); padding: 12px; }
+    .cols { display: flex; gap: 24px; flex-wrap: wrap; width: 100%; }
+    .cols > * { flex: 1 1 260px; min-width: 0; }
+    .row { display: flex; gap: 28px; flex-wrap: wrap; align-items: flex-start; }
+  </style>
+  <script src="../../assets/vendor/react.production.min.js"></script>
+  <script src="../../assets/vendor/react-dom.production.min.js"></script>
+  <script src="../../assets/vendor/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel" src="Tabs.jsx"></script>
+  <script type="text/babel">
+    const { useState } = React;
+
+    /* Demo-only. This page never reimplements Tabs and never touches the widgets' lifecycle.
+       The exported UnderlineTabs / Segmented / Pills own selection, ARIA (role, aria-selected /
+       aria-checked, aria-controls / aria-labelledby), roving tabIndex, keyboard, automatic
+       activation, the stable React.useId() id pairs and the panel `hidden` contract. Here we only
+       render the real exports, pass real props (items / active / onChange / aria-label /
+       aria-labelledby), and keep some demo state: three controlled ids, one shared status line,
+       and panel-local child state. No querySelector, no addEventListener, no classList, no
+       setAttribute, no manual hidden, no scrollHeight / getBoundingClientRect, no ResizeObserver /
+       MutationObserver, no timer / rAF, no transitionend / animationend, no scrollIntoView, no
+       .focus(), no document.activeElement, no own roving / aria / id pairs / selection fallback. */
+
+    /* Panel-local React state. Proves child state survives a tab switch: panels stay mounted and
+       inactive ones are hidden, so this counter is preserved — it does NOT drive tab selection. */
+    function Counter() {
+      const [n, setN] = useState(0);
+      return (
+        <button type="button" className="action" onClick={() => setN((v) => v + 1)}>
+          Panel-local counter: {n}
+        </button>
+      );
+    }
+
+    /* Panel-local growing list: appending rows lets the real panel grow to its natural height
+       (no cap, no measurement, no observer). Like Counter, it does NOT control tab selection. */
+    function GrowingList() {
+      const [rows, setRows] = useState(['First note', 'Second note', 'Third note']);
+      return (
+        <div className="panel-body">
+          <ul className="keys">
+            {rows.map((row, i) => <li key={i}>{row}</li>)}
+          </ul>
+          <button type="button" className="action" onClick={() => setRows((rs) => [...rs, `Note ${rs.length + 1}`])}>
+            Add a row
+          </button>
+        </div>
+      );
+    }
+
+    function App() {
+      // Allowed demo state: shared status + the three controlled active ids. The uncontrolled
+      // examples keep NO selection state here — the component owns it.
+      const [status, setStatus] = useState('Ready.');
+      const [activeTab, setActiveTab] = useState('summary');   // controlled UnderlineTabs
+      const [range, setRange] = useState('Week');              // controlled Segmented
+      const [pillFilter, setPillFilter] = useState('Active');  // controlled Pills
+
+      // ---- Uncontrolled UnderlineTabs items ----
+      const basicItems = [
+        { id: 'overview', label: 'Overview', content: (
+          <div className="panel-body">
+            <p>The first item is selected on mount and the component owns selection — no demo state backs it.</p>
+            <button type="button" className="action" onClick={() => setStatus('Overview panel action fired.')}>Run panel action</button>
+          </div>
+        )},
+        { id: 'activity', label: 'Activity', count: 3, content: (
+          <div className="panel-body">
+            <p>This panel stays mounted while another tab is active, so the field, link and counter below keep their state when you switch away and back.</p>
+            <label className="field">
+              <span className="field-label">Draft note (uncontrolled input)</span>
+              <input type="text" placeholder="Type, switch tabs, come back…" />
+            </label>
+            <a className="link" href="#tabs-basic-h">A real in-page link</a>
+            <Counter />
+          </div>
+        )},
+        { id: 'settings', label: 'Settings', content: (
+          <div className="panel-body">
+            <p>A third panel, present only to show that exactly one panel is visible at a time and the inactive ones carry the native <code>hidden</code> attribute.</p>
+          </div>
+        )},
+      ];
+
+      // ---- Controlled UnderlineTabs items ----
+      const controlledItems = [
+        { id: 'summary', label: 'Summary', content: (<div className="panel-body"><p>Selection here is driven only by the parent <code>active</code> state.</p></div>) },
+        { id: 'metrics', label: 'Metrics', count: 12, content: (<div className="panel-body"><p>Switching tabs calls <code>onChange(id)</code>, which updates the parent state; the panel follows.</p></div>) },
+        { id: 'audit', label: 'Audit log', content: (<div className="panel-body"><p>Re-activating the already-selected tab is a no-op: <code>onChange</code> does not fire again.</p></div>) },
+      ];
+
+      // ---- Dynamic / long content (one Tabs, one tall panel) ----
+      const dynamicItems = [
+        { id: 'notes', label: 'Notes', content: (
+          <div className="panel-body">
+            <p>This panel holds several paragraphs and a panel-local growing list, so it takes its natural, content-driven height — no fixed height, no <code>max-height</code>, no overflow container, no measurement.</p>
+            <p>Adding rows grows the panel inline. Switch to another tab and back: the appended rows are still here, because the panel is hidden, not unmounted.</p>
+            <GrowingList />
+          </div>
+        )},
+        { id: 'links', label: 'Links', content: (
+          <div className="panel-body">
+            <p>A second panel with a longer reading list.</p>
+            <ul className="keys">
+              <li>Inactive panels stay mounted but get the native <code>hidden</code> attribute.</li>
+              <li>The active panel uses normal block layout and is never animated.</li>
+              <li>Returning to a panel preserves its child state.</li>
+            </ul>
+          </div>
+        )},
+      ];
+
+      // ---- Long titles / narrow viewport ----
+      const longItems = [
+        { id: 'discovery', label: 'Discovery & research', content: (<div className="panel-body"><p>Long tab labels stay on one row; the tablist scrolls horizontally instead of wrapping or truncating.</p></div>) },
+        { id: 'implementation', label: 'Implementation details', count: 7, content: (<div className="panel-body"><p>The full label text is never replaced by an ellipsis.</p></div>) },
+        { id: 'qa', label: 'Quality assurance & rollout', content: (<div className="panel-body"><p>Focus the first, middle and last tab to check the focus ring along the scroll axis.</p></div>) },
+        { id: 'retro', label: 'Retrospective notes', count: 4, content: (<div className="panel-body"><p>Touch or pointer scrolling reaches every tab.</p></div>) },
+      ];
+
+      // ---- Nested: an inner UnderlineTabs lives inside an outer panel's content ----
+      const innerItems = [
+        { id: 'profile', label: 'Profile', content: (<div className="panel-body"><p>Inner tab one. Arrow keys here move only the inner tablist.</p></div>) },
+        { id: 'security', label: 'Security', content: (<div className="panel-body"><p>Inner tab two. The inner widget has its own selection, its own <code>useId()</code> base and its own ARIA id pairs.</p></div>) },
+      ];
+      const nestedOuterItems = [
+        { id: 'general', label: 'General', content: (
+          <div className="panel-body">
+            <p>This outer panel contains a fully independent nested UnderlineTabs.</p>
+            <h3 id="tabs-nested-inner-h">Nested tabs (inner)</h3>
+            <UnderlineTabs aria-labelledby="tabs-nested-inner-h" items={innerItems} />
+          </div>
+        )},
+        { id: 'advanced', label: 'Advanced', content: (
+          <div className="panel-body">
+            <p>Leave General and come back: the inner selection is preserved, because the outer panel is hidden (which also hides the whole inner subtree), not unmounted.</p>
+          </div>
+        )},
+      ];
+
+      // ---- Two sibling instances ----
+      const multiA = [
+        { id: 'a-one', label: 'One', content: (<div className="panel-body"><p>Instance A, panel one.</p></div>) },
+        { id: 'a-two', label: 'Two', content: (<div className="panel-body"><p>Instance A, panel two.</p></div>) },
+      ];
+      const multiB = [
+        { id: 'b-one', label: 'Alpha', content: (<div className="panel-body"><p>Instance B, panel alpha.</p></div>) },
+        { id: 'b-two', label: 'Beta', content: (<div className="panel-body"><p>Instance B, panel beta.</p></div>) },
+      ];
+
+      // ---- Form context ----
+      const formItems = [
+        { id: 'account', label: 'Account', content: (
+          <div className="panel-body">
+            <label className="field">
+              <span className="field-label">Display name</span>
+              <input type="text" name="displayName" placeholder="Ada Lovelace" />
+            </label>
+            <button type="submit" className="action">Save account</button>
+          </div>
+        )},
+        { id: 'notifications', label: 'Notifications', content: (
+          <div className="panel-body">
+            <label className="field">
+              <span className="field-label">Notification email</span>
+              <input type="email" name="email" placeholder="ada@example.com" />
+            </label>
+            <button type="submit" className="action">Save notifications</button>
+          </div>
+        )},
+      ];
+
+      return (
+        <main className="page">
+          <header>
+            <h1>Tabs <em>family</em></h1>
+            <p className="lead">Live demo of the real <code>UnderlineTabs</code>, <code>Segmented</code> and <code>Pills</code> exports from <code>Tabs.jsx</code>. UnderlineTabs is in-page content tabs (tablist / tab / tabpanel); Segmented and Pills are single-select radiogroups. Every widget below is the actual export — nothing is hand-mocked.</p>
+            <p className="status" role="status" aria-live="polite">Last action: <strong>{status}</strong></p>
+          </header>
+
+          <section className="panel" aria-labelledby="tabs-basic-h">
+            <h2 id="tabs-basic-h">UnderlineTabs — uncontrolled</h2>
+            <p className="hint">No <code>active</code> prop: the component selects the first item on mount and owns selection. Exactly one panel is visible; the others are <code>hidden</code>. Type in the Activity field, bump the counter, then switch tabs and return — both survive, and there is no programmatic panel focus.</p>
+            <UnderlineTabs aria-labelledby="tabs-basic-h" items={basicItems} />
+          </section>
+
+          <section className="panel" aria-labelledby="tabs-ctrl-h">
+            <h2 id="tabs-ctrl-h">UnderlineTabs — controlled</h2>
+            <p className="hint">The parent owns the value via <code>active={'{activeTab}'}</code>; <code>onChange(nextId)</code> updates it. There is no second, parallel selection state and no manual DOM attribute change. Re-activating the current tab (click / <kbd>Enter</kbd> / <kbd>Space</kbd>) is a no-op — <code>onChange</code> does not fire for the same id, selection and panel are unchanged, and focus stays on the tab.</p>
+            <UnderlineTabs
+              aria-labelledby="tabs-ctrl-h"
+              items={controlledItems}
+              active={activeTab}
+              onChange={(id) => { setActiveTab(id); setStatus(`Controlled tab → ${id}`); }}
+            />
+            <p className="hint">Current controlled id: <strong>{activeTab}</strong></p>
+          </section>
+
+          <section className="panel" aria-labelledby="tabs-kb-h">
+            <h2 id="tabs-kb-h">Tabs keyboard &amp; panel lifecycle</h2>
+            <ul className="keys">
+              <li><kbd>Tab</kbd> enters the tablist on the selected tab (roving <code>tabIndex</code>: only the selected tab is in the page tab order).</li>
+              <li><kbd>→</kbd> next tab, <kbd>←</kbd> previous tab, <kbd>Home</kbd> first, <kbd>End</kbd> last; navigation loops past the ends.</li>
+              <li><kbd>↑</kbd> / <kbd>↓</kbd> are <strong>not</strong> Tabs navigation (left to the browser).</li>
+              <li><kbd>Enter</kbd> / <kbd>Space</kbd> activate via native button behaviour.</li>
+              <li>Automatic activation: moving focus with the arrow keys also changes the selection and the visible panel.</li>
+              <li>The next <kbd>Tab</kbd> after a tab moves to the active panel's first focusable child, or the next document element — there is no focus trap and no automatic panel focus.</li>
+              <li>RTL: in LTR <kbd>→</kbd> is forward and <kbd>←</kbd> is back; in RTL the visual direction flips, while <kbd>Home</kbd> / <kbd>End</kbd> are unchanged.</li>
+            </ul>
+            <p className="hint">ARIA &amp; lifecycle: the tablist is <code>role="tablist"</code>; each trigger is <code>role="tab"</code> with <code>aria-selected</code> and roving <code>tabIndex</code>; per instance a stable <code>React.useId()</code> base builds each tab <code>id</code> + <code>aria-controls</code> and the matching panel <code>id</code> + <code>aria-labelledby</code>. Each panel is <code>role="tabpanel"</code>; inactive panels are <code>hidden</code> while staying mounted — there is no <code>aria-hidden</code>, no <code>inert</code>, no panel <code>tabIndex</code> and no conditional unmount. Below, the Notes panel grows to its natural height as rows are added.</p>
+            <h3 id="tabs-dyn-h">Dynamic panel content</h3>
+            <UnderlineTabs aria-labelledby="tabs-dyn-h" items={dynamicItems} />
+          </section>
+
+          <section className="panel" aria-labelledby="tabs-long-h">
+            <h2 id="tabs-long-h">Tabs — long titles / narrow viewport</h2>
+            <p className="hint">Inside a deliberately narrow frame the tablist stays on one row and scrolls horizontally; labels are shown in full (never ellipsised), the selected underline and count badges stay correct, and focusing the first / middle / last tab works under touch, pointer and 200% zoom. The frame only constrains width — it does not touch the component or its overflow.</p>
+            <div className="demo-frame">
+              <UnderlineTabs aria-labelledby="tabs-long-h" items={longItems} />
+            </div>
+          </section>
+
+          <section className="panel" aria-labelledby="tabs-nested-h">
+            <h2 id="tabs-nested-h">Tabs — nested &amp; multiple instances</h2>
+            <p className="hint">Nested: the General panel of the outer tabs contains an independent inner UnderlineTabs. Inner arrow keys never move the outer tabs; each has its own selection, <code>useId()</code> base and ARIA id pairs; no outer tab's <code>aria-controls</code> points at an inner panel. There is no global keydown listener and no propagation hack.</p>
+            <h3 id="tabs-nested-outer-h">Nested tabs (outer)</h3>
+            <UnderlineTabs aria-labelledby="tabs-nested-outer-h" items={nestedOuterItems} />
+            <p className="hint">Two sibling instances, each with independent state and id pairs — neither one's <code>onChange</code> reacts to the other's events:</p>
+            <div className="cols">
+              <div>
+                <h3 id="tabs-multi-a-h">Instance A</h3>
+                <UnderlineTabs aria-labelledby="tabs-multi-a-h" items={multiA} />
+              </div>
+              <div>
+                <h3 id="tabs-multi-b-h">Instance B</h3>
+                <UnderlineTabs aria-labelledby="tabs-multi-b-h" items={multiB} />
+              </div>
+            </div>
+          </section>
+
+          <section className="panel" aria-labelledby="tabs-form-h">
+            <h2 id="tabs-form-h">Tabs — form context</h2>
+            <p className="hint">The tabs sit inside a real <code>&lt;form&gt;</code>. Tab triggers are <code>&lt;button type="button"&gt;</code>, so switching tabs never submits; the active panel's real <code>&lt;button type="submit"&gt;</code> does submit. Controls in an inactive panel are <code>hidden</code>, so they are unreachable. The submit handler only updates the demo status — it does not touch tab selection.</p>
+            <form className="demo-form" onSubmit={(e) => { e.preventDefault(); setStatus('Form submitted from the active tab panel.'); }}>
+              <UnderlineTabs aria-labelledby="tabs-form-h" items={formItems} />
+            </form>
+          </section>
+
+          <section className="panel" aria-labelledby="seg-unctrl-h">
+            <h2 id="seg-unctrl-h">Segmented — uncontrolled radiogroup</h2>
+            <p className="hint">Object items, no <code>active</code> prop: the first item is checked on mount. Exactly one <code>aria-checked="true"</code> and one <code>tabIndex={'{0}'}</code>; <kbd>←</kbd>/<kbd>→</kbd>/<kbd>↑</kbd>/<kbd>↓</kbd>/<kbd>Home</kbd>/<kbd>End</kbd> move with looping and selection-follows-focus; re-activating the checked radio is a no-op; nothing submits a form.</p>
+            <Segmented
+              aria-labelledby="seg-unctrl-h"
+              items={[{ id: 'day', label: 'Day' }, { id: 'week', label: 'Week' }, { id: 'month', label: 'Month' }]}
+            />
+          </section>
+
+          <section className="panel" aria-labelledby="seg-ctrl-h">
+            <h2 id="seg-ctrl-h">Segmented — controlled radiogroup</h2>
+            <p className="hint">String items with a compact <code>aria-label</code> name. The parent owns the value; no own keyboard, checked or tabindex logic is added here.</p>
+            <Segmented
+              aria-label="Reporting range"
+              items={['Day', 'Week', 'Month']}
+              active={range}
+              onChange={(value) => { setRange(value); setStatus(`Segmented → ${value}`); }}
+            />
+            <p className="hint">Current range: <strong>{range}</strong></p>
+          </section>
+
+          <section className="panel" aria-labelledby="pills-unctrl-h">
+            <h2 id="pills-unctrl-h">Pills — uncontrolled radiogroup</h2>
+            <p className="hint">Object items, uncontrolled: exactly one checked, arrow/Home/End looping, selection-follows-focus, re-activation no-op. The current Pills export is a <strong>single-select radiogroup</strong> — not a multi-select filter-chip set: there is no <code>aria-pressed</code>, no multi-select array state and no checkbox logic.</p>
+            <Pills
+              aria-labelledby="pills-unctrl-h"
+              items={[{ id: 'all', label: 'All' }, { id: 'active', label: 'Active' }, { id: 'archived', label: 'Archived' }, { id: 'drafts', label: 'Drafts' }]}
+            />
+          </section>
+
+          <section className="panel" aria-labelledby="pills-ctrl-h">
+            <h2 id="pills-ctrl-h">Pills — controlled radiogroup</h2>
+            <p className="hint">String items with an <code>aria-label</code> name; the parent owns the value.</p>
+            <Pills
+              aria-label="Status filter"
+              items={['All', 'Active', 'Archived', 'Drafts']}
+              active={pillFilter}
+              onChange={(value) => { setPillFilter(value); setStatus(`Pill filter → ${value}`); }}
+            />
+            <p className="hint">Current filter: <strong>{pillFilter}</strong>. Single-select — one filter at a time, not a multi-select chip set.</p>
+          </section>
+
+          <section className="panel" aria-labelledby="radio-kb-h">
+            <h2 id="radio-kb-h">Selection-control keyboard (Segmented &amp; Pills)</h2>
+            <ul className="keys">
+              <li><kbd>Tab</kbd> enters the group on the checked radio; the next <kbd>Tab</kbd> leaves the group (roving <code>tabIndex</code>).</li>
+              <li><kbd>→</kbd> / <kbd>↓</kbd> next, <kbd>←</kbd> / <kbd>↑</kbd> previous, <kbd>Home</kbd> first, <kbd>End</kbd> last; movement loops.</li>
+              <li>Selection follows focus: moving to a radio checks it.</li>
+              <li><kbd>Enter</kbd> / <kbd>Space</kbd> activate via native button behaviour; re-activating the checked radio is a no-op.</li>
+              <li>There is no <code>disabled</code> API and no automatic form-value submission — these are UI-only radiogroups.</li>
+            </ul>
+          </section>
+
+          <section className="panel" aria-labelledby="focus-h">
+            <h2 id="focus-h">Focus-visible</h2>
+            <p className="hint">Every trigger has a targeted <code>:focus-visible</code> recipe: the <code>box-shadow: var(--ep-shadow-focus)</code> ring, with no layout shift, not animated, and a pointer click alone may not show it. The selected / checked state stays visible alongside the ring. Tab onto the controls above to see it.</p>
+            <p className="hint">On the scrollable UnderlineTabs the tablist is a scroll container, so the user agent can partially clip the outer part of the outset ring at the scrollport edges. <code>scroll-padding-inline</code> keeps a keyboard-focused edge tab clear along the inline axis so its ring is visible there; full ring containment is a known, documented <strong>P2</strong> — not fully solved in normal mode. In forced-colors mode the tab focus uses an inner <code>Highlight</code> outline instead, which is not clipped.</p>
+          </section>
+
+          <section className="panel" aria-labelledby="rm-h">
+            <h2 id="rm-h">Reduced-motion</h2>
+            <p className="hint">In normal mode the tab / segment / pill colour and surface changes may transition; the focus ring is never animated and the tabpanels are never animated. Under <code>prefers-reduced-motion: reduce</code> the three trigger families' transitions are switched off, while the selected / checked end-state, the underline, the segment / pill surfaces, the focus ring and the panel <code>hidden</code> contract are all preserved. There is no <code>transitionend</code> / <code>animationend</code> lifecycle.</p>
+          </section>
+
+          <section className="panel" aria-labelledby="fc-h">
+            <h2 id="fc-h">Forced-colors</h2>
+            <p className="hint"><strong>UnderlineTabs:</strong> the tablist divider is <code>CanvasText</code>, tab text is <code>ButtonText</code>, the selected tab carries a real <code>Highlight</code> underline, the count badge uses system colours, the panel is <code>CanvasText</code>, and focus is an inner <code>Highlight</code> outline.</p>
+            <p className="hint"><strong>Segmented:</strong> the root is a <code>Canvas</code> surface with a <code>CanvasText</code> border, radios are <code>ButtonText</code>, the checked radio is <code>Highlight</code> / <code>HighlightText</code>, and focus is a <code>Highlight</code> outline.</p>
+            <p className="hint"><strong>Pills:</strong> each pill is <code>ButtonText</code> with a real system border, the checked pill is <code>Highlight</code> / <code>HighlightText</code>, and focus is a <code>Highlight</code> outline. No <code>forced-color-adjust: none</code> is used. Consumer controls placed inside a panel keep their own (or the browser's) forced-colors behaviour — the component does not override them.</p>
+          </section>
+
+          <section className="panel" aria-labelledby="limits-h">
+            <h2 id="limits-h">Known limitations</h2>
+            <p className="hint">These are documented design limits, not runtime errors or P1 accessibility bugs.</p>
+            <h3>All three</h3>
+            <ul className="keys">
+              <li>The exports attach to the browser <code>window</code> (browser-only, no module build).</li>
+              <li>No <code>disabled</code> API and no runtime item-id validation; item ids must be unique and non-empty.</li>
+            </ul>
+            <h3>UnderlineTabs</h3>
+            <ul className="keys">
+              <li>Fixed horizontal orientation and fixed automatic activation; there is no <code>activationMode</code> prop.</li>
+              <li>No explicit unmount / forceMount API; a missing <code>content</code> renders an empty but valid panel.</li>
+              <li>The scrollable tablist's normal-mode outset focus ring can be edge-clipped at the scrollport (P2); native focus-scroll has browser-dependent fine detail.</li>
+            </ul>
+            <h3>Segmented &amp; Pills</h3>
+            <ul className="keys">
+              <li>UI-only radiogroups: no automatic form-value, no disabled item, no vertical orientation.</li>
+              <li>Pills is single-select by design — not a multi-select filter set.</li>
+            </ul>
+          </section>
+        </main>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+  </script>
+</body>
+</html>

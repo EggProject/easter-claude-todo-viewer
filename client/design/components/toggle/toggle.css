@@ -1,0 +1,89 @@
+@import url('../../../eggproject-design/colors_and_type.css');
+
+/* ============ Toggle ============
+   Structure:
+     .toggle[ .is-on | .is-pressed ]
+       Optionally has icon + label text inside
+   Variants: .toggle--sm · .toggle--lg
+             .toggle--outline · .toggle--ghost
+   A single-button toggle (pressed state) distinct from
+   the Switch (on/off track) in form-controls.
+============================================ */
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: var(--ep-radius-md);
+  border: 1px solid var(--ep-border);
+  background: transparent;
+  font: 500 13px/1 var(--ep-font-sans);
+  color: var(--ep-fg-muted);
+  cursor: pointer;
+  transition: all var(--ep-dur-base) var(--ep-ease-out);
+  user-select: none;
+}
+
+.toggle:hover {
+  background: var(--ep-bg-hover);
+  color: var(--ep-fg);
+}
+
+.toggle.is-on,
+.toggle[aria-pressed="true"] {
+  background: var(--ep-accent-bg);
+  border-color: var(--ep-accent);
+  color: var(--ep-accent-fg, var(--ep-yolk-700));
+}
+
+.toggle:focus-visible {
+  outline: none;
+  box-shadow: var(--ep-shadow-focus);
+}
+
+.toggle:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.toggle svg {
+  width: 15px; height: 15px;
+  flex-shrink: 0;
+}
+
+/* Variants */
+.toggle--sm {
+  padding: 5px 10px;
+  font-size: 12px;
+  border-radius: var(--ep-radius-sm);
+}
+.toggle--lg {
+  padding: 11px 18px;
+  font-size: 14px;
+  border-radius: var(--ep-radius-lg);
+}
+
+.toggle--ghost {
+  border-color: transparent;
+}
+.toggle--ghost.is-on {
+  border-color: transparent;
+  background: var(--ep-accent-bg);
+}
+
+.toggle--outline {
+  border-color: var(--ep-border-strong);
+}
+.toggle--outline.is-on {
+  border-color: var(--ep-accent);
+  background: var(--ep-accent-bg);
+}
+
+/* Icon-only toggle */
+.toggle--icon {
+  padding: 8px;
+  border-radius: var(--ep-radius-md);
+}
+.toggle--icon.toggle--sm { padding: 5px; }
+.toggle--icon.toggle--lg { padding: 10px; }

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>EggProject — Scroll Area</title>
+  <script src="../../../eggproject-design/preview/_theme.js" defer></script>
+  <meta name="viewport" content="width=720" />
+  <link rel="stylesheet" href="scroll-area.css" />
+  <link rel="icon" href="../../../eggproject-design/assets/logo-mark.svg" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--ep-bg); color: var(--ep-fg); font-family: var(--ep-font-sans); padding: 40px; }
+    .page { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+    h1 { font: 400 36px/1.1 var(--ep-font-display); letter-spacing: -0.02em; }
+    h1 em { font-weight: 700; }
+    .lead { font: var(--ep-text-body); color: var(--ep-fg-muted); }
+    .label { font: var(--ep-text-overline); letter-spacing: var(--ep-track-overline); text-transform: uppercase; color: var(--ep-fg-subtle); }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    .list-item { padding: 12px 16px; border-bottom: 1px solid var(--ep-divider); font: var(--ep-text-body); color: var(--ep-fg-muted); }
+    .list-item:last-child { border-bottom: none; }
+    .code-line { padding: 3px 16px; font: 13px/1.6 var(--ep-font-mono); color: var(--ep-fg-muted); white-space: nowrap; }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1>Scroll Area · <em>styled overflow</em></h1>
+    <p class="lead">CSS-only scroll container with a thin, themed scrollbar. Vertical and horizontal variants.</p>
+    <span class="label">Vertical · Horizontal</span>
+    <div class="row">
+      <div class="scroll-area" style="height: 220px; border: 1px solid var(--ep-border); border-radius: var(--ep-radius-lg);">
+        <div class="scroll-area__viewport" tabindex="0" role="region" aria-label="Scrollable activity list">
+          <div class="list-item">Sprint 1 — Planning</div>
+          <div class="list-item">Sprint 2 — In progress</div>
+          <div class="list-item">Sprint 3 — Review</div>
+          <div class="list-item">Sprint 4 — Done</div>
+          <div class="list-item">Sprint 5 — Planning</div>
+          <div class="list-item">Sprint 6 — In progress</div>
+          <div class="list-item">Sprint 7 — Review</div>
+          <div class="list-item">Sprint 8 — Done</div>
+          <div class="list-item">Sprint 9 — Planning</div>
+          <div class="list-item">Sprint 10 — In progress</div>
+          <div class="list-item">Sprint 11 — Review</div>
+          <div class="list-item">Sprint 12 — Done</div>
+        </div>
+      </div>
+      <div class="scroll-area scroll-area--x" style="border: 1px solid var(--ep-border); border-radius: var(--ep-radius-lg);">
+        <div class="scroll-area__viewport" style="padding: 16px 0;" tabindex="0" role="region" aria-label="Scrollable code sample">
+          <div class="code-line">import { Component0 } from './components';</div>
+          <div class="code-line">import { Component1 } from './components';</div>
+          <div class="code-line">import { Component2 } from './components';</div>
+          <div class="code-line">import { Component3 } from './components';</div>
+          <div class="code-line">import { Component4 } from './components';</div>
+          <div class="code-line">import { Component5 } from './components';</div>
+          <div class="code-line">import { Component6 } from './components';</div>
+          <div class="code-line">import { Component7 } from './components';</div>
+          <div class="code-line">import { Component8 } from './components';</div>
+          <div class="code-line">import { Component9 } from './components';</div>
+          <div class="code-line">import { Component10 } from './components';</div>
+          <div class="code-line">import { Component11 } from './components';</div>
+          <div class="code-line">import { Component12 } from './components';</div>
+          <div class="code-line">import { Component13 } from './components';</div>
+          <div class="code-line">import { Component14 } from './components';</div>
+          <div class="code-line">import { Component15 } from './components';</div>
+          <div class="code-line">import { Component16 } from './components';</div>
+          <div class="code-line">import { Component17 } from './components';</div>
+          <div class="code-line">import { Component18 } from './components';</div>
+          <div class="code-line">import { Component19 } from './components';</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

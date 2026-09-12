@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>EggProject — Breadcrumb</title>
+  <script src="../../../eggproject-design/preview/_theme.js" defer></script>
+  <meta name="viewport" content="width=720" />
+  <link rel="stylesheet" href="breadcrumb.css" />
+  <link rel="icon" href="../../../eggproject-design/assets/logo-mark.svg" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--ep-bg); color: var(--ep-fg); font-family: var(--ep-font-sans); padding: 40px; min-height: 100vh; }
+    .demo-page { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+    h1 { font: 400 36px/1.1 var(--ep-font-display); letter-spacing: -0.02em; color: var(--ep-fg); }
+    h1 em { font-weight: 700; }
+    .demo-lead { font: var(--ep-text-body); color: var(--ep-fg-muted); }
+    /* ---- demo page chrome only (no component selectors) ---- */
+    #root { display: flex; flex-direction: column; gap: 18px; }
+    .demo-section { display: flex; flex-direction: column; gap: 12px; padding: 20px; background: var(--ep-bg-elevated); border: 1px solid var(--ep-border-subtle); border-radius: var(--ep-radius-lg); }
+    .demo-h2 { font: 600 15px var(--ep-font-sans); color: var(--ep-fg); }
+    .demo-note { font: var(--ep-text-small); line-height: 1.65; color: var(--ep-fg-muted); }
+    .demo-note strong { color: var(--ep-fg); font-weight: 600; }
+    .demo-note code { font: 500 12px var(--ep-font-mono); background: var(--ep-bg-sunken); color: var(--ep-fg); padding: 1px 6px; border-radius: var(--ep-radius-sm); }
+    .demo-grid { display: flex; flex-wrap: wrap; gap: 28px; }
+    .demo-caption { display: block; font: 500 12px var(--ep-font-sans); letter-spacing: 0.04em; text-transform: uppercase; color: var(--ep-fg-subtle); margin-bottom: 6px; }
+    .demo-fixture { border: 1px dashed var(--ep-border-subtle); border-radius: var(--ep-radius-md); padding: 12px; }
+    .demo-fixture--narrow { max-width: 240px; }
+  </style>
+  <script src="../../assets/vendor/react.production.min.js"></script>
+  <script src="../../assets/vendor/react-dom.production.min.js"></script>
+  <script src="../../assets/vendor/babel.min.js"></script>
+</head>
+<body>
+  <div class="demo-page">
+    <h1 id="top">Breadcrumb · <em>where you are</em></h1>
+    <p class="demo-lead">Hierarchical page-structure navigation — real ancestor links, one non-interactive current page. Every widget below is the real <code>&lt;Breadcrumb&gt;</code> export.</p>
+    <div id="root"></div>
+  </div>
+
+  <script type="text/babel" src="Breadcrumb.jsx"></script>
+  <script type="text/babel">
+    const { Breadcrumb } = window;
+
+    // Decorative leading icon: a plain, non-interactive node the component drops into
+    // <span class="breadcrumb__icon">. aria-hidden + focusable="false" keep it out of the
+    // accessibility tree and the tab order, so it never becomes the link's accessible name.
+    const homeIcon = (
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+        <path d="M3 8 8 3l5 5v5.5a.5.5 0 0 1-.5.5H10v-4H6v4H3.5a.5.5 0 0 1-.5-.5z"/>
+      </svg>
+    );
+
+    // Object-only items { label, href?, icon?, onClick? }. The LAST item is the current page
+    // and carries NO href → the component renders it as a non-interactive current <span>.
+    // Ancestor hrefs are real same-page fragments (they resolve to ids on this page), so the
+    // demo stays keyboard-navigable without inventing routes and without any `#` placeholder.
+    const SLASH_ITEMS = [
+      { label: 'Studio', href: '#top' },
+      { label: 'Projects', href: '#ex-chevron' },
+      { label: 'Project overview' },
+    ];
+    const CHEVRON_ITEMS = [
+      { label: 'Home', href: '#top', icon: homeIcon },
+      { label: 'Workspace', href: '#ex-dot' },
+      { label: 'Settings', href: '#ex-collapsed' },
+      { label: 'Billing' },
+    ];
+    const DOT_ITEMS = [
+      { label: 'Q1 2026', href: '#top' },
+      { label: 'March', href: '#ex-dot' },
+      { label: 'Week 11' },
+    ];
+    // Six items with maxItems={5} → the middle levels collapse behind a non-interactive ellipsis.
+    const LONG_ITEMS = [
+      { label: 'Studio', href: '#top' },
+      { label: 'Clients', href: '#ex-collapsed' },
+      { label: 'Northbeam', href: '#ex-collapsed' },
+      { label: 'Engagements', href: '#ex-collapsed' },
+      { label: 'Q3 audit', href: '#ex-collapsed' },
+      { label: 'Working papers' },
+    ];
+    const SINGLE_ITEM = [{ label: 'Dashboard' }];
+    const LONG_LABEL_ITEMS = [
+      { label: 'Studio', href: '#top' },
+      { label: 'Client engagements and quarterly audit working papers', href: '#ex-long' },
+      { label: 'Section that also carries a deliberately long descriptive title' },
+    ];
+
+    function App() {
+      return (
+        <React.Fragment>
+
+          <section className="demo-section" id="ex-slash">
+            <h2 className="demo-h2">Slash separator · default</h2>
+            <Breadcrumb items={SLASH_ITEMS} />
+            <p className="demo-note">
+              The default <code>separator="slash"</code>. Two navigable ancestors as real <code>&lt;a&gt;</code> links,
+              then the current page as a non-interactive <code>&lt;span aria-current="page"&gt;</code>; the <code>/</code>
+              separators are <code>aria-hidden="true"</code>.
+            </p>
+          </section>
+
+          <section className="demo-section" id="ex-chevron">
+            <h2 className="demo-h2">Chevron separator · leading icon</h2>
+            <Breadcrumb separator="chevron" items={CHEVRON_ITEMS} />
+            <p className="demo-note">
+              <code>separator="chevron"</code> renders the component's own SVG chevron (wrapper
+              <code>aria-hidden="true"</code>, SVG <code>focusable="false"</code>). The first item passes a decorative
+              <code>icon</code> node, which the component places in <code>.breadcrumb__icon</code> — it is not a separate
+              tab stop and not part of the link's name.
+            </p>
+          </section>
+
+          <section className="demo-section" id="ex-dot">
+            <h2 className="demo-h2">Dot separator</h2>
+            <Breadcrumb separator="dot" items={DOT_ITEMS} />
+            <p className="demo-note">
+              <code>separator="dot"</code>. The dot is the component's CSS pseudo-element (no hand-typed glyph), hidden
+              from assistive tech by the component's own separator contract.
+            </p>
+          </section>
+
+          <section className="demo-section" id="ex-collapsed">
+            <h2 className="demo-h2">Collapsed · maxItems</h2>
+            <Breadcrumb maxItems={5} items={LONG_ITEMS} />
+            <p className="demo-note">
+              Six items with <code>maxItems={'{5}'}</code>: the first item and the trailing items are kept and the middle
+              levels collapse behind a <strong>non-interactive</strong> <code>…</code> ellipsis (a plain
+              <code>.breadcrumb__more</code> span, <code>aria-hidden="true"</code> — not a button, not focusable). It is
+              <strong> not</strong> an interactive overflow disclosure; expanding collapsed levels is not part of the
+              current API.
+            </p>
+          </section>
+
+          <section className="demo-section" id="ex-edges">
+            <h2 className="demo-h2">Edge cases</h2>
+            <div className="demo-grid">
+              <div>
+                <span className="demo-caption">Single item</span>
+                <Breadcrumb items={SINGLE_ITEM} />
+              </div>
+              <div>
+                <span className="demo-caption">Empty list</span>
+                <Breadcrumb items={[]} />
+              </div>
+            </div>
+            <p className="demo-note">
+              A <strong>single item</strong> is the current page: a <code>aria-current="page"</code> span with no link and
+              no separator. An <strong>empty <code>items={'{[]}'}</code></strong> does not throw — it renders an empty but
+              named <code>&lt;nav aria-label="Breadcrumb"&gt;</code>; a consumer normally should not mount an empty
+              breadcrumb.
+            </p>
+          </section>
+
+          <section className="demo-section" id="ex-long">
+            <h2 className="demo-h2">Long label · wrap in a narrow container</h2>
+            <div className="demo-fixture demo-fixture--narrow">
+              <Breadcrumb items={LONG_LABEL_ITEMS} />
+            </div>
+            <p className="demo-note">
+              A page-chrome fixture just caps the card width so the component's own <code>flex-wrap</code> shows; the demo
+              adds no truncation or overflow handling and overrides no component CSS. Long-label wrapping is platform- and
+              content-dependent.
+            </p>
+          </section>
+
+          <section className="demo-section" id="ex-notes">
+            <h2 className="demo-h2">Contract</h2>
+            <p className="demo-note">
+              <strong>Keyboard:</strong> Tab / Shift+Tab walk the real links; Enter follows a link; modifier-click and the
+              context menu are native. The current page and the collapsed <code>…</code> are not focusable. There is no
+              Arrow / Home / End roving, no own keyboard handling and no focus trap.
+            </p>
+            <p className="demo-note">
+              <strong>ARIA &amp; lifecycle:</strong> each widget is a native <code>&lt;nav aria-label="Breadcrumb"&gt;</code>;
+              ancestors are real links; the last shown item is a non-interactive current
+              <code>&lt;span aria-current="page"&gt;</code>; separators are <code>aria-hidden="true"</code>; the collapsed
+              ellipsis is non-interactive and hidden from assistive tech. There is no popup, disclosure or separate
+              lifecycle state.
+            </p>
+            <p className="demo-note">
+              <strong>Focus &amp; appearance:</strong> navigable links show a <code>var(--ep-shadow-focus)</code> ring on
+              <code>:focus-visible</code> (the current item and the ellipsis are not focusable; a pointer click does not force
+              a keyboard ring). In forced-colors the ring becomes a real <code>Highlight</code> outline and links / text map
+              to system colors, while the current item also stays distinct by font-weight; the targeted color / background
+              transition switches off under reduced-motion, and there is no entrance or layout motion. All of this comes from
+              the real <code>breadcrumb.css</code> — this demo adds no component CSS, ARIA or keyboard logic of its own.
+            </p>
+            <p className="demo-note">
+              <strong>Limits:</strong> browser-only <code>window.Breadcrumb</code> export; the nav name is fixed
+              (<code>"Breadcrumb"</code>) with no <code>aria-label</code> / <code>aria-labelledby</code> override, so several
+              breadcrumbs on one page share the same landmark name; no <code>&lt;ol&gt;</code> / <code>&lt;li&gt;</code> list
+              semantics; the current page is implicit (the last shown item); no runtime item validation; a missing
+              <code>href</code> falls back to <code>#</code>, so pass a real one; the ellipsis is not an interactive overflow
+              disclosure; there is no router integration.
+            </p>
+          </section>
+
+        </React.Fragment>
+      );
+    }
+    ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+  </script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>EggProject — Pagination</title>
+  <script src="../../../eggproject-design/preview/_theme.js" defer></script>
+  <meta name="viewport" content="width=720" />
+  <link rel="stylesheet" href="pagination.css" />
+  <link rel="icon" href="../../../eggproject-design/assets/logo-mark.svg" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--ep-bg); color: var(--ep-fg); font-family: var(--ep-font-sans); padding: 40px; }
+    .page { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+    .label { font: var(--ep-text-overline); letter-spacing: var(--ep-track-overline); text-transform: uppercase; color: var(--ep-fg-subtle); margin-top: 14px; }
+    h1 { font: 400 36px/1.1 var(--ep-font-display); letter-spacing: -0.02em; color: var(--ep-fg); }
+ h1 em { font-weight: 700; }
+    .frame { padding: 16px 20px; background: var(--ep-bg-elevated); border: 1px solid var(--ep-border-subtle); border-radius: 12px; }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1>Pagination · <em>page through</em></h1>
+
+    <span class="label">Default — ink active state</span>
+    <div class="frame">
+      <nav class="pagination" aria-label="Pagination example: first page">
+        <span class="pagination__meta"><strong>1–10</strong> of 142</span>
+        <div class="pagination__pages">
+          <button class="pagination__page" disabled aria-label="Previous"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M10 4 6 8l4 4"/></svg></button>
+          <button class="pagination__page pagination__page--active" aria-current="page">1</button>
+          <button class="pagination__page">2</button>
+          <button class="pagination__page">3</button>
+          <button class="pagination__page">4</button>
+          <span class="pagination__ellipsis">…</span>
+          <button class="pagination__page">15</button>
+          <button class="pagination__page" aria-label="Next"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m6 4 4 4-4 4"/></svg></button>
+        </div>
+      </nav>
+    </div>
+
+    <span class="label">Mid-range</span>
+    <div class="frame">
+      <nav class="pagination" aria-label="Pagination example: middle page">
+        <span class="pagination__meta">Page <strong>7</strong> of 15</span>
+        <div class="pagination__pages">
+          <button class="pagination__page" aria-label="Previous"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M10 4 6 8l4 4"/></svg></button>
+          <button class="pagination__page">1</button>
+          <span class="pagination__ellipsis">…</span>
+          <button class="pagination__page">6</button>
+          <button class="pagination__page pagination__page--active" aria-current="page">7</button>
+          <button class="pagination__page">8</button>
+          <span class="pagination__ellipsis">…</span>
+          <button class="pagination__page">15</button>
+          <button class="pagination__page" aria-label="Next"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m6 4 4 4-4 4"/></svg></button>
+        </div>
+      </nav>
+    </div>
+
+    <span class="label">Outlined</span>
+    <div class="frame">
+      <nav class="pagination pagination--outlined" aria-label="Pagination example: outlined">
+        <span class="pagination__meta"><strong>21–30</strong> of 142</span>
+        <div class="pagination__pages">
+          <button class="pagination__page" aria-label="Previous"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M10 4 6 8l4 4"/></svg></button>
+          <button class="pagination__page">1</button>
+          <span class="pagination__ellipsis">…</span>
+          <button class="pagination__page">2</button>
+          <button class="pagination__page pagination__page--active" aria-current="page">3</button>
+          <button class="pagination__page">4</button>
+          <span class="pagination__ellipsis">…</span>
+          <button class="pagination__page">15</button>
+          <button class="pagination__page" aria-label="Next"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m6 4 4 4-4 4"/></svg></button>
+        </div>
+      </nav>
+    </div>
+  </div>
+</body>
+</html>

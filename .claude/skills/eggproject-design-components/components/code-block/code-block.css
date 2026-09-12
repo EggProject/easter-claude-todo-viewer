@@ -1,0 +1,115 @@
+@import url('../../../eggproject-design/colors_and_type.css');
+
+/* ============ Code block ============
+   For showing snippets, configs, terminal output.
+
+   .code              — wrapper card (paper, with light border)
+   .code--ink         — dark variant (terminal style)
+   .code__header        — top bar: filename + actions
+   .code__filename    — mono label
+   .code__lang        — small chip
+   .code__copy        — copy button
+   .code__body        — <pre> body
+   .code__line        — single line; .code__line--number for line numbers
+   .code__token--<x>  — basic tokens (kw, str, num, comment, type, fn)
+============================================ */
+.code {
+  background: var(--ep-bg-elevated);
+  border: 1px solid var(--ep-border-subtle);
+  border-radius: var(--ep-radius-md);
+  overflow: hidden;
+  font-family: var(--ep-font-mono);
+}
+
+.code__header {
+  display: flex; align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--ep-bg-hover);
+  border-bottom: 1px solid var(--ep-border-subtle);
+}
+.code__filename {
+  font: 500 12px var(--ep-font-mono);
+  color: var(--ep-fg-muted);
+}
+.code__lang {
+  font: 500 10px var(--ep-font-mono);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--ep-accent-bg);
+  color: var(--ep-accent-fg);
+}
+.code__header-spacer { flex: 1; }
+.code__copy {
+  display: inline-flex; align-items: center; gap: 6px;
+  font: 500 11px var(--ep-font-sans);
+  padding: 4px 8px;
+  border-radius: var(--ep-radius-sm);
+  border: 0;
+  background: transparent;
+  color: var(--ep-fg-muted);
+  cursor: pointer;
+  transition: all var(--ep-dur-fast) var(--ep-ease-out);
+}
+.code__copy:hover { background: var(--ep-bg-elevated); color: var(--ep-fg); }
+.code__copy svg { width: 12px; height: 12px; }
+
+.code__body {
+  font: 500 13px/1.6 var(--ep-font-mono);
+  padding: 14px 18px;
+  color: var(--ep-fg);
+  overflow-x: auto;
+  white-space: pre;
+}
+.code__line { display: block; }
+.code__number {
+  display: inline-block;
+  width: 24px;
+  text-align: right;
+  padding-right: 14px;
+  color: var(--ep-fg-faint);
+  user-select: none;
+}
+
+/* Tokens — soft, low-saturation; readable on paper */
+.code__token--keyword      { color: var(--ep-accent); }
+.code__token--string     { color: var(--ep-success); }
+.code__token--number     { color: var(--ep-yolk-700); }
+.code__token--comment { color: var(--ep-fg-subtle); font-style: italic; }
+.code__token--type    { color: var(--ep-accent-fg); }
+.code__token--function      { color: var(--ep-fg); font-weight: 600; }
+.code__token--punctuation   { color: var(--ep-fg-muted); }
+
+/* ---- Ink (terminal) variant ---- */
+.code--ink {
+  background: var(--ep-ink-900);
+  border-color: transparent;
+}
+.code--ink .code__header {
+  background: var(--ep-slate-800);
+  border-bottom-color: rgba(255,255,255,0.06);
+}
+.code--ink .code__filename { color: var(--ep-slate-300); }
+.code--ink .code__lang { background: rgba(46,91,224,0.18); color: var(--ep-blue-300); }
+.code--ink .code__copy { color: var(--ep-slate-300); }
+.code--ink .code__copy:hover { background: rgba(255,255,255,0.06); color: var(--ep-paper-50); }
+.code--ink .code__body { color: var(--ep-paper-50); }
+.code--ink .code__number { color: var(--ep-slate-500); }
+.code--ink .code__token--keyword      { color: var(--ep-blue-300); }
+.code--ink .code__token--string     { color: #6FCFA3; }
+.code--ink .code__token--number     { color: var(--ep-yolk-400); }
+.code--ink .code__token--comment { color: var(--ep-slate-400); }
+.code--ink .code__token--type    { color: var(--ep-blue-400); }
+.code--ink .code__token--function      { color: var(--ep-paper-50); font-weight: 600; }
+.code--ink .code__token--punctuation   { color: var(--ep-slate-300); }
+
+/* ---- Inline code ---- */
+.code-inline {
+  font: 500 13px var(--ep-font-mono);
+  background: var(--ep-accent-bg);
+  color: var(--ep-accent-fg);
+  padding: 1px 6px;
+  border-radius: 4px;
+}

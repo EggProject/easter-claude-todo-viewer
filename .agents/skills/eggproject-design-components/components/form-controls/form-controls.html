@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>EggProject — Form controls</title>
+  <script src="../../../eggproject-design/preview/_theme.js" defer></script>
+  <meta name="viewport" content="width=720" />
+  <link rel="stylesheet" href="form-controls.css" />
+  <link rel="icon" href="../../../eggproject-design/assets/logo-mark.svg" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--ep-bg); color: var(--ep-fg); font-family: var(--ep-font-sans); padding: 40px; }
+    .page { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+    .row { display: flex; gap: 24px; align-items: center; flex-wrap: wrap; }
+    .col { display: flex; flex-direction: column; gap: 12px; }
+    .label { font: var(--ep-text-overline); letter-spacing: var(--ep-track-overline); text-transform: uppercase; color: var(--ep-fg-subtle); margin-top: 10px; }
+    h1 { font: 400 36px/1.1 var(--ep-font-display); letter-spacing: -0.02em; color: var(--ep-fg); }
+ h1 em { font-weight: 700; }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1>Checkbox · Radio · <em>Switch</em></h1>
+
+    <span class="label">Checkboxes</span>
+    <div class="col">
+      <label class="ctrl">
+        <input type="checkbox" class="ctrl__input" checked aria-labelledby="digest-checkbox-label" aria-describedby="digest-checkbox-hint">
+        <span class="ctrl__box"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m3.5 8 3 3 6-6.5"/></svg></span>
+        <span class="ctrl__text">
+          <span class="ctrl__label" id="digest-checkbox-label">Send weekly digest</span>
+          <span class="ctrl__hint" id="digest-checkbox-hint">Friday morning summary of project activity.</span>
+        </span>
+      </label>
+      <label class="ctrl">
+        <input type="checkbox" class="ctrl__input" aria-labelledby="autoarchive-checkbox-label">
+        <span class="ctrl__box"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m3.5 8 3 3 6-6.5"/></svg></span>
+        <span class="ctrl__text"><span class="ctrl__label" id="autoarchive-checkbox-label">Auto-archive shipped projects after 90 days</span></span>
+      </label>
+      <label class="ctrl is-disabled">
+        <input type="checkbox" class="ctrl__input" disabled aria-labelledby="auditlog-checkbox-label" aria-describedby="auditlog-checkbox-hint">
+        <span class="ctrl__box"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m3.5 8 3 3 6-6.5"/></svg></span>
+        <span class="ctrl__text">
+          <span class="ctrl__label" id="auditlog-checkbox-label">Audit log export (admin only)</span>
+          <span class="ctrl__hint" id="auditlog-checkbox-hint">Requires admin role to enable.</span>
+        </span>
+      </label>
+    </div>
+
+    <span class="label" id="plan-radiogroup-label">Radio group</span>
+    <div class="radio-group" role="radiogroup" aria-labelledby="plan-radiogroup-label">
+      <label class="ctrl">
+        <input type="radio" class="ctrl__input" name="plan" checked aria-labelledby="plan-radio-retainer-label" aria-describedby="plan-radio-retainer-hint">
+        <span class="ctrl__radio"></span>
+        <span class="ctrl__text">
+          <span class="ctrl__label" id="plan-radio-retainer-label">Retainer · monthly</span>
+          <span class="ctrl__hint" id="plan-radio-retainer-hint">Continuous engineering bandwidth, billed at month end.</span>
+        </span>
+      </label>
+      <label class="ctrl">
+        <input type="radio" class="ctrl__input" name="plan" aria-labelledby="plan-radio-fixed-label" aria-describedby="plan-radio-fixed-hint">
+        <span class="ctrl__radio"></span>
+        <span class="ctrl__text">
+          <span class="ctrl__label" id="plan-radio-fixed-label">Fixed-scope project</span>
+          <span class="ctrl__hint" id="plan-radio-fixed-hint">Defined deliverables, milestone payments.</span>
+        </span>
+      </label>
+      <label class="ctrl">
+        <input type="radio" class="ctrl__input" name="plan" aria-labelledby="plan-radio-hourly-label">
+        <span class="ctrl__radio"></span>
+        <span class="ctrl__text">
+          <span class="ctrl__label" id="plan-radio-hourly-label">Hourly · ad-hoc</span>
+        </span>
+      </label>
+    </div>
+
+    <span class="label" id="surface-radiogroup-label">Inline radio</span>
+    <div class="radio-group radio-group--row" role="radiogroup" aria-labelledby="surface-radiogroup-label">
+      <label class="ctrl">
+        <input type="radio" class="ctrl__input" name="surface" checked aria-labelledby="surface-radio-light-label">
+        <span class="ctrl__radio"></span>
+        <span class="ctrl__label" id="surface-radio-light-label">Light</span>
+      </label>
+      <label class="ctrl">
+        <input type="radio" class="ctrl__input" name="surface" aria-labelledby="surface-radio-dark-label">
+        <span class="ctrl__radio"></span>
+        <span class="ctrl__label" id="surface-radio-dark-label">Dark</span>
+      </label>
+      <label class="ctrl">
+        <input type="radio" class="ctrl__input" name="surface" aria-labelledby="surface-radio-system-label">
+        <span class="ctrl__radio"></span>
+        <span class="ctrl__label" id="surface-radio-system-label">System</span>
+      </label>
+    </div>
+
+    <span class="label">Switches</span>
+    <div class="col">
+      <label class="ctrl">
+        <input type="checkbox" role="switch" class="ctrl__input" checked aria-labelledby="notifications-switch-label" aria-describedby="notifications-switch-hint">
+        <span class="ctrl__switch"></span>
+        <span class="ctrl__text">
+          <span class="ctrl__label" id="notifications-switch-label">Email notifications</span>
+          <span class="ctrl__hint" id="notifications-switch-hint">Activity, mentions, and digests.</span>
+        </span>
+      </label>
+      <label class="ctrl">
+        <input type="checkbox" role="switch" class="ctrl__input" aria-labelledby="twofactor-switch-label">
+        <span class="ctrl__switch"></span>
+        <span class="ctrl__label" id="twofactor-switch-label">Two-factor authentication</span>
+      </label>
+      <label class="ctrl">
+        <input type="checkbox" role="switch" class="ctrl__input" checked aria-labelledby="density-switch-label">
+        <span class="ctrl__switch ctrl__switch--sm"></span>
+        <span class="ctrl__label" id="density-switch-label">Compact density</span>
+      </label>
+    </div>
+  </div>
+</body>
+</html>

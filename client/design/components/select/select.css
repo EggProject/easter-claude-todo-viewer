@@ -1,0 +1,148 @@
+@import url('../../../eggproject-design/colors_and_type.css');
+@import url('../menu/menu.css');
+
+/* ============ Select ============
+   .select         — visual trigger (looks like .input but with chevron)
+   .select--open   — visual state when menu shows
+   The dropdown panel uses .menu — same as Menu component.
+============================================ */
+.select {
+  background: var(--ep-bg-elevated);
+  border: 1px solid var(--ep-control-border);
+  border-radius: var(--ep-radius-md);
+  padding: 10px 14px;
+  font: var(--ep-text-body);
+  color: var(--ep-fg);
+  cursor: pointer;
+  transition:
+    border-color var(--ep-dur-fast) var(--ep-ease-out),
+    box-shadow var(--ep-dur-fast) var(--ep-ease-out);
+  outline: none;
+  min-width: 200px;
+  font-family: inherit;
+  width: 100%;
+  text-align: left;
+}
+/* The button trigger (React Select) lays out the value + caret; the native <select> retrofit
+   on static pages uses the platform control, so flex/gap stay button-only. */
+button.select { display: inline-flex; align-items: center; gap: 10px; }
+/* Native <select> shares the .select shell but keeps the platform dropdown indicator —
+   no appearance:none, no custom caret. box-sizing keeps width:100% inside the field grid. */
+select.select { box-sizing: border-box; max-width: 100%; }
+.select:where(:not(:disabled)):hover { border-color: var(--ep-fg); }
+.select:focus-visible,
+.select--open { border-color: var(--ep-accent); box-shadow: var(--ep-shadow-focus); }
+
+.select:disabled {
+  background: var(--ep-bg-sunken);
+  color: var(--ep-fg-subtle);
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.select__icon {
+  width: 16px; height: 16px;
+  color: var(--ep-fg-muted);
+  flex-shrink: 0;
+}
+.select__value {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.select__value--placeholder { color: var(--ep-fg-placeholder); }
+.select__caret {
+  width: 14px; height: 14px;
+  color: var(--ep-fg-subtle);
+  flex-shrink: 0;
+  transition: transform var(--ep-dur-fast) var(--ep-ease-out);
+}
+.select--open .select__caret { transform: rotate(180deg); }
+
+.select--sm { padding: 7px 10px; font-size: 13px; min-width: 140px; }
+
+.select__panel {
+  margin-top: 6px;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+/* ============ Combobox — input that filters a list ============ */
+.combo { position: relative; display: inline-block; width: 100%; }
+.combo__input {
+  width: 100%;
+  background: var(--ep-bg-elevated);
+  border: 1px solid var(--ep-control-border);
+  border-radius: var(--ep-radius-md);
+  padding: 11px 36px 11px 14px;
+  font: var(--ep-text-body);
+  color: var(--ep-fg);
+  outline: none;
+  font-family: inherit;
+}
+.combo__input:read-only {
+  background: var(--ep-bg-sunken);
+  color: var(--ep-fg);
+  border-color: var(--ep-fg-subtle);
+  opacity: 1;
+  cursor: text;
+}
+.combo__input:where(:not(:disabled)):hover { border-color: var(--ep-fg); }
+.combo__input:focus { border-color: var(--ep-accent); box-shadow: var(--ep-shadow-focus); }
+.combo__input:disabled {
+  background: var(--ep-bg-sunken);
+  color: var(--ep-fg-subtle);
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+.combo__input:disabled + .combo__caret { opacity: 0.65; }
+/* Browser autofill — keep themed text + caret; defer the UA background paint via a
+   near-infinite background-color transition. No box-shadow set, so the focus ring survives. */
+.combo__input:autofill,
+.combo__input:-webkit-autofill {
+  -webkit-text-fill-color: var(--ep-fg);
+  caret-color: var(--ep-fg);
+  transition: background-color 600000s 0s;
+}
+.combo__caret {
+  position: absolute;
+  right: 12px; top: 50%;
+  transform: translateY(-50%);
+  width: 14px; height: 14px;
+  color: var(--ep-fg-subtle);
+  pointer-events: none;
+}
+.combo__panel {
+  position: absolute;
+  left: 0; right: 0;
+  top: calc(100% + 4px);
+  z-index: 500;
+  max-height: 240px;
+  overflow-y: auto;
+}
+.combo__empty {
+  padding: 12px 14px;
+  font: var(--ep-text-small);
+  color: var(--ep-fg-subtle);
+  text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .select,
+  .select__caret {
+    transition: none;
+  }
+}
+
+/* Forced-colors drops box-shadow, so the token focus ring vanishes; restore a real system
+   outline for the button trigger, the native <select> (both match .select) and the combo input.
+   Positive offset — none of these controls sits in an overflow-clipping ancestor. */
+@media (forced-colors: active) {
+  .select:focus-visible,
+  .combo__input:focus {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+    box-shadow: none;
+  }
+}

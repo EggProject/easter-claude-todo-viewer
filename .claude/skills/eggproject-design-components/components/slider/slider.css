@@ -1,0 +1,183 @@
+@import url('../../../eggproject-design/colors_and_type.css');
+
+/* ============ Slider ============
+   Single-thumb range input, styled across WebKit & Firefox.
+
+   .slider           — wrapper (label + control)
+   .slider__track    — native input, restyled
+   .slider__header     — flex row above the track (label + value)
+   .slider__label    — uppercase mini label
+   .slider__value    — right-side value display (mono)
+   .slider__ticks    — optional tick marks under the track
+============================================ */
+.slider {
+  display: flex; flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.slider__header {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 12px;
+}
+.slider__label {
+  font: 500 12px var(--ep-font-sans);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ep-fg-muted);
+}
+.slider__value {
+  font: 500 14px var(--ep-font-mono);
+  color: var(--ep-fg);
+}
+
+.slider__track {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 24px;
+  background: transparent;
+  cursor: pointer;
+  outline: none;
+}
+
+/* Use a CSS variable on the input to color the filled portion.
+   `--val` (0–100) is set INLINE from JS — see Slider.jsx — so it is
+   not a theme token; the gradient falls back to 0 when unset. */
+.slider__track {
+  background: linear-gradient(
+    to right,
+    var(--ep-blue-600) 0%,
+    var(--ep-accent) calc(var(--val, 0) * 1%),
+    var(--ep-paper-300) calc(var(--val, 0) * 1%),
+    var(--ep-bg-control) 100%
+  );
+  background-size: 100% 4px;
+  background-repeat: no-repeat;
+  background-position: center;
+  border-radius: 2px;
+}
+
+/* WebKit thumb */
+.slider__track::-webkit-slider-runnable-track {
+  height: 4px;
+  background: transparent;
+  border-radius: 2px;
+}
+.slider__track::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1.5px solid var(--ep-accent);
+  margin-top: -7px;
+  box-shadow: var(--ep-shadow-sm);
+  transition: transform var(--ep-dur-fast) var(--ep-ease-out),
+              box-shadow var(--ep-dur-fast) var(--ep-ease-out);
+}
+.slider__track:hover::-webkit-slider-thumb { transform: scale(1.08); }
+/* Keyboard focus ring on the thumb — :focus-visible so a pointer drag
+   never leaves a persistent ring. Mirrored for Gecko below. */
+.slider__track:focus-visible::-webkit-slider-thumb {
+  box-shadow: var(--ep-shadow-focus);
+}
+
+/* Firefox */
+.slider__track::-moz-range-track {
+  height: 4px;
+  background: var(--ep-bg-control);
+  border-radius: 2px;
+}
+.slider__track::-moz-range-progress {
+  height: 4px;
+  background: var(--ep-accent);
+  border-radius: 2px;
+}
+.slider__track::-moz-range-thumb {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1.5px solid var(--ep-accent);
+  cursor: pointer;
+}
+
+.slider__track:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* Ticks */
+.slider__ticks {
+  display: flex; justify-content: space-between;
+  margin-top: -4px;
+  padding: 0 2px;
+}
+.slider__tick {
+  font: 500 11px var(--ep-font-mono);
+  color: var(--ep-fg-subtle);
+}
+
+/* ---- Dark variant (on ink surfaces) ---- */
+.slider--dark .slider__label,
+.slider--dark .slider__tick { color: var(--ep-slate-300); }
+.slider--dark .slider__value { color: var(--ep-paper-50); }
+.slider--dark .slider__track {
+  background: linear-gradient(
+    to right,
+    var(--ep-blue-500) 0%,
+    var(--ep-blue-500) calc(var(--val, 0) * 1%),
+    rgba(255,255,255,0.18) calc(var(--val, 0) * 1%),
+    rgba(255,255,255,0.18) 100%
+  );
+  background-size: 100% 4px;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+.slider--dark .slider__track::-webkit-slider-thumb {
+  background: var(--ep-ink-900);
+  border-color: var(--ep-blue-400);
+}
+
+/* Keyboard focus ring — mirrored for Gecko so keyboard focus is visible in
+   Firefox too (WebKit thumb ring lives above). :focus-visible only. */
+.slider__track:focus-visible::-moz-range-thumb {
+  box-shadow: var(--ep-shadow-focus);
+}
+
+/* Reduced motion — kill the thumb hover/focus micro-transitions. The vendor
+   thumb pseudo-elements are split into separate rules: a selector list mixing
+   -webkit- and -moz- pseudos is dropped wholesale by the engine that doesn't
+   know one of them, so each engine needs its own rule to survive. */
+@media (prefers-reduced-motion: reduce) {
+  .slider__track { transition: none; }
+  .slider__track::-webkit-slider-thumb { transition: none; }
+  .slider__track::-moz-range-thumb { transition: none; }
+}
+
+/* Forced colors — keep track fill, thumb and focus perceivable via system
+   colors (gradient background-images are not auto-neutralised, so the fill
+   is re-expressed with Highlight / GrayText; both light and dark variants).
+   Vendor thumb pseudos split per engine (see reduced-motion note above). */
+@media (forced-colors: active) {
+  .slider__track,
+  .slider--dark .slider__track {
+    background-image: linear-gradient(
+      to right,
+      Highlight 0%,
+      Highlight calc(var(--val, 0) * 1%),
+      GrayText calc(var(--val, 0) * 1%),
+      GrayText 100%
+    );
+  }
+  .slider__track:disabled,
+  .slider--dark .slider__track:disabled {
+    background-image: linear-gradient(GrayText, GrayText);
+  }
+  .slider__track::-webkit-slider-thumb { background: Canvas; border-color: Highlight; }
+  .slider__track::-moz-range-thumb { background: Canvas; border-color: Highlight; }
+  /* Box-shadow rings are dropped in forced colors — the outline below is the
+     focus indicator; also neutralise the normal-mode thumb ring per engine. */
+  .slider__track:focus-visible::-webkit-slider-thumb { box-shadow: none; }
+  .slider__track:focus-visible::-moz-range-thumb { box-shadow: none; }
+  .slider__track:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 3px;
+  }
+}

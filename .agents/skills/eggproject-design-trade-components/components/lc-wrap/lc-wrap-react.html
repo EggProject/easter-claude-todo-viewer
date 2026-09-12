@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<!-- @dsCard group="Brand" name="LcWrap · React" subtitle="Real window.LcWrap export — consumer-owned lightweight-charts lifecycle" -->
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>EggProject — LcWrap · React</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="../../../eggproject-design/preview/_theme.js" defer></script>
+  <link rel="icon" href="../../../eggproject-design/assets/logo-mark.svg" />
+  <!-- Component visual source of truth: lc-wrap.css pulls A tokens + B feed-indicator (→ dot) CSS via @import. -->
+  <link rel="stylesheet" href="lc-wrap.css" />
+  <style>
+    /* ---- demo page chrome ONLY — no component/element selectors ---- */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--ep-bg);
+      color: var(--ep-fg);
+      font-family: var(--ep-font-sans);
+      padding: 48px 40px 72px;
+      display: flex; flex-direction: column;
+      max-width: var(--ep-layout-max-marketing);
+      margin: 0 auto;
+    }
+    #root { display: flex; flex-direction: column; gap: 28px; }
+    .demo-header {
+      display: flex; flex-direction: column; gap: 10px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--ep-divider);
+    }
+    .demo-header h1 {
+      font: 400 40px/1 var(--ep-font-display);
+      letter-spacing: var(--ep-track-tight);
+      color: var(--ep-fg);
+      text-wrap: balance;
+    }
+    .demo-header h1 em { font-weight: 700; font-style: normal; color: var(--ep-accent); }
+    .demo-lead { font: var(--ep-text-body); color: var(--ep-fg-muted); max-width: 68ch; }
+    .demo-lead code, .demo-note code {
+      font: 500 12px var(--ep-font-mono);
+      background: var(--ep-accent-bg); color: var(--ep-accent-fg);
+      padding: 1px 6px; border-radius: var(--ep-radius-sm);
+    }
+    .demo-status {
+      display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap;
+      margin-top: 4px;
+      font: 500 12px var(--ep-font-mono); color: var(--ep-fg-subtle);
+      letter-spacing: 0.02em;
+    }
+    .demo-status b { color: var(--ep-fg); font-weight: 600; }
+    .demo-section { display: flex; flex-direction: column; gap: 14px; }
+    .demo-h2 {
+      font: 500 12px var(--ep-font-sans); letter-spacing: 0.06em;
+      text-transform: uppercase; color: var(--ep-fg-subtle);
+    }
+    .demo-grid {
+      display: grid; gap: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    }
+    .demo-note {
+      font: var(--ep-text-small); line-height: 1.65; color: var(--ep-fg-muted);
+      max-width: 78ch;
+    }
+    .demo-note strong { color: var(--ep-fg); font-weight: 600; }
+    .demo-notes { display: flex; flex-direction: column; gap: 12px; }
+    .demo-fixture--narrow { max-width: 300px; }
+    @media (max-width: 520px) { body { padding: 32px 20px 56px; } .demo-header h1 { font-size: 32px; } }
+  </style>
+
+  <!-- ==== Race-free bootstrap (§4): theme → charts vendor → helper → React → Babel ==== -->
+  <script src="../../assets/vendor/lightweight-charts.standalone.production.js"></script>
+  <script src="lc-charts.js"></script>
+  <script src="../../../eggproject-design-components/assets/vendor/react.production.min.js"></script>
+  <script src="../../../eggproject-design-components/assets/vendor/react-dom.production.min.js"></script>
+  <script src="../../../eggproject-design-components/assets/vendor/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- Component globals the demo consumes (all real exports, load before the app). -->
+  <script type="text/babel" src="../../../eggproject-design-components/components/dot/Dot.jsx"></script>
+  <script type="text/babel" src="../../../eggproject-design-components/components/feed-indicator/FeedIndicator.jsx"></script>
+  <script type="text/babel" src="LcWrap.jsx"></script>
+
+  <script type="text/babel">
+    const { LcWrap, LcWrapIconButton } = window;
+
+    // Timeframe items — ids match the helper's real RANGES keys (1m·5m·15m·1h·4h·1d).
+    const RANGES = [
+      { id: '1m',  label: '1m'  },
+      { id: '5m',  label: '5m'  },
+      { id: '15m', label: '15m' },
+      { id: '1h',  label: '1H'  },
+      { id: '4h',  label: '4H'  },
+      { id: '1d',  label: '1D'  },
+    ];
+    const RANGES_SHORT = [
+      { id: '1m', label: '1m' },
+      { id: '5m', label: '5m' },
+      { id: '1h', label: '1H' },
+      { id: '1d', label: '1D' },
+    ];
+
+    const fullscreenIcon = (
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3 6V3h3M13 6V3h-3M3 10v3h3M13 10v3h-3"/>
+      </svg>
+    );
+
+    // ---- Consumer wrapper: owns the chart lifecycle for ONE React <LcWrap>. ----
+    // Ref-based imperative mount via the PUBLIC LcCharts.mount(ref, options); the
+    // returned handle's setRange(id) is the single chart-update path. No init(),
+    // no bindRanges(), no document query — so nothing competes with React state.
+    function ChartCard({
+      chartOptions, ranges, initialRange = '5m',
+      title, symbol, meta, price, delta, deltaDir,
+      feedState, feedMeta, actions, footer,
+      surface, density, height,
+    }) {
+      const plotRef = React.useRef(null);
+      const handleRef = React.useRef(null);
+      const [activeRange, setActiveRange] = React.useState(initialRange);
+
+      React.useEffect(() => {
+        // Guard: mount exactly once per instance, only when the plot node exists.
+        if (!plotRef.current || handleRef.current) return;
+        const handle = window.LcCharts.mount(plotRef.current, chartOptions);
+        handleRef.current = handle;
+        // Align the freshly-mounted chart to the initial checked radio (runs at most once).
+        if (handle && ranges) handle.setRange(initialRange);
+      }, []);
+
+      // The component's own roving keyboard + pointer both route here → one React
+      // state update + exactly one setRange per interaction.
+      const handleRangeChange = React.useCallback((id) => {
+        setActiveRange(id);
+        if (handleRef.current) handleRef.current.setRange(id);
+      }, []);
+
+      return (
+        <LcWrap
+          title={title}
+          symbol={symbol}
+          meta={meta}
+          price={price}
+          delta={delta}
+          deltaDir={deltaDir}
+          feedState={feedState}
+          feedMeta={feedMeta}
+          actions={actions}
+          footer={footer}
+          surface={surface}
+          density={density}
+          height={height}
+          ranges={ranges}
+          activeRange={ranges ? activeRange : undefined}
+          onRangeChange={ranges ? handleRangeChange : undefined}
+        >
+          <div ref={plotRef} className="line-chart-plot" />
+        </LcWrap>
+      );
+    }
+
+    function App() {
+      const [lastAction, setLastAction] = React.useState('—');
+
+      // Primary example — the consumer-owned lifecycle shown inline (no wrapper indirection):
+      // one imperative LcCharts.mount(ref, options), then the handle's setRange drives updates.
+      const paperPlotRef = React.useRef(null);
+      const paperHandleRef = React.useRef(null);
+      const [paperRange, setPaperRange] = React.useState('5m');
+      React.useEffect(() => {
+        if (!paperPlotRef.current || paperHandleRef.current) return;
+        const handle = window.LcCharts.mount(paperPlotRef.current, {
+          kind: 'candles', seed: 7, base: 68200, vol: 130, drift: 9, count: 80,
+          markers: [
+            { i: 20, position: 'belowBar', text: 'Entry' },
+            { i: 60, position: 'aboveBar', text: 'Exit' },
+          ],
+        });
+        paperHandleRef.current = handle;
+        if (handle) handle.setRange('5m');
+      }, []);
+      const onPaperRange = React.useCallback((id) => {
+        setPaperRange(id);
+        if (paperHandleRef.current) paperHandleRef.current.setRange(id);
+      }, []);
+
+      const action = (name) => (
+        <LcWrapIconButton label="Fullscreen" title="Toggle fullscreen"
+                          onClick={() => setLastAction('Fullscreen · ' + name)}>
+          {fullscreenIcon}
+        </LcWrapIconButton>
+      );
+
+      return (
+        <React.Fragment>
+
+          <header className="demo-header">
+            <h1>LcWrap · <em>React</em></h1>
+            <p className="demo-lead">
+              Every widget below is the real <code>window.LcWrap</code> export driving a live
+              <code>lightweight-charts</code> instance. The wrapper owns chrome only; the chart lifecycle is
+              consumer-owned via the public <code>LcCharts.mount(ref, options)</code> — no <code>init()</code>,
+              no <code>bindRanges()</code>. For the declarative <code>[data-lc]</code> + <code>bindRanges()</code>
+              path, see the static <code>lc-wrap.html</code>.
+            </p>
+            <span className="demo-status">
+              lifecycle: <b>consumer-owned</b> · mount: <b>LcCharts.mount(ref, options)</b> · last action: <b>{lastAction}</b>
+            </span>
+          </header>
+
+          {/* 1 · Paper candlestick — full header/legend/footer/action + string height "md" + pass-through props */}
+          <section className="demo-section">
+            <span className="demo-h2">Paper · candlesticks · full contract</span>
+            <LcWrap
+              className="demo-passthrough"
+              style={{ '--demo-pass': '1' }}
+              height="md"
+              symbol="BTCUSDT"
+              meta="5m · binance"
+              price="68,412.30"
+              delta="+1.24%"
+              deltaDir="up"
+              feedState="streaming"
+              feedMeta="8 ms"
+              actions={action('BTCUSDT')}
+              ranges={RANGES}
+              activeRange={paperRange}
+              onRangeChange={onPaperRange}
+              legend={[
+                { label: 'Up candle',    kind: 'candle-up' },
+                { label: 'Down candle',  kind: 'candle-down' },
+                { label: 'Trade markers', kind: 'dot', color: 'var(--ep-yolk-500)' },
+              ]}
+              footer={<React.Fragment><span>vol · 1,284 BTC</span><span>20,328 candles</span></React.Fragment>}
+            >
+              <div ref={paperPlotRef} className="line-chart-plot" />
+            </LcWrap>
+            <p className="demo-note">
+              One <code>&lt;LcWrap surface="paper" height="md"&gt;</code> → root
+              <code>line-chart-wrapper line-chart-wrapper--h-md</code>. Legend swatches come from the real
+              component: two class-coloured candle chips (<code>candle-up</code> / <code>candle-down</code>) plus one
+              inline-<code>color</code> marker swatch. The action is a real <code>&lt;LcWrapIconButton&gt;</code> with a
+              programmatic <code>aria-label</code>; clicking it updates the “last action” status above — it mutates no
+              chart DOM. A consumer <code>className="demo-passthrough"</code> and an unused
+              <code>style={'{'} '--demo-pass': '1' {'}'}</code> ride through onto the root after the canonical classes,
+              overriding no component style.
+            </p>
+          </section>
+
+          {/* 2 · Two independent instances (paper + ink) prove per-instance isolation — numeric height */}
+          <section className="demo-section">
+            <span className="demo-h2">Isolation · paper + ink · independent range state</span>
+            <div className="demo-grid">
+              <ChartCard
+                height={260}
+                symbol="ETHUSDT"
+                meta="portfolio · 30d"
+                price="3,418.62"
+                delta="+2.34%"
+                deltaDir="up"
+                feedState="stale"
+                feedMeta="42 s"
+                ranges={RANGES_SHORT}
+                initialRange="5m"
+                footer={<React.Fragment><span>paper surface</span><span>own state</span></React.Fragment>}
+                chartOptions={{ kind: 'area', seed: 21, base: 100, vol: 1.1, drift: 1.2, count: 96 }}
+              />
+              <ChartCard
+                surface="ink"
+                height={260}
+                symbol="BTCUSDT"
+                meta="5m · binance"
+                price="68,190.10"
+                delta="−0.62%"
+                deltaDir="down"
+                actions={action('ETHUSDT')}
+                ranges={RANGES_SHORT}
+                initialRange="1h"
+                footer={<React.Fragment><span>ink surface</span><span>own state</span></React.Fragment>}
+                chartOptions={{ kind: 'area', seed: 3, base: 3350, vol: 28, drift: 2.2, count: 84 }}
+              />
+            </div>
+            <p className="demo-note">
+              Two separate <code>&lt;LcWrap&gt;</code> instances, each with its own plot ref, chart handle and
+              <code>activeRange</code> state. The ink one is <code>&lt;LcWrap surface="ink"&gt;</code> → root
+              <code>line-chart-wrapper--ink</code>; its ref-mounted chart reads the ink palette from
+              <code>closest('.line-chart-wrapper--ink')</code> and stays ink across range changes. Switching one
+              radiogroup never touches the other’s selection or chart — no shared “first-match” lookup. Both use a
+              numeric <code>height={'{'}260{'}'}</code> → inline height, no <code>--h-*</code> class.
+            </p>
+          </section>
+
+          {/* 3 · Compact density + string height "sm" + no ranges + no legend */}
+          <section className="demo-section">
+            <span className="demo-h2">Compact density · string height “sm” · no range control</span>
+            <div className="demo-fixture--narrow">
+              <ChartCard
+                density="compact"
+                height="sm"
+                title="Equity curve"
+                meta="portfolio-7 · 30d"
+                feedState="stale"
+                feedMeta="42 s"
+                footer={<span>compact · no radiogroup</span>}
+                chartOptions={{ kind: 'area', seed: 21, base: 100, vol: 1.1, drift: 0.9, count: 90 }}
+              />
+            </div>
+            <p className="demo-note">
+              <code>&lt;LcWrap density="compact" height="sm"&gt;</code> → root
+              <code>line-chart-wrapper--compact line-chart-wrapper--h-sm</code>. With no <code>ranges</code> the
+              component renders no radiogroup, and with no <code>legend</code> it renders no legend row — the chart
+              still mounts and sizes into the compact body without clipping.
+            </p>
+          </section>
+
+          {/* 4 · Placeholder — design-time grid, NO chart mounted */}
+          <section className="demo-section">
+            <span className="demo-h2">Placeholder · design-time, no chart</span>
+            <ChartCardless />
+            <p className="demo-note">
+              A separate <code>&lt;LcWrap placeholder={'{'}true{'}'} height="sm"&gt;</code> with no chart child: it
+              renders the component’s own <code>.line-chart-wrapper__placeholder</code> grid and mounts no
+              <code>lightweight-charts</code> instance. This is a static design-time placeholder — <strong>not</strong>
+              a lifecycle-managed loading/error state (the component has no loading or error prop).
+            </p>
+          </section>
+
+          {/* Contract notes */}
+          <section className="demo-section demo-notes">
+            <span className="demo-h2">Contract</span>
+            <p className="demo-note">
+              <strong>Timeframe keyboard:</strong> the range control is the component’s own
+              <code>role="radiogroup"</code> of <code>role="radio"</code> buttons. Tab enters once (roving tabindex);
+              ArrowLeft/Right/Up/Down move and select; Home/End jump to first/last; selection wraps and follows focus;
+              Enter/Space are the native button click. React <code>activeRange</code> is the single selection source and
+              each interaction fires exactly one <code>onRangeChange</code> → one <code>setRange</code>. The demo adds
+              no keydown handler and no <code>bindRanges()</code> on these controls.
+            </p>
+            <p className="demo-note">
+              <strong>Chart lifecycle:</strong> <code>LcWrap</code> is a layout/wrapper component and mounts no chart
+              itself. The demo owns the lifecycle: a per-instance <code>useEffect</code> calls the public
+              <code>LcCharts.mount(ref, options)</code> once and drives the returned handle’s <code>setRange(id)</code>.
+              It never calls the automatic <code>init()</code> / <code>bindRanges()</code> path. There is no
+              dispose/cleanup helper API, so these are page-lifetime mounts.
+            </p>
+            <p className="demo-note">
+              <strong>Classes &amp; theme:</strong> the React root is the canonical <code>.line-chart-wrapper</code>;
+              <code>surface="ink"</code> adds <code>.line-chart-wrapper--ink</code>, <code>density="compact"</code> adds
+              <code>.line-chart-wrapper--compact</code>, a string <code>height</code> adds
+              <code>.line-chart-wrapper--h-*</code>, and a numeric <code>height</code> is an inline style. The ink chart
+              palette is chosen by the mount’s ancestor detection, matching the ink chrome.
+            </p>
+            <p className="demo-note">
+              <strong>Known limits (P2):</strong> browser-only <code>window.LcWrap</code> / <code>window.LcWrapIconButton</code>
+              exports; consumer-owned chart lifecycle with no dispose/cleanup helper; controlled-only range selection
+              with no disabled range and no runtime item validation; a fixed <code>aria-label="Time range"</code> so
+              several radiogroups on a page share a landmark name; the icon button relies on the native UA focus ring;
+              and this React demo lives alongside the static <code>lc-wrap.html</code>.
+            </p>
+          </section>
+
+        </React.Fragment>
+      );
+    }
+
+    // Placeholder instance kept out of ChartCard so it mounts no chart and needs no ref.
+    function ChartCardless() {
+      return (
+        <div className="demo-fixture--narrow">
+          <LcWrap placeholder={true} height="sm" symbol="SOLUSDT" meta="awaiting feed" />
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+  </script>
+</body>
+</html>

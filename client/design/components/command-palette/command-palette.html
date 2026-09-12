@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>EggProject — Command palette</title>
+  <script src="../../../eggproject-design/preview/_theme.js" defer></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="command-palette.css" />
+  <link rel="stylesheet" href="../button/button.css" />
+  <link rel="icon" href="../../../eggproject-design/assets/logo-mark.svg" />
+  <style>
+    /* demo-page chrome only — no .command-palette/.command-palette__* rules; the component owns its CSS,
+       its focus-visible, its forced-colors and its reduced-motion recipes. */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--ep-bg); color: var(--ep-fg); font-family: var(--ep-font-sans); padding: 40px; min-height: 100vh; }
+    .page { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+    .page__head { display: flex; flex-direction: column; gap: 8px; }
+    h1 { font: 400 36px/1.1 var(--ep-font-display); letter-spacing: -0.02em; color: var(--ep-fg); }
+    h1 em { font-weight: 700; }
+    .lead { font: var(--ep-text-body); color: var(--ep-fg-muted); max-width: 60ch; }
+    code { font-family: var(--ep-font-mono); font-size: 0.92em; color: var(--ep-fg); }
+
+    .panel { display: flex; flex-direction: column; align-items: flex-start; gap: 14px;
+      background: var(--ep-bg-elevated); border: 1px solid var(--ep-border-subtle);
+      border-radius: var(--ep-radius-lg); padding: 24px; }
+    .hint-inline { font: var(--ep-text-small); color: var(--ep-fg-muted); }
+
+    .field { display: flex; flex-direction: column; gap: 6px; width: 100%; max-width: 360px; }
+    .field__label { font: 500 12px var(--ep-font-sans); color: var(--ep-fg-muted); }
+    .field__input { width: 100%; background: var(--ep-bg); color: var(--ep-fg);
+      border: 1px solid var(--ep-border); border-radius: var(--ep-radius-md);
+      padding: 8px 12px; font: var(--ep-text-small); font-family: inherit; }
+    .field__input:focus-visible { outline: none; box-shadow: var(--ep-shadow-focus); }
+
+    .link { color: var(--ep-accent); font: 500 13px var(--ep-font-sans); width: fit-content; }
+    .link:focus-visible { outline: none; box-shadow: var(--ep-shadow-focus); border-radius: var(--ep-radius-sm); }
+
+    .status { font: var(--ep-text-small); color: var(--ep-fg-muted);
+      border-top: 1px solid var(--ep-divider); padding-top: 12px; width: 100%; }
+    .status strong { color: var(--ep-fg); font-weight: 600; }
+
+    .guide { font: var(--ep-text-small); color: var(--ep-fg-muted);
+      border: 1px solid var(--ep-border-subtle); border-radius: var(--ep-radius-lg); padding: 18px 20px; }
+    .guide h2 { font: 600 13px var(--ep-font-sans); color: var(--ep-fg); margin: 14px 0 8px; }
+    .guide h2:first-child { margin-top: 0; }
+    .guide ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }
+    .guide p { margin: 0; max-width: 64ch; }
+    .guide kbd { font: 600 11px var(--ep-font-mono); background: var(--ep-bg-hover);
+      border: 1px solid var(--ep-border-subtle); border-radius: var(--ep-radius-sm); padding: 1px 5px; color: var(--ep-fg); }
+  </style>
+  <script src="../../assets/vendor/react.production.min.js"></script>
+  <script src="../../assets/vendor/react-dom.production.min.js"></script>
+  <script src="../../assets/vendor/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel" src="CommandPalette.jsx"></script>
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    const IconGrid  = () => <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.75"><rect x="3" y="4" width="12" height="10" rx="1.5"/><path d="M3 7h12"/></svg>;
+    const IconInbox = () => <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinejoin="round"><path d="M3 4h12v10H3z"/><path d="M3 10h3l1 2h4l1-2h3"/></svg>;
+    const IconPlus  = () => <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round"><path d="M9 4v10M4 9h10"/></svg>;
+    const IconDoc   = () => <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.75"><rect x="3.5" y="2.5" width="11" height="13" rx="1.5"/><path d="M6 6h6M6 9h6M6 12h4"/></svg>;
+    const IconUser  = () => <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.75"><circle cx="7" cy="7" r="2.5"/><path d="M3 14c.6-2.4 2.4-4 4.5-4"/><path d="M13 11v4M11 13h4"/></svg>;
+    const IconGear  = () => <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.75"><circle cx="9" cy="9" r="2"/><circle cx="9" cy="9" r="7"/></svg>;
+    const IconKey   = () => <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round"><circle cx="6" cy="9" r="3"/><path d="M9 9h6M13 9v3M15 9v2"/></svg>;
+
+    function App() {
+      const [open, setOpen] = useState(false);
+      const [status, setStatus] = useState('No command run yet.');
+
+      // The only shortcut the demo owns: ⌘K / Ctrl+K toggle. Escape, Tab, Arrow/Home/End/Enter
+      // and the focus model all belong to the component — the demo adds none of them.
+      useEffect(() => {
+        const onKey = (event) => {
+          if (event.isComposing || event.keyCode === 229) return;          // ignore IME composition
+          if ((event.key === 'k' || event.key === 'K') && (event.metaKey || event.ctrlKey)) {
+            event.preventDefault();                                          // beat the browser's own ⌘K
+            setOpen((value) => !value);
+          }
+        };
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+      }, []);
+
+      // onSelect only reports the action; the component runs onSelect then its own onClose.
+      const run = (label) => () => setStatus('Ran: ' + label);
+
+      const groups = [
+        { label: 'Navigation', items: [
+          { id: 'nav-dashboard', label: 'Go to Dashboard', icon: <IconGrid />,  meta: 'PAGE', shortcut: ['G', 'D'], keywords: 'home overview start', onSelect: run('Go to Dashboard') },
+          { id: 'nav-projects',  label: 'Go to Projects',  icon: <IconGrid />,  meta: 'PAGE', keywords: 'work clients lumenwerk', onSelect: run('Go to Projects') },
+          { id: 'nav-inbox',     label: 'Open Inbox',      icon: <IconInbox />, meta: 'PAGE', shortcut: ['G', 'I'], keywords: 'messages notifications', onSelect: run('Open Inbox') },
+        ]},
+        { label: 'Create', items: [
+          { id: 'create-project', label: 'New project',     icon: <IconPlus />, shortcut: ['⌘', 'N'], keywords: 'add start create', onSelect: run('New project') },
+          { id: 'create-invoice', label: 'New invoice',     icon: <IconDoc />,  keywords: 'bill payment billing', onSelect: run('New invoice') },
+          { id: 'create-invite',  label: 'Invite teammate', icon: <IconUser />, keywords: 'member people user add', onSelect: run('Invite teammate') },
+        ]},
+        { label: 'Settings', items: [
+          { id: 'settings-workspace', label: 'Workspace settings', icon: <IconGear />, meta: 'PAGE', shortcut: ['⌘', ','], keywords: 'preferences configuration', onSelect: run('Workspace settings') },
+          { id: 'settings-theme',     label: 'Toggle theme',       icon: <IconGear />, keywords: 'dark light appearance mode', onSelect: run('Toggle theme') },
+          { id: 'settings-keys',      label: 'Keyboard shortcuts', icon: <IconKey />,  shortcut: ['?'], keywords: 'keys help bindings', onSelect: run('Keyboard shortcuts') },
+        ]},
+      ];
+
+      return (
+        <>
+          <main className="page">
+            <header className="page__head">
+              <h1>Command palette · <em>⌘K</em></h1>
+              <p className="lead">A real <code>&lt;CommandPalette&gt;</code> driven only by the public <code>open</code> / <code>onClose</code> / <code>groups</code> / <code>placeholder</code> API. It is a true modal dialog (shared dialog manager) with a combobox + listbox keyboard model — the component owns the focus trap, Escape, navigation, ARIA and focus return; this page only supplies data.</p>
+            </header>
+
+            <section className="panel" aria-label="Open the palette and background controls">
+              <button type="button" className="btn btn--primary" aria-haspopup="dialog" aria-expanded={open} onClick={() => setOpen(true)}>
+                Open command palette
+              </button>
+              <p className="hint-inline">…or press <kbd>⌘</kbd><kbd>K</kbd> / <kbd>Ctrl</kbd><kbd>K</kbd> from anywhere on the page.</p>
+
+              <div className="field">
+                <label className="field__label" htmlFor="bg-note">Background note field</label>
+                <input id="bg-note" type="text" className="field__input" placeholder="A normal field — try Tab while the palette is open" />
+              </div>
+              <a className="link" href="#docs">A background link (also a Tab stop)</a>
+
+              <p className="status" role="status" aria-live="polite">Last action: <strong>{status}</strong></p>
+            </section>
+
+            <section className="guide" aria-label="Keyboard and pointer guide">
+              <h2>Open &amp; close</h2>
+              <ul>
+                <li>Focus <em>Open command palette</em> and press <kbd>Enter</kbd> / <kbd>Space</kbd>, or click it.</li>
+                <li><kbd>⌘</kbd><kbd>K</kbd> / <kbd>Ctrl</kbd><kbd>K</kbd> toggles it from anywhere.</li>
+                <li>The search input takes focus automatically on open.</li>
+                <li><kbd>Esc</kbd> or a click on the backdrop (outside the panel) closes it and returns focus to wherever you were.</li>
+              </ul>
+
+              <h2>Search &amp; navigate</h2>
+              <ul>
+                <li>Type to filter by label or keywords — e.g. <code>bill</code> matches “New invoice”, <code>dark</code> matches “Toggle theme”. Whole groups disappear when they have no match.</li>
+                <li><kbd>↓</kbd> / <kbd>↑</kbd> move the active result and wrap at the ends; <kbd>Home</kbd> jumps to the first, <kbd>End</kbd> to the last.</li>
+                <li><kbd>Enter</kbd> runs the active result; during IME composition <kbd>Enter</kbd> does not select.</li>
+                <li>Type a term with no matches (e.g. <code>zzzz</code>) to see the empty state — no active result, and <kbd>Enter</kbd> does nothing.</li>
+              </ul>
+
+              <h2>Combobox &amp; listbox</h2>
+              <p>Keyboard focus stays in the search field the whole time; the arrows only move the active result, which is highlighted visually and exposed to screen readers as the active descendant of the list. In a DOM inspector you can confirm the combobox <code>aria-controls</code> / <code>aria-expanded</code> / <code>aria-activedescendant</code>, the listbox id, a single selected option, and each group’s labelled heading.</p>
+
+              <h2>Modality &amp; focus return</h2>
+              <ul>
+                <li>With the palette open, press <kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd>: focus cycles inside the palette and never reaches the background field, link or button.</li>
+                <li>The background is inert (not clickable, hidden from assistive tech) until you close; then it is usable again.</li>
+                <li>Open from the background field or link, then press <kbd>Esc</kbd> — focus returns to that exact element, not just the main button.</li>
+              </ul>
+            </section>
+          </main>
+
+          <CommandPalette
+            open={open}
+            onClose={() => setOpen(false)}
+            groups={groups}
+            placeholder="Search commands…"
+          />
+        </>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>

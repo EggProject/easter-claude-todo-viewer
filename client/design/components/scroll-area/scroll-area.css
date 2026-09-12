@@ -1,0 +1,80 @@
+@import url('../../../eggproject-design/colors_and_type.css');
+
+/* ============ Scroll Area ============
+   Structure:
+     .scroll-area[ .scroll-area--x | .scroll-area--both ]
+       > .scroll-area__viewport
+         > content
+   Thin, styled scrollbar via webkit + standard scrollbar props.
+============================================ */
+.scroll-area {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--ep-radius-md);
+}
+
+.scroll-area__viewport {
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: 100%;
+  width: 100%;
+  scrollbar-width: thin;
+  scrollbar-color: var(--ep-border-strong) transparent;
+}
+
+.scroll-area--x .scroll-area__viewport {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.scroll-area--both .scroll-area__viewport {
+  overflow: auto;
+}
+
+/* WebKit scrollbar */
+.scroll-area__viewport::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.scroll-area__viewport::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scroll-area__viewport::-webkit-scrollbar-thumb {
+  background: var(--ep-border);
+  border-radius: var(--ep-radius-pill);
+  transition: background var(--ep-dur-base);
+}
+.scroll-area__viewport::-webkit-scrollbar-thumb:hover {
+  background: var(--ep-fg-muted);
+}
+
+/* Keyboard focus on the scroll viewport.
+   The viewport carries tabindex="0" + role="region" in the canonical markup so
+   keyboard users can reach and scroll the overflow content. The root .scroll-area
+   is overflow:hidden and the viewport fills it, so an outset ring would be clipped —
+   use an INSET ring instead (never animated). */
+.scroll-area__viewport:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--ep-accent);
+}
+
+/* Forced colors (Windows High Contrast): keep the container edge, scroll affordance
+   and focus visible with system colors only. No token/hex/rgb/hsl; no
+   forced-color-adjust. Live emulation not run — source/CSSOM-verified. */
+@media (forced-colors: active) {
+  .scroll-area { border: 1px solid CanvasText; }
+  .scroll-area__viewport { scrollbar-color: CanvasText Canvas; }
+  .scroll-area__viewport:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+    box-shadow: none;
+  }
+  .scroll-area__viewport::-webkit-scrollbar-track { background: Canvas; }
+  .scroll-area__viewport::-webkit-scrollbar-thumb { background: CanvasText; }
+}
+
+/* Reduced motion: drop the cosmetic scrollbar-thumb hover colour fade. No new
+   animation, no smooth scroll, focus ring stays static. */
+@media (prefers-reduced-motion: reduce) {
+  .scroll-area__viewport::-webkit-scrollbar-thumb { transition: none; }
+}

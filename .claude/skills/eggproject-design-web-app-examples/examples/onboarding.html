@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<!-- @dsCard group="Brand" name="Demo · Onboarding wizard" subtitle="Stepper-driven 4-step new-project flow" -->
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>EggProject — New project</title>
+  <script src="../../eggproject-design/preview/_theme.js" defer></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" href="../../eggproject-design/assets/logo-mark.svg" />
+  <link rel="stylesheet" href="../../eggproject-design/colors_and_type.css" />
+  <link rel="stylesheet" href="../../eggproject-design-app-common/_shell.css" />
+  <link rel="stylesheet" href="../../eggproject-design-components/components/button/button.css" />
+  <link rel="stylesheet" href="../../eggproject-design-components/components/input/input.css" />
+  <link rel="stylesheet" href="../../eggproject-design-components/components/select/select.css" />
+  <link rel="stylesheet" href="../../eggproject-design-components/components/menu/menu.css" />
+  <link rel="stylesheet" href="../../eggproject-design-components/components/form-controls/form-controls.css" />
+  <link rel="stylesheet" href="../../eggproject-design-components/components/stepper/stepper.css" />
+  <link rel="stylesheet" href="../../eggproject-design-components/components/badge/badge.css" />
+  <link rel="stylesheet" href="../../eggproject-design-components/components/avatar/avatar.css" />
+  <link rel="stylesheet" href="../../eggproject-design-components/components/tag-input/tag-input.css" />
+  <link rel="stylesheet" href="../../eggproject-design-components/components/file-upload/file-upload.css" />
+  <link rel="stylesheet" href="../../eggproject-design-components/components/alert/alert.css" />
+  <link rel="stylesheet" href="../../eggproject-design-components/components/divider/divider.css" />
+  <link rel="stylesheet" href="../../eggproject-design-components/components/kbd/kbd.css" />
+  <style>
+    body { background: var(--ep-bg-sunken); color: var(--ep-fg); }
+
+    .wizard-card {
+      background: var(--ep-bg-elevated);
+      border: 1px solid var(--ep-border-subtle);
+      border-radius: var(--ep-radius-xl);
+      box-shadow: var(--ep-shadow-sm);
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      min-height: 560px;
+      overflow: hidden;
+    }
+
+    .wizard-sidebar {
+      background: var(--ep-bg-sunken);
+      border-right: 1px solid var(--ep-border-subtle);
+      padding: 32px 28px;
+      display: flex; flex-direction: column;
+      gap: 28px;
+    }
+    .wizard-sidebar__header h2 {
+      font: 400 26px/1.1 var(--ep-font-display);
+      letter-spacing: -0.02em;
+      color: var(--ep-fg);
+    }
+ .wizard-sidebar__header h2 em { font-weight: 700; }
+    .wizard-sidebar__header p {
+      margin-top: 6px;
+      font: 400 13.5px/1.5 var(--ep-font-sans);
+      color: var(--ep-fg-muted);
+    }
+
+    .wizard-main {
+      padding: 32px 40px 28px;
+      display: flex; flex-direction: column;
+      gap: 24px;
+      min-width: 0;
+    }
+    .wizard-main__header h3 {
+      font: 400 28px/1.1 var(--ep-font-display);
+      letter-spacing: -0.02em;
+      color: var(--ep-fg);
+    }
+ .wizard-main__header h3 em { font-weight: 700; }
+    .wizard-main__header p {
+      margin-top: 6px;
+      font: var(--ep-text-body);
+      color: var(--ep-fg-muted);
+      max-width: 52ch;
+    }
+
+    .wizard-fields { display: flex; flex-direction: column; gap: 20px; }
+    .wizard-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+    /* Selector cards (project type) */
+    .selector { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .selector .ctrl-card {
+      flex-direction: column;
+      align-items: stretch;
+      padding: 16px;
+      gap: 8px;
+    }
+    .selector .ctrl-card__top {
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .selector .ctrl-card__icon {
+      width: 30px; height: 30px;
+      border-radius: var(--ep-radius-md);
+      background: var(--ep-accent-bg);
+      color: var(--ep-accent);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .selector .ctrl-card__icon svg { width: 16px; height: 16px; }
+    .selector .ctrl-card .ctrl__radio { margin-top: 0; }
+    .selector .ctrl-card__name { font: 600 14px var(--ep-font-sans); color: var(--ep-fg); }
+    .selector .ctrl-card__sub { font: 400 12.5px/1.45 var(--ep-font-sans); color: var(--ep-fg-muted); }
+
+    .wizard-footer {
+      grid-column: 1 / -1;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 40px;
+      border-top: 1px solid var(--ep-divider);
+      background: var(--ep-bg-sunken);
+    }
+    .wizard-footer__hint {
+      font: var(--ep-text-meta);
+      font-family: var(--ep-font-mono);
+      color: var(--ep-fg-subtle);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .wizard-footer__actions { display: flex; gap: 10px; }
+
+    .summary {
+      margin-top: auto;
+      padding: 14px 16px;
+      background: var(--ep-bg-elevated);
+      border: 1px solid var(--ep-border-subtle);
+      border-radius: var(--ep-radius-md);
+    }
+    .summary h4 {
+      font: 500 11px var(--ep-font-sans);
+      letter-spacing: var(--ep-track-overline);
+      text-transform: uppercase;
+      color: var(--ep-fg-subtle);
+      margin-bottom: 8px;
+    }
+    .summary dl {
+      display: grid; grid-template-columns: auto 1fr;
+      gap: 6px 12px;
+      font: 400 13px var(--ep-font-sans);
+    }
+    .summary dt { color: var(--ep-fg-muted); }
+    .summary dd { color: var(--ep-fg); font-weight: 500; text-align: right; }
+
+    /* Custom stepper align */
+    .stepper--vertical .stepper__step { padding-bottom: 16px; }
+
+    /* Compact tag-input override for narrow column */
+    .tag-input { width: 100%; }
+  </style>
+</head>
+<body>
+
+  <div class="focus" data-screen-label="New project">
+
+    <header class="focus__bar">
+      <a class="focus__brand" href="index.html">
+        <img src="../../eggproject-design/assets/logo-mark.svg" alt="" />
+        <b>EggProject</b>
+      </a>
+      <div class="focus__bar-aside">
+        <button class="ep-theme-toggle" type="button" data-ep-theme-toggle aria-label="Switch to dark theme">
+          <svg class="ep-theme-toggle__moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+          <svg class="ep-theme-toggle__sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        </button>
+        <a href="index.html">Save &amp; exit ×</a>
+      </div>
+    </header>
+
+    <div class="focus__body" style="align-items: flex-start; padding-top: 8px;">
+    <section class="wizard-card" style="width: 100%; max-width: 1080px;">
+
+      <!-- ===== Side: stepper + summary ===== -->
+      <aside class="wizard-sidebar">
+        <div class="wizard-sidebar__header">
+          <h2>Start a <em>new project</em></h2>
+          <p>Four short steps. You can edit any of it later — none of this is locked in.</p>
+        </div>
+
+        <ol class="stepper stepper--vertical">
+          <li class="stepper__step stepper__step--complete">
+            <div class="stepper__header">
+              <span class="stepper__node">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m3 8 3 3 7-8"/></svg>
+              </span>
+              <div class="stepper__text">
+                <span class="stepper__label">The basics</span>
+                <span class="stepper__subtitle">Name &amp; type</span>
+              </div>
+            </div>
+            <span class="stepper__line"></span>
+          </li>
+          <li class="stepper__step stepper__step--complete">
+            <div class="stepper__header">
+              <span class="stepper__node">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m3 8 3 3 7-8"/></svg>
+              </span>
+              <div class="stepper__text">
+                <span class="stepper__label">Scope &amp; timing</span>
+                <span class="stepper__subtitle">2 of 2 confirmed</span>
+              </div>
+            </div>
+            <span class="stepper__line"></span>
+          </li>
+          <li class="stepper__step stepper__step--current">
+            <div class="stepper__header">
+              <span class="stepper__node">3</span>
+              <div class="stepper__text">
+                <span class="stepper__label">Team &amp; access</span>
+                <span class="stepper__subtitle">Who's involved</span>
+              </div>
+            </div>
+            <span class="stepper__line"></span>
+          </li>
+          <li class="stepper__step stepper__step--pending">
+            <div class="stepper__header">
+              <span class="stepper__node">4</span>
+              <div class="stepper__text">
+                <span class="stepper__label">Brief &amp; attachments</span>
+                <span class="stepper__subtitle">Optional</span>
+              </div>
+            </div>
+          </li>
+        </ol>
+
+        <div class="summary">
+          <h4>So far</h4>
+          <dl>
+            <dt>Project</dt><dd>Lumenwerk · Portal v2</dd>
+            <dt>Type</dt><dd>Project (3–6 mo)</dd>
+            <dt>Start</dt><dd>4 Jun 2026</dd>
+            <dt>Budget</dt><dd>€18k / month</dd>
+          </dl>
+        </div>
+      </aside>
+
+      <!-- ===== Main step content ===== -->
+      <div class="wizard-main">
+        <header class="wizard-main__header">
+          <span class="design-mark-meta">Step 3 of 4</span>
+          <h3>Who's on <em>your side?</em></h3>
+          <p>Add the people we should brief, ping, and bill. You can change roles per-person later in the portal.</p>
+        </header>
+
+        <div class="wizard-fields">
+
+          <!-- Stakeholders -->
+          <div class="field">
+            <label class="field__label">Stakeholders</label>
+            <div class="tagi">
+              <span class="tagi__tag">
+                <span class="tagi__tag-text">Anna Kovács · anna@northbeam.co</span>
+                <button class="tagi__tag-x" aria-label="Remove"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m3 3 6 6m0-6-6 6"/></svg></button>
+              </span>
+              <span class="tagi__tag tagi__tag--yolk">
+                <span class="tagi__tag-text">Petra Dóra · petra@northbeam.co</span>
+                <button class="tagi__tag-x" aria-label="Remove"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m3 3 6 6m0-6-6 6"/></svg></button>
+              </span>
+              <span class="tagi__tag">
+                <span class="tagi__tag-text">Tomáš Surányi · tomas@northbeam.co</span>
+                <button class="tagi__tag-x" aria-label="Remove"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m3 3 6 6m0-6-6 6"/></svg></button>
+              </span>
+              <input class="tagi__input" placeholder="Add by email or name…" />
+            </div>
+          </div>
+
+          <!-- Role + access -->
+          <div class="wizard-row-2">
+            <div class="field">
+              <label class="field__label" for="primary-contact">Primary contact</label>
+              <select id="primary-contact" name="primaryContact" class="select">
+                <option value="anna" selected>Anna Kovács — Director of product</option>
+                <option value="petra">Petra Dóra</option>
+                <option value="tomas">Tomáš Surányi</option>
+              </select>
+            </div>
+            <div class="field">
+              <label class="field__label" for="billing-contact">Billing contact</label>
+              <select id="billing-contact" name="billingContact" class="select">
+                <option value="same" selected>Same as primary</option>
+                <option value="anna">Anna Kovács — Director of product</option>
+                <option value="petra">Petra Dóra</option>
+                <option value="tomas">Tomáš Surányi</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Permissions block -->
+          <div>
+            <label class="field__label" style="margin-bottom: 10px; display: block;">What can stakeholders see?</label>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+              <label class="ctrl">
+                <input class="ctrl__input" type="checkbox" checked />
+                <span class="ctrl__box"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 6 3 3 5-6"/></svg></span>
+                <span class="ctrl__text">
+                  <span class="ctrl__label">Project timeline &amp; weekly demos</span>
+                  <span class="ctrl__hint">Read-only view of milestones, releases, and recorded demos.</span>
+                </span>
+              </label>
+              <label class="ctrl">
+                <input class="ctrl__input" type="checkbox" checked />
+                <span class="ctrl__box"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 6 3 3 5-6"/></svg></span>
+                <span class="ctrl__text">
+                  <span class="ctrl__label">Comment on tasks &amp; designs</span>
+                  <span class="ctrl__hint">Threaded comments on the kanban and Figma embeds.</span>
+                </span>
+              </label>
+              <label class="ctrl">
+                <input class="ctrl__input" type="checkbox" />
+                <span class="ctrl__box"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 6 3 3 5-6"/></svg></span>
+                <span class="ctrl__text">
+                  <span class="ctrl__label">Invoices &amp; payment history</span>
+                  <span class="ctrl__hint">Only billing contacts by default.</span>
+                </span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Notification preference -->
+          <div>
+            <label class="field__label" style="margin-bottom: 10px; display: block;">How should we ping the team?</label>
+            <div class="radio-group radio-group--row">
+              <label class="ctrl">
+                <input class="ctrl__input" type="radio" name="ping" checked />
+                <span class="ctrl__radio"></span>
+                <span class="ctrl__text"><span class="ctrl__label">Email digest (daily)</span></span>
+              </label>
+              <label class="ctrl">
+                <input class="ctrl__input" type="radio" name="ping" />
+                <span class="ctrl__radio"></span>
+                <span class="ctrl__text"><span class="ctrl__label">Slack channel</span></span>
+              </label>
+              <label class="ctrl">
+                <input class="ctrl__input" type="radio" name="ping" />
+                <span class="ctrl__radio"></span>
+                <span class="ctrl__text"><span class="ctrl__label">Both</span></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Inline reassurance alert -->
+          <div class="alert alert--subtle alert--info">
+            <svg class="alert__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5m0 3h.01"/></svg>
+            <div class="alert__body">
+              <div class="alert__title">Invitations go out when you click <em>Continue</em></div>
+              <div class="alert__message">Each person gets a portal account with the permissions you set above. No charge for stakeholder seats.</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ===== Footer ===== -->
+      <footer class="wizard-footer">
+        <div class="wizard-footer__hint">
+          <span class="kbd-combo">
+            <span class="kbd kbd--sm">⌘</span><span class="kbd-combo__sep">+</span><span class="kbd kbd--sm">↵</span>
+          </span>
+          to continue
+        </div>
+        <div class="wizard-footer__actions">
+          <button class="btn btn--ghost">← Back</button>
+          <button class="btn btn--primary">Continue
+            <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h8m-3-3 3 3-3 3"/></svg>
+          </button>
+        </div>
+      </footer>
+
+    </section>
+    </div>
+  </div>
+
+</body>
+</html>

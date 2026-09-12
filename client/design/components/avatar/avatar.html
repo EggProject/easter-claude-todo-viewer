@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>EggProject — Avatar</title>
+  <script src="../../../eggproject-design/preview/_theme.js" defer></script>
+  <meta name="viewport" content="width=720" />
+  <link rel="stylesheet" href="avatar.css" />
+  <link rel="icon" href="../../../eggproject-design/assets/logo-mark.svg" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--ep-bg); color: var(--ep-fg); font-family: var(--ep-font-sans); padding: 40px; display: flex; flex-direction: column; gap: 18px; max-width: 720px; }
+    .row { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+    .label { font: var(--ep-text-overline); letter-spacing: var(--ep-track-overline); text-transform: uppercase; color: var(--ep-fg-subtle); margin-top: 10px; }
+    h1 { font: 400 36px/1.1 var(--ep-font-display); letter-spacing: -0.02em; color: var(--ep-fg); }
+ h1 em { font-weight: 700; }
+  </style>
+</head>
+<body>
+  <h1>Avatar · <em>identity</em></h1>
+
+  <span class="label">Sizes</span>
+  <div class="row">
+    <span class="avatar avatar--xs avatar--blue"><span class="avatar__initials">EP</span></span>
+    <span class="avatar avatar--sm avatar--ink"><span class="avatar__initials">EK</span></span>
+    <span class="avatar avatar--md avatar--yolk"><span class="avatar__initials">LB</span></span>
+    <span class="avatar avatar--lg avatar--slate"><span class="avatar__initials">NH</span></span>
+    <span class="avatar avatar--xl avatar--violet"><span class="avatar__initials">RT</span></span>
+    <span class="avatar avatar--2xl avatar--teal"><span class="avatar__initials">MZ</span></span>
+  </div>
+
+  <span class="label">Square</span>
+  <div class="row">
+    <span class="avatar avatar--md avatar--square avatar--blue"><span class="avatar__initials">EP</span></span>
+    <span class="avatar avatar--lg avatar--square avatar--ink"><span class="avatar__initials">EK</span></span>
+    <span class="avatar avatar--xl avatar--square avatar--yolk"><span class="avatar__initials">LB</span></span>
+    <span class="avatar avatar--2xl avatar--square avatar--violet"><span class="avatar__initials">MZ</span></span>
+  </div>
+
+  <span class="label">With status</span>
+  <div class="row">
+    <span class="avatar avatar--lg avatar--blue"><span class="avatar__initials">EP</span><span class="avatar__status avatar__status--online"></span></span>
+    <span class="avatar avatar--lg avatar--ink"><span class="avatar__initials">EK</span><span class="avatar__status avatar__status--away"></span></span>
+    <span class="avatar avatar--lg avatar--yolk"><span class="avatar__initials">LB</span><span class="avatar__status avatar__status--busy"></span></span>
+    <span class="avatar avatar--lg avatar--slate"><span class="avatar__initials">NH</span><span class="avatar__status avatar__status--offline"></span></span>
+  </div>
+
+  <span class="label">Group — overlap stack</span>
+  <div class="row">
+    <span class="avatar-group">
+      <span class="avatar avatar--md avatar--blue"><span class="avatar__initials">EP</span></span>
+      <span class="avatar avatar--md avatar--yolk"><span class="avatar__initials">LB</span></span>
+      <span class="avatar avatar--md avatar--violet"><span class="avatar__initials">RT</span></span>
+      <span class="avatar avatar--md avatar--teal"><span class="avatar__initials">MZ</span></span>
+      <span class="avatar-group__more avatar--md">+3</span>
+    </span>
+
+    <span class="avatar-group avatar-group--lg">
+      <span class="avatar avatar--lg avatar--ink"><span class="avatar__initials">EK</span></span>
+      <span class="avatar avatar--lg avatar--blue"><span class="avatar__initials">EP</span></span>
+      <span class="avatar avatar--lg avatar--yolk"><span class="avatar__initials">LB</span></span>
+    </span>
+  </div>
+</body>
+</html>

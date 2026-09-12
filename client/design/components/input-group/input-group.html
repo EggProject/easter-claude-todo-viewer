@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>EggProject — Input Group</title>
+  <script src="../../../eggproject-design/preview/_theme.js" defer></script>
+  <meta name="viewport" content="width=720" />
+  <link rel="stylesheet" href="input-group.css" />
+  <link rel="stylesheet" href="../input/input.css" />
+  <link rel="stylesheet" href="../button/button.css" />
+  <link rel="icon" href="../../../eggproject-design/assets/logo-mark.svg" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--ep-bg); color: var(--ep-fg); font-family: var(--ep-font-sans); padding: 40px; }
+    .page { max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+    h1 { font: 400 36px/1.1 var(--ep-font-display); letter-spacing: -0.02em; }
+    h1 em { font-weight: 700; }
+    .lead { font: var(--ep-text-body); color: var(--ep-fg-muted); }
+    .label { font: var(--ep-text-overline); letter-spacing: var(--ep-track-overline); text-transform: uppercase; color: var(--ep-fg-subtle); }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1>Input Group · <em>addons</em></h1>
+    <p class="lead">Prefix and suffix addons — text labels, icon buttons, or full buttons — fused with the input control.</p>
+    <span class="label">Text prefix</span>
+    <div class="input-group">
+      <span class="input-group__addon">https://</span>
+      <input class="input" type="text" placeholder="yoursite.com" />
+    </div>
+    <span class="label">Text suffix</span>
+    <div class="input-group">
+      <input class="input" type="number" placeholder="0.00" />
+      <span class="input-group__addon">EUR</span>
+    </div>
+    <span class="label">Both prefix and suffix</span>
+    <div class="input-group">
+      <span class="input-group__addon">$</span>
+      <input class="input" type="number" placeholder="Amount" />
+      <span class="input-group__addon">.00</span>
+    </div>
+    <span class="label">Button suffix (search)</span>
+    <div class="input-group">
+      <input class="input" type="text" placeholder="Search projects…" />
+      <button class="btn btn--primary" style="border-radius: 0 var(--ep-radius-md) var(--ep-radius-md) 0;">Search</button>
+    </div>
+    <span class="label">Icon prefix</span>
+    <div class="input-group">
+      <span class="input-group__addon">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true" focusable="false">
+          <circle cx="6.5" cy="6.5" r="4"/><path d="m10 10 3 3"/>
+        </svg>
+      </span>
+      <input class="input" type="text" placeholder="Filter by name…" />
+    </div>
+  </div>
+</body>
+</html>

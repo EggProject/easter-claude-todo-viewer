@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>EggProject — Popover</title>
+  <script src="../../../eggproject-design/preview/_theme.js" defer></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="popover.css" />
+  <link rel="stylesheet" href="../button/button.css" />
+  <link rel="icon" href="../../../eggproject-design/assets/logo-mark.svg" />
+  <style>
+    /* demo-page chrome only — no .popover / .popover__* / .popover-anchor rules; the component
+       owns its CSS, its focus-visible, its forced-colors and its reduced-motion recipes. */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--ep-bg); color: var(--ep-fg); font-family: var(--ep-font-sans); padding: 40px; min-height: 100vh; }
+    .page { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 22px; }
+    header { display: flex; flex-direction: column; gap: 8px; }
+    h1 { font: 400 36px/1.1 var(--ep-font-display); letter-spacing: -0.02em; color: var(--ep-fg); }
+    h1 em { font-weight: 700; }
+    .lead { font: var(--ep-text-body); color: var(--ep-fg-muted); max-width: 64ch; }
+    code { font-family: var(--ep-font-mono); font-size: 0.92em; color: var(--ep-fg); }
+
+    .panel { display: flex; flex-direction: column; align-items: flex-start; gap: 12px;
+      background: var(--ep-bg-elevated); border: 1px solid var(--ep-border-subtle);
+      border-radius: var(--ep-radius-lg); padding: 20px 22px; }
+    .panel h2 { font: 600 15px var(--ep-font-sans); color: var(--ep-fg); }
+    .panel h3 { font: 600 13px var(--ep-font-sans); color: var(--ep-fg); margin-top: 6px; }
+
+    .row { display: flex; flex-wrap: wrap; gap: 14px 18px; align-items: flex-start; }
+
+    .config { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center;
+      border: 1px solid var(--ep-border-subtle); border-radius: var(--ep-radius-md); padding: 10px 14px; width: 100%; }
+    .config legend { font: 500 12px var(--ep-font-sans); color: var(--ep-fg-muted); padding: 0 6px; }
+    .config .muted { color: var(--ep-fg-subtle); font-weight: 400; }
+    .opt { display: inline-flex; align-items: center; gap: 6px; font: var(--ep-text-small); color: var(--ep-fg); cursor: pointer; }
+
+    .bg-field { display: flex; flex-direction: column; gap: 6px; width: 100%; max-width: 380px; }
+    .bg-field input { width: 100%; background: var(--ep-bg); color: var(--ep-fg);
+      border: 1px solid var(--ep-border); border-radius: var(--ep-radius-sm);
+      padding: 7px 10px; font: var(--ep-text-small); font-family: inherit; }
+    .bg-field input:focus-visible { outline: none; box-shadow: var(--ep-shadow-focus); }
+
+    .link { color: var(--ep-accent); font: 500 13px var(--ep-font-sans); width: fit-content; }
+    .link:focus-visible { outline: none; box-shadow: var(--ep-shadow-focus); border-radius: var(--ep-radius-sm); }
+
+    .outside-controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; width: 100%; }
+    .outside-surface { font: var(--ep-text-small); color: var(--ep-fg-subtle);
+      border: 1px dashed var(--ep-border); border-radius: var(--ep-radius-md); padding: 14px 16px; background: var(--ep-bg); }
+
+    .po-grid { display: flex; gap: 10px; width: 100%; }
+    .field { display: flex; flex-direction: column; gap: 6px; flex: 1; }
+    .field-label { font: 500 12px var(--ep-font-sans); letter-spacing: 0.04em; text-transform: uppercase; color: var(--ep-fg-muted); }
+    .field input { width: 100%; background: var(--ep-bg); color: var(--ep-fg);
+      border: 1px solid var(--ep-border); border-radius: var(--ep-radius-sm);
+      padding: 7px 10px; font: var(--ep-text-small); font-family: inherit; }
+    .field input:focus-visible { outline: none; box-shadow: var(--ep-shadow-focus); }
+
+    .demo-form { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; width: 100%; }
+
+    .status { font: var(--ep-text-small); color: var(--ep-fg-muted);
+      border-top: 1px solid var(--ep-divider); padding-top: 10px; width: 100%; }
+    .status strong { color: var(--ep-fg); font-weight: 600; }
+
+    .hint { font: var(--ep-text-small); color: var(--ep-fg-muted); max-width: 66ch; }
+    .hint code, .hint strong { color: var(--ep-fg); }
+
+    .keys { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 5px; }
+    .keys li { font: var(--ep-text-small); color: var(--ep-fg-muted); max-width: 70ch; }
+
+    kbd { font: 600 11px var(--ep-font-mono); background: var(--ep-bg-hover);
+      border: 1px solid var(--ep-border-subtle); border-radius: var(--ep-radius-sm); padding: 1px 5px; color: var(--ep-fg); }
+  </style>
+  <script src="../../assets/vendor/react.production.min.js"></script>
+  <script src="../../assets/vendor/react-dom.production.min.js"></script>
+  <script src="../../assets/vendor/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel" src="Popover.jsx"></script>
+  <script type="text/babel">
+    const { useState } = React;
+
+    // Demo-only: this page never touches the popover lifecycle. The exported Popover owns the
+    // trigger ARIA, the non-modal role="dialog" panel, Escape + outside-pointer close and focus
+    // return. Here we only render real <Popover>/<PopoverHeader>/<PopoverFooter>, pass props, and
+    // keep one bit of demo state (an action-result line). No timers, no listeners, no DOM access.
+    function App() {
+      const [status, setStatus] = useState('No action yet.');
+      const [placement, setPlacement] = useState('bottom');
+      const [align, setAlign] = useState('center');
+
+      return (
+        <main className="page">
+          <header>
+            <h1>Popover · <em>rich, click-triggered</em></h1>
+            <p className="lead">Driven entirely by the exported <code>Popover</code> / <code>PopoverHeader</code> / <code>PopoverFooter</code>. The component owns the trigger ARIA, the non-modal <code>role="dialog"</code> panel, Escape + outside-pointer close and focus return — this page only supplies triggers, content and props.</p>
+          </header>
+
+          <section className="panel" aria-labelledby="cfg-h">
+            <h2 id="cfg-h">Placement &amp; align · interactive</h2>
+            <fieldset className="config">
+              <legend>Placement</legend>
+              {['top', 'bottom', 'left', 'right'].map((value) => (
+                <label key={value} className="opt">
+                  <input type="radio" name="placement" value={value} checked={placement === value} onChange={() => setPlacement(value)} />
+                  <span>{value}</span>
+                </label>
+              ))}
+            </fieldset>
+            <fieldset className="config">
+              <legend>Align <span className="muted">· top / bottom</span></legend>
+              {['start', 'center', 'end'].map((value) => (
+                <label key={value} className="opt">
+                  <input type="radio" name="align" value={value} checked={align === value} onChange={() => setAlign(value)} />
+                  <span>{value}</span>
+                </label>
+              ))}
+            </fieldset>
+            <div className="row">
+              <Popover placement={placement} align={align} trigger={<button type="button" className="btn btn--secondary">Configured popover</button>}>
+                <PopoverHeader title="Live configuration" sub={`placement=${placement} · align=${align}`}/>
+                <p className="popover__message">Pick a placement and align above, then open this trigger to see the panel anchor there.</p>
+              </Popover>
+            </div>
+            <p className="hint">Default is <code>placement="bottom"</code> / <code>align="center"</code>; <code>align</code> applies to <code>top</code> and <code>bottom</code>. Clicking a radio while the panel is open counts as an outside click and closes it (non-modal) — set the configuration, then open. If a corner would overflow the viewport, the component nudges the panel back on-screen; there is no flip, portal or collision detection, so a transformed / <code>overflow:hidden</code> ancestor can still clip it.</p>
+          </section>
+
+          <section className="panel" aria-labelledby="rc-h">
+            <h2 id="rc-h">Rich content — a filter form</h2>
+            <Popover placement="bottom" trigger={<button type="button" className="btn btn--secondary">Filter by date</button>}>
+              <PopoverHeader title="Filter by date" sub="Show projects active between"/>
+              <div className="po-grid">
+                <label className="field"><span className="field-label">From</span><input type="date" defaultValue="2026-01-01"/></label>
+                <label className="field"><span className="field-label">To</span><input type="date" defaultValue="2026-03-31"/></label>
+              </div>
+              <PopoverFooter>
+                <button type="button" className="btn btn--ghost btn--sm" onClick={() => setStatus('Filter cleared')}>Clear</button>
+                <button type="button" className="btn btn--primary btn--sm" onClick={() => setStatus('Filter applied · Jan–Mar 2026')}>Apply</button>
+              </PopoverFooter>
+            </Popover>
+            <p className="status" role="status" aria-live="polite">Last action: <strong>{status}</strong></p>
+            <p className="hint">Tab from the trigger straight into the date fields — there is <strong>no focus trap</strong>. The footer buttons are consumer-owned (<code>type="button"</code>) and run their own <code>onClick</code>; they don’t auto-close the uncontrolled popover. Close it with its <strong>×</strong>, <kbd>Esc</kbd>, an outside click, or by toggling the trigger.</p>
+          </section>
+
+          <section className="panel" aria-labelledby="do-h">
+            <h2 id="do-h">Starts open · <code>defaultOpen</code></h2>
+            <Popover defaultOpen placement="bottom" trigger={<button type="button" className="btn btn--secondary">Pre-opened</button>}>
+              <PopoverHeader title="Already open"/>
+              <p className="popover__message">Rendered with <code>defaultOpen</code>; the component owns the open state from here (uncontrolled — there is no <code>open</code> / <code>onOpenChange</code> prop).</p>
+            </Popover>
+            <p className="hint">Use the <strong>×</strong>, <kbd>Esc</kbd> or an outside click to dismiss it, then the trigger to toggle it again.</p>
+          </section>
+
+          <section className="panel" aria-labelledby="fm-h">
+            <h2 id="fm-h">Inside a form</h2>
+            <form className="demo-form" onSubmit={(event) => { event.preventDefault(); setStatus('Form submitted (explicit submit only)'); }}>
+              <Popover placement="bottom" trigger={<button type="button" className="btn btn--secondary">Open in a form</button>}>
+                <PopoverHeader title="Form-safe trigger"/>
+                <p className="popover__message">Opening this popover and using its footer never submits the surrounding form — the trigger and footer buttons are <code>type="button"</code>.</p>
+                <PopoverFooter>
+                  <button type="button" className="btn btn--ghost btn--sm" onClick={() => setStatus('Popover action ran (no submit)')}>Run action</button>
+                </PopoverFooter>
+              </Popover>
+              <button type="submit" className="btn btn--primary btn--sm">Submit form</button>
+            </form>
+            <p className="hint">Only the explicit <code>Submit form</code> button submits; the popover trigger and its footer action never do. (Watch the <em>Last action</em> line above.)</p>
+          </section>
+
+          <section className="panel" aria-labelledby="cm-h">
+            <h2 id="cm-h">Trigger handler composition</h2>
+            <div className="row">
+              <Popover placement="bottom" trigger={<button type="button" className="btn btn--secondary" onClick={() => setStatus('Trigger onClick ran, then the popover toggled')}>Normal · own onClick</button>}>
+                <PopoverHeader title="Composed handlers"/>
+                <p className="popover__message">The trigger’s own <code>onClick</code> runs first; only then does the component toggle the popover. The consumer’s <code>onClick</code> / <code>onKeyDown</code> / ref are preserved, and the injected <code>type="button"</code> keeps it form-safe.</p>
+              </Popover>
+              <Popover placement="bottom" align="center" trigger={<button type="button" className="btn btn--secondary" onClick={(event) => { event.preventDefault(); setStatus('Consumer prevented the popover toggle.'); }}>Prevented · own onClick</button>}>
+                <PopoverHeader title="You shouldn’t see this"/>
+                <p className="popover__message">This trigger’s <code>onClick</code> calls <code>preventDefault()</code>, so the component never toggles — the panel stays closed.</p>
+              </Popover>
+            </div>
+            <p className="hint">Watch the <em>Last action</em> line in the Rich content section. <strong>Normal</strong> runs its handler and opens; <strong>Prevented</strong> runs its handler but its <code>preventDefault()</code> stops the toggle, so the panel never opens (no double click, no extra state).</p>
+          </section>
+
+          <section className="panel" aria-labelledby="ns-h">
+            <h2 id="ns-h">Nested popover</h2>
+            <Popover placement="bottom" trigger={<button type="button" className="btn btn--secondary">Outer popover</button>}>
+              <PopoverHeader title="Outer panel"/>
+              <p className="popover__message">This dialog hosts another popover:</p>
+              <PopoverFooter>
+                <Popover placement="bottom" trigger={<button type="button" className="btn btn--ghost btn--sm">Inner popover</button>}>
+                  <PopoverHeader title="Inner panel"/>
+                  <p className="popover__message"><kbd>Esc</kbd> closes me first (the bubbling Escape stops here); opening or closing me never closes the outer panel.</p>
+                </Popover>
+              </PopoverFooter>
+            </Popover>
+            <p className="hint">Each popover owns its own ids, refs and outside-pointer listener; the inner one closes by DOM containment without disturbing the outer one.</p>
+          </section>
+
+          <section className="panel" aria-labelledby="mi-h">
+            <h2 id="mi-h">Multiple instances</h2>
+            <div className="row">
+              <Popover placement="bottom" trigger={<button type="button" className="btn btn--secondary">Popover A</button>}>
+                <PopoverHeader title="Instance A"/>
+                <p className="popover__message">My <kbd>Esc</kbd> and my trigger only affect me.</p>
+              </Popover>
+              <Popover placement="bottom" trigger={<button type="button" className="btn btn--secondary">Popover B</button>}>
+                <PopoverHeader title="Instance B"/>
+                <p className="popover__message">Open both at once — each closes independently on its own <kbd>Esc</kbd> or outside click.</p>
+              </Popover>
+            </div>
+            <p className="hint">Instances never share open state, ids or listeners.</p>
+          </section>
+
+          <section className="panel" aria-labelledby="fl-h">
+            <h2 id="fl-h">Focus lifecycle · non-modal</h2>
+            <div className="bg-field">
+              <label className="field-label" htmlFor="fl-input">Background field (a Tab target outside the popover)</label>
+              <input id="fl-input" type="text" placeholder="Tab through here" />
+            </div>
+            <div className="row">
+              <Popover placement="bottom" trigger={<button type="button" className="btn btn--secondary">Open, then Tab / Esc</button>}>
+                <PopoverHeader title="Focus stays free"/>
+                <p className="popover__message">Tab moves into this button and back out — focus is never trapped.</p>
+                <PopoverFooter>
+                  <button type="button" className="btn btn--ghost btn--sm" onClick={() => setStatus('Inner popover button activated')}>An inner button</button>
+                </PopoverFooter>
+              </Popover>
+            </div>
+            <a className="link" href="#cfg-h">A background link (another Tab target)</a>
+            <ol className="keys">
+              <li>Focus the background field, then <kbd>Tab</kbd> to the trigger and open the popover.</li>
+              <li><kbd>Tab</kbd> moves into the panel’s button, then onward to the background link — the page stays reachable (non-modal).</li>
+              <li>With focus inside the panel, press <kbd>Esc</kbd>: it closes and focus returns to the trigger.</li>
+              <li>With focus on the trigger, <kbd>Esc</kbd> closes without a needless refocus.</li>
+            </ol>
+          </section>
+
+          <section className="panel" aria-labelledby="esc-h">
+            <h2 id="esc-h">Escape composition · inner widget wins</h2>
+            <Popover placement="bottom" trigger={<button type="button" className="btn btn--secondary">Open · inner Escape handler</button>}>
+              <PopoverHeader title="Inner widget owns Escape"/>
+              <div className="bg-field">
+                <label className="field-label" htmlFor="esc-input">Type here, then press Escape</label>
+                <input
+                  id="esc-input"
+                  type="text"
+                  placeholder="Escape is handled in this field"
+                  onKeyDown={(event) => {
+                    if (event.key === 'Escape') {
+                      event.preventDefault();
+                      setStatus('Inner widget handled Escape; the popover remained open.');
+                    }
+                  }}
+                />
+              </div>
+              <p className="popover__message">This field’s own <code>onKeyDown</code> calls <code>preventDefault()</code> on Escape — and nothing else (no <code>stopPropagation</code>, no close helper, no DOM). The component sees the handled Escape and leaves the popover open.</p>
+            </Popover>
+            <ol className="keys">
+              <li>Open the popover.</li>
+              <li>Focus the input.</li>
+              <li>Press <kbd>Esc</kbd>.</li>
+              <li>The <em>Last action</em> line updates.</li>
+              <li>The popover stays open, and the trigger is <strong>not</strong> refocused.</li>
+              <li>Close it with the Header <strong>×</strong> (the component’s own close path still works).</li>
+            </ol>
+          </section>
+
+          <section className="panel" aria-labelledby="oc-h">
+            <h2 id="oc-h">Outside-close &amp; focus retention</h2>
+            <Popover placement="bottom" trigger={<button type="button" className="btn btn--secondary">Open · then click outside</button>}>
+              <PopoverHeader title="Outside interaction"/>
+              <div className="bg-field">
+                <label className="field-label" htmlFor="inside-input">A control inside the panel</label>
+                <input id="inside-input" type="text" placeholder="Focus me, then click an outside control" />
+              </div>
+              <PopoverFooter>
+                <button type="button" className="btn btn--ghost btn--sm" onClick={() => setStatus('Inside footer button activated')}>Inside button</button>
+              </PopoverFooter>
+            </Popover>
+
+            <div className="outside-controls">
+              <div className="bg-field">
+                <label className="field-label" htmlFor="outside-input">Outside input (takes focus on click)</label>
+                <input id="outside-input" type="text" placeholder="Clicking me closes the popover and keeps my focus" />
+              </div>
+              <button type="button" className="btn btn--secondary btn--sm" onClick={() => setStatus('Outside button activated and retained interaction.')}>Outside button</button>
+              <a className="link" href="#kb-h">Outside link → jumps to “Keyboard &amp; focus”</a>
+              <div className="outside-surface">Non-focusable outside surface</div>
+            </div>
+
+            <ol className="keys">
+              <li><strong>Outside input:</strong> open the popover, focus a panel control, then click the outside input — the popover closes and the input keeps the focus (the trigger is not refocused).</li>
+              <li><strong>Outside button:</strong> reopen, focus a panel control, click the outside button — the popover closes, the button’s handler runs (the <em>Last action</em> line updates), and focus is not stolen back to the trigger.</li>
+              <li><strong>Outside link:</strong> reopen, click the link — the popover closes and the link does its normal in-page navigation; the trigger is not refocused.</li>
+              <li><strong>Non-focusable surface:</strong> reopen, focus a panel control, click the dashed surface — the popover closes; because that target takes no focus, the component may return focus to the usable trigger. This is the one case that differs from the input / button / link above, where the outside target’s own focus wins.</li>
+            </ol>
+          </section>
+
+          <section className="panel" aria-labelledby="kb-h">
+            <h2 id="kb-h">Keyboard &amp; focus</h2>
+            <ul className="keys">
+              <li><kbd>Tab</kbd> onto a trigger; <kbd>Enter</kbd> / <kbd>Space</kbd> opens it via native button activation.</li>
+              <li>Opening keeps focus on the trigger; <kbd>Tab</kbd> moves into the panel by DOM order — <strong>no focus trap</strong>, no auto-focus.</li>
+              <li><kbd>Shift</kbd> + <kbd>Tab</kbd> walks back out; you can Tab past the popover into the rest of the page (non-modal).</li>
+              <li><kbd>Esc</kbd> closes the popover; if focus was inside the panel it returns to the trigger, otherwise it stays put.</li>
+              <li>A pointerdown outside the trigger + panel closes it, without stealing focus from whatever you clicked.</li>
+              <li>An inner widget that already handled <kbd>Esc</kbd> (and called <code>preventDefault</code>) keeps the popover open.</li>
+            </ul>
+          </section>
+
+          <section className="panel" aria-labelledby="bn-h">
+            <h2 id="bn-h">Behaviour &amp; accessibility</h2>
+            <h3>Non-modal</h3>
+            <p className="hint">No backdrop, no scroll lock, no <code>inert</code> — the page stays fully interactive behind the panel, and focus is never trapped.</p>
+            <h3>Roles &amp; names</h3>
+            <p className="hint">The trigger carries <code>aria-haspopup="dialog"</code> + <code>aria-expanded</code> + <code>aria-controls</code>; the panel is a non-modal <code>role="dialog"</code> named by its trigger via <code>aria-labelledby</code>. Closed, it carries <code>hidden</code> and leaves the accessibility tree.</p>
+            <h3>Forced colors &amp; reduced motion</h3>
+            <p className="hint">In forced-colors the panel converges to a Canvas/CanvasText surface with a real border, and the close button gets a Highlight focus outline. The popover appears via an instant display toggle, so there is no entrance motion to reduce.</p>
+            <h3>Nested &amp; multiple</h3>
+            <p className="hint">Each popover owns its own ids, refs and outside-pointer listener; one popover’s <kbd>Esc</kbd> or trigger never controls another, and a popover opened inside another’s panel closes independently by DOM containment.</p>
+          </section>
+        </main>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+  </script>
+</body>
+</html>

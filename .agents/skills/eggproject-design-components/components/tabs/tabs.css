@@ -1,0 +1,150 @@
+@import url('../../../eggproject-design/colors_and_type.css');
+
+/* ============ Underline tabs (page-level) ============ */
+.tabs {
+  display: flex; gap: 0;
+  border-bottom: 1px solid var(--ep-divider);
+  padding: 0 4px;
+  /* Narrow-viewport / many-tab contract: stay on one row and scroll horizontally
+     instead of wrapping or squishing labels (which would blur the underline
+     geometry). scroll-padding-inline keeps a keyboard-focused edge tab clear of
+     the scrollport edge so its focus ring stays visible along the scroll axis. */
+  overflow-x: auto;
+  overflow-y: hidden;
+  max-width: 100%;
+  scrollbar-width: thin;
+  scroll-padding-inline: var(--ep-space-1);
+}
+.tabs button {
+  padding: 12px 16px;
+  font: 500 14px var(--ep-font-sans);
+  color: var(--ep-fg-muted);
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  display: inline-flex; align-items: center; gap: 8px;
+  flex: 0 0 auto;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color var(--ep-dur-fast) var(--ep-ease-out);
+}
+.tabs button:hover { color: var(--ep-fg); }
+.tabs button.is-on { color: var(--ep-fg); border-bottom-color: var(--ep-blue-600); }
+.tabs__count {
+  font: 500 11px var(--ep-font-mono);
+  background: var(--ep-bg-pressed);
+  color: var(--ep-fg-subtle);
+  padding: 1px 6px;
+  border-radius: var(--ep-radius-pill);
+  line-height: 1.4;
+}
+.tabs button.is-on .tabs__count { background: var(--ep-accent-bg); color: var(--ep-accent-fg); }
+
+/* Panels the component renders itself: natural block height, no min-height,
+   no clipping, no surface. Inactive panels stay mounted and are hidden by the
+   native `hidden` attribute (intentionally not overridden here). */
+.tabs__panels { margin-top: var(--ep-space-4); }
+
+/* ============ Segmented control (in-panel) ============ */
+.seg {
+  display: inline-flex;
+  background: var(--ep-bg-hover);
+  border: 1px solid var(--ep-border-subtle);
+  border-radius: var(--ep-radius-md);
+  padding: 3px;
+  gap: 2px;
+  width: fit-content;
+}
+.seg button {
+  padding: 6px 14px;
+  font: 500 12px var(--ep-font-sans);
+  color: var(--ep-fg-muted);
+  background: transparent;
+  border: 0;
+  border-radius: var(--ep-radius-sm);
+  cursor: pointer;
+  transition: background-color var(--ep-dur-fast) var(--ep-ease-out), color var(--ep-dur-fast) var(--ep-ease-out);
+}
+.seg button:hover:not(.is-on) { color: var(--ep-fg); }
+.seg button.is-on {
+  background: var(--ep-bg-elevated);
+  color: var(--ep-fg);
+  box-shadow: var(--ep-shadow-xs);
+}
+
+/* ============ Pill tabs (compact) ============ */
+.pills { display: flex; gap: 6px; flex-wrap: wrap; }
+.pills button {
+  padding: 6px 12px;
+  font: 500 13px var(--ep-font-sans);
+  color: var(--ep-fg-muted);
+  background: transparent;
+  border: 0;
+  border-radius: var(--ep-radius-pill);
+  cursor: pointer;
+  transition: background-color var(--ep-dur-fast) var(--ep-ease-out), color var(--ep-dur-fast) var(--ep-ease-out);
+}
+.pills button:hover:not(.is-on) { color: var(--ep-fg); background: var(--ep-bg-hover); }
+.pills button.is-on { background: var(--ep-ink-900); color: var(--ep-paper-50); }
+
+/* ============ Keyboard focus (shared, token-based) ============
+   Canonical two-layer gold ring via --ep-shadow-focus, matching every other
+   component. Placed after the .is-on rules so a focused + selected/checked
+   trigger shows the ring on equal specificity (source order wins). The ring is
+   in no transition list, so it appears instantly and never animates.
+   NOTE: the scrollable .tabs is a scroll container, so the UA can edge-clip an
+   outset ring at the scrollport boundary — see report P2. */
+.tabs button:focus-visible,
+.seg button:focus-visible,
+.pills button:focus-visible {
+  outline: none;
+  box-shadow: var(--ep-shadow-focus);
+}
+
+/* ---- Reduced motion: drop the colour transitions; every end state is static,
+        so selected/checked, underline, surfaces, focus ring and `hidden` panels
+        are all unaffected. ---- */
+@media (prefers-reduced-motion: reduce) {
+  .tabs button,
+  .seg button,
+  .pills button { transition: none; }
+}
+
+/* ---- Forced colors (Windows High Contrast): map to system colors. Box-shadow
+        rings are dropped by the UA, so keyboard focus gets a real Highlight
+        outline; selected/checked states carry a real Highlight surface/underline
+        rather than a colour-only or shadow-only cue. ---- */
+@media (forced-colors: active) {
+  /* UnderlineTabs — divider + tab text + Highlight underline for the active tab */
+  .tabs { border-bottom-color: CanvasText; }
+  .tabs button { color: ButtonText; }
+  .tabs button.is-on { color: Highlight; border-bottom-color: Highlight; }
+  .tabs__count { background: ButtonFace; color: ButtonText; }
+  .tabs button.is-on .tabs__count { background: Highlight; color: HighlightText; }
+  .tabs__panel { color: CanvasText; }
+
+  /* Segmented — system surface + CanvasText boundary; checked = Highlight pair */
+  .seg { background: Canvas; border-color: CanvasText; }
+  .seg button { color: ButtonText; }
+  .seg button.is-on { background: Highlight; color: HighlightText; }
+
+  /* Pills — per-pill ButtonText border for shape; checked = Highlight pair */
+  .pills button { color: ButtonText; border: 1px solid ButtonText; }
+  .pills button.is-on { background: Highlight; color: HighlightText; border-color: Highlight; }
+
+  /* Focus — real outline, not shadow. The scrollable .tabs uses a negative
+     offset so the outline sits inside the scrollport (no clipping, no shift);
+     the others use a positive offset (their wrappers don't clip). */
+  .seg button:focus-visible,
+  .pills button:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+    box-shadow: none;
+  }
+  .tabs button:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+    box-shadow: none;
+  }
+}

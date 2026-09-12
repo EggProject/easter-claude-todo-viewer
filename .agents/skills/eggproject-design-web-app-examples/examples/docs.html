@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<!-- @dsCard group="Brand" name="Demo · Documentation" subtitle="API docs page with code, callouts, TOC" -->
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>EggProject — Docs</title>
+  <script src="../../eggproject-design/preview/_theme.js" defer></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" href="../../eggproject-design/assets/logo-mark.svg" />
+  <link rel="stylesheet" href="../../eggproject-design/colors_and_type.css" />
+  <link rel="stylesheet" href="../../eggproject-design-app-common/_shell.css" />
+  <link rel="stylesheet" href="../../eggproject-design-components/components/button/button.css" />
+  <link rel="stylesheet" href="../../eggproject-design-components/components/badge/badge.css" />
+  <link rel="stylesheet" href="../../eggproject-design-components/components/code-block/code-block.css" />
+  <link rel="stylesheet" href="../../eggproject-design-components/components/kbd/kbd.css" />
+  <link rel="stylesheet" href="../../eggproject-design-components/components/breadcrumb/breadcrumb.css" />
+  <link rel="stylesheet" href="../../eggproject-design-components/components/alert/alert.css" />
+  <link rel="stylesheet" href="../../eggproject-design-components/components/divider/divider.css" />
+  <link rel="stylesheet" href="../../eggproject-design-components/components/input/input.css" />
+  <link rel="stylesheet" href="../../eggproject-design-components/components/tabs/tabs.css" />
+  <link rel="stylesheet" href="../../eggproject-design-components/components/pagination/pagination.css" />
+  <style>
+    body { background: var(--ep-bg-sunken); color: var(--ep-fg); }
+
+
+    .docs-version {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 10px;
+      background: var(--ep-accent-bg);
+      color: var(--ep-accent-fg);
+      border-radius: 999px;
+      font: 500 12px var(--ep-font-mono);
+      letter-spacing: 0.02em;
+    }
+
+
+    /* === Article === */
+    .article { min-width: 0; }
+    .article__bc { margin-bottom: 16px; }
+    .article__header h1 {
+      font: 400 56px/1 var(--ep-font-display);
+      letter-spacing: var(--ep-track-tight);
+      color: var(--ep-fg);
+      max-width: 18ch;
+    }
+ .article__header h1 em { font-weight: 700; }
+    .article__header p {
+      margin-top: 16px;
+      font: 400 19px/1.55 var(--ep-font-sans);
+      color: var(--ep-fg-muted);
+      max-width: 60ch;
+    }
+    .article__meta {
+      margin-top: 22px;
+      display: flex; align-items: center; gap: 14px;
+      font: var(--ep-text-meta);
+      font-family: var(--ep-font-mono);
+      color: var(--ep-fg-subtle);
+    }
+    .article__meta b { color: var(--ep-fg); font-weight: 500; font-family: var(--ep-font-sans); font-size: 13px; }
+
+    .prose { max-width: 64ch; }
+    .prose h2 {
+      font: 400 32px/1.15 var(--ep-font-display);
+      letter-spacing: var(--ep-track-tight);
+      color: var(--ep-fg);
+      margin: 48px 0 12px;
+      scroll-margin-top: 88px;
+    }
+ .prose h2 em { font-weight: 700; }
+    .prose h3 {
+      font: 600 18px var(--ep-font-sans);
+      color: var(--ep-fg);
+      margin: 32px 0 8px;
+    }
+    .prose p {
+      font: 400 16.5px/1.65 var(--ep-font-sans);
+      color: var(--ep-fg);
+      margin: 12px 0;
+    }
+    .prose p:first-of-type { font-size: 18px; color: var(--ep-fg); }
+    .prose ul, .prose ol {
+      font: 400 16px/1.6 var(--ep-font-sans);
+      color: var(--ep-fg);
+      margin: 12px 0 12px 22px;
+    }
+    .prose li { padding: 4px 0; }
+    .prose a { color: var(--ep-accent); text-decoration: none; border-bottom: 1px solid currentColor; }
+    .prose a:hover { color: var(--ep-accent-fg); }
+    .prose .code-inline { font: 500 14px var(--ep-font-mono); background: var(--ep-accent-bg); color: var(--ep-accent-fg); padding: 1px 6px; border-radius: 4px; }
+    .prose strong { font-weight: 600; color: var(--ep-fg); }
+
+    .prose .code, .prose .alert {
+      margin: 22px 0;
+      max-width: none;
+    }
+
+    /* Pull quote / editorial divider */
+    .pull {
+      margin: 36px 0;
+      padding: 24px 28px;
+      border-left: 3px solid var(--ep-blue-600);
+      background: var(--ep-bg-hover);
+      border-radius: 0 var(--ep-radius-md) var(--ep-radius-md) 0;
+    }
+    .pull p {
+      font: 400 22px/1.4 var(--ep-font-display);
+      color: var(--ep-fg);
+ font-weight: 700;
+      letter-spacing: -0.005em;
+    }
+    .pull cite {
+      display: block;
+      margin-top: 10px;
+      font: 500 12px var(--ep-font-mono);
+      color: var(--ep-fg-subtle);
+      font-style: normal;
+      letter-spacing: 0.04em;
+    }
+
+    /* Param table */
+    .param-table {
+      margin: 22px 0;
+      width: 100%;
+      border-collapse: collapse;
+      font: 14px/1.5 var(--ep-font-sans);
+    }
+    .param-table th, .param-table td {
+      padding: 10px 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--ep-divider);
+    }
+    .param-table th {
+      font: 500 11px var(--ep-font-sans);
+      letter-spacing: var(--ep-track-overline);
+      text-transform: uppercase;
+      color: var(--ep-fg-subtle);
+      background: var(--ep-bg-sunken);
+    }
+    .param-table td:first-child { font: 500 13px var(--ep-font-mono); color: var(--ep-accent-fg); }
+    .param-table td .type { font: 500 12px var(--ep-font-mono); color: var(--ep-fg-subtle); }
+    .param-table tr:last-child td { border-bottom: 0; }
+    .props-table-header { display: inline-flex; align-items: center; gap: 5px; }
+    .portal-caret { color: var(--ep-fg-faint); flex: 0 0 auto; }
+    .param-table thead th:hover .portal-caret { color: var(--ep-fg-subtle); }
+
+
+    .toc__feedback {
+      margin-top: 28px;
+      padding: 14px 0 0;
+      border-top: 1px solid var(--ep-divider);
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .toc__feedback small { font: var(--ep-text-meta); font-family: var(--ep-font-mono); color: var(--ep-fg-subtle); }
+    .toc__feedback .group { display: flex; gap: 4px; }
+    .toc__feedback button {
+      flex: 1;
+      padding: 6px;
+      background: var(--ep-bg-elevated);
+      border: 1px solid var(--ep-border-subtle);
+      border-radius: 6px;
+      cursor: pointer;
+      color: var(--ep-fg-muted);
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    .toc__feedback button:hover { color: var(--ep-fg); border-color: var(--ep-fg); }
+    .toc__feedback svg { width: 14px; height: 14px; }
+
+    /* Next page card */
+    .nextprev {
+      max-width: 64ch;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+      margin-top: 48px;
+    }
+    .nextprev a {
+      padding: 16px 18px;
+      background: var(--ep-bg-elevated);
+      border: 1px solid var(--ep-border-subtle);
+      border-radius: var(--ep-radius-md);
+      text-decoration: none;
+      display: flex; flex-direction: column; gap: 4px;
+      transition: all var(--ep-dur-fast) var(--ep-ease-out);
+    }
+    .nextprev a:hover { border-color: var(--ep-fg); box-shadow: var(--ep-shadow-md); }
+    .nextprev span {
+      font: var(--ep-text-meta);
+      font-family: var(--ep-font-mono);
+      color: var(--ep-fg-subtle);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .nextprev strong { font: 600 14px var(--ep-font-sans); color: var(--ep-fg); }
+    .nextprev .right { text-align: right; }
+    .nextprev .right span { justify-content: flex-end; }
+
+  </style>
+</head>
+<body>
+
+  <!-- ===== Top bar ===== -->
+  <header class="docs-top">
+    <a class="docs-top__brand" href="index.html">
+      <img src="../../eggproject-design/assets/logo-mark.svg" alt="" />
+      <b>EggProject Docs</b>
+    </a>
+    <nav class="docs-top__navigation">
+      <a href="#">Guides</a>
+      <a class="is-on" href="#">API</a>
+      <a href="#">Components</a>
+      <a href="#">Changelog</a>
+    </nav>
+    <div class="docs-top__search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input placeholder="Search the docs…" />
+      <span class="kbd kbd--sm">⌘K</span>
+    </div>
+    <button class="ep-theme-toggle" type="button" data-ep-theme-toggle aria-label="Switch to dark theme">
+      <svg class="ep-theme-toggle__moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      <svg class="ep-theme-toggle__sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+    </button>
+    <span class="docs-version">v2.4 · stable</span>
+    <a href="#" class="btn btn--ink btn--sm">Open portal →</a>
+  </header>
+
+  <div class="docs-layout">
+
+    <!-- ===== Left nav ===== -->
+    <aside class="docs-navigation">
+      <div class="docs-navigation__group">
+        <span class="docs-navigation__label">Getting started</span>
+        <a class="docs-navigation__link" href="#">Quickstart</a>
+        <a class="docs-navigation__link" href="#">Authentication <span class="meta">2m</span></a>
+        <a class="docs-navigation__link" href="#">First request</a>
+      </div>
+      <div class="docs-navigation__group">
+        <span class="docs-navigation__label">Concepts</span>
+        <a class="docs-navigation__link" href="#">Projects</a>
+        <a class="docs-navigation__link" href="#">Engagements</a>
+        <a class="docs-navigation__link" href="#">Members &amp; roles</a>
+      </div>
+      <div class="docs-navigation__group">
+        <span class="docs-navigation__label">API reference</span>
+        <a class="docs-navigation__link is-on" href="#">Webhooks</a>
+        <a class="docs-navigation__link" href="#">Projects API</a>
+        <a class="docs-navigation__link" href="#">Invoices API</a>
+        <a class="docs-navigation__link" href="#">Members API</a>
+        <a class="docs-navigation__link" href="#">Search API</a>
+        <a class="docs-navigation__link" href="#">Errors</a>
+      </div>
+      <div class="docs-navigation__group">
+        <span class="docs-navigation__label">Patterns</span>
+        <a class="docs-navigation__link" href="#">Idempotency</a>
+        <a class="docs-navigation__link" href="#">Pagination</a>
+        <a class="docs-navigation__link" href="#">Rate limits</a>
+      </div>
+    </aside>
+
+    <!-- ===== Main article ===== -->
+    <article class="article">
+      <nav class="breadcrumb article__bc" aria-label="Breadcrumb">
+        <a class="breadcrumb__item" href="#">Docs</a>
+        <span class="breadcrumb__separator">/</span>
+        <a class="breadcrumb__item" href="#">API reference</a>
+        <span class="breadcrumb__separator">/</span>
+        <span class="breadcrumb__item breadcrumb__item--current" aria-current="page">Webhooks</span>
+      </nav>
+
+      <header class="article__header">
+        <h1>Webhooks <em>that don't lie.</em></h1>
+        <p>How to subscribe to events from the EggProject platform, what payloads look like, and the small rules that keep your handler honest when the network gets weird.</p>
+        <div class="article__meta">
+          <span><b>v2.4</b></span>
+          <span>·</span>
+          <span>Updated 12 May 2026</span>
+          <span>·</span>
+          <span>~ 6 min read</span>
+          <span style="margin-left: auto;">
+            <span class="badge badge--success" style="margin-right: 4px;"><span class="badge__dot"></span>Stable</span>
+          </span>
+        </div>
+      </header>
+
+      <div class="prose">
+        <p>Every meaningful state change in the portal — a new invoice, a comment, a project transition — emits a webhook. Subscribe to the events you care about; we'll <code class="code-inline">POST</code> a small JSON envelope to your URL within a second of the event happening on our side.</p>
+
+        <p>Webhooks are <strong>at-least-once</strong>. We will retry until your server returns a <code class="code-inline">2xx</code>, so your handler must be idempotent. We give you everything you need to deduplicate.</p>
+
+        <!-- Quick callout -->
+        <div class="alert alert--subtle alert--info">
+          <svg class="alert__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5m0 3h.01"/></svg>
+          <div class="alert__body">
+            <div class="alert__title">Local dev: use the tunnel</div>
+            <div class="alert__message">Run <code class="code-inline">egg tunnel start</code> in your terminal to receive webhooks against a localhost URL — no ngrok required.</div>
+          </div>
+        </div>
+
+        <h2 id="subscribe">1. Subscribe <em>to events</em></h2>
+        <p>Create a webhook endpoint from the portal, or with the API. Each endpoint declares the events it wants. You can have up to <strong>10 endpoints</strong> per workspace.</p>
+
+        <div class="code">
+          <header class="code__header">
+            <span class="code__filename">subscribe.sh</span>
+            <span class="code__lang">bash</span>
+            <span class="code__header-spacer"></span>
+            <button class="code__copy"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="6" height="6" rx="1"/><path d="M5 1h4a2 2 0 0 1 2 2v4"/></svg> Copy</button>
+          </header>
+          <pre class="code__body"><code><span class="code__line"><span class="code__number">1</span><span class="code__token--function">curl</span> <span class="code__token--string">"https://api.egg.dev/v2/webhooks"</span> \</span>
+<span class="code__line"><span class="code__number">2</span>  -H <span class="code__token--string">"Authorization: Bearer $EGG_API_KEY"</span> \</span>
+<span class="code__line"><span class="code__number">3</span>  -H <span class="code__token--string">"Content-Type: application/json"</span> \</span>
+<span class="code__line"><span class="code__number">4</span>  -d <span class="code__token--string">'{</span></span>
+<span class="code__line"><span class="code__number">5</span><span class="code__token--string">    "url": "https://hooks.acme.io/egg",</span></span>
+<span class="code__line"><span class="code__number">6</span><span class="code__token--string">    "events": ["invoice.paid", "project.updated"],</span></span>
+<span class="code__line"><span class="code__number">7</span><span class="code__token--string">    "description": "Production · billing sync"</span></span>
+<span class="code__line"><span class="code__number">8</span><span class="code__token--string">  }'</span></span></code></pre>
+        </div>
+
+        <p>The response includes a <code class="code-inline">signing_secret</code>. Store it somewhere safe — you'll need it to verify every incoming request.</p>
+
+        <h3>Available events</h3>
+
+        <div id="param-table-mount"></div>
+
+        <h2 id="payload">2. The <em>payload</em></h2>
+        <p>Every webhook is wrapped in a standard envelope. The <code class="code-inline">data</code> field contains the resource as it exists right now — not a diff.</p>
+
+        <div class="code">
+          <header class="code__header">
+            <span class="code__filename">invoice.paid.json</span>
+            <span class="code__lang">json</span>
+            <span class="code__header-spacer"></span>
+            <button class="code__copy"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="6" height="6" rx="1"/><path d="M5 1h4a2 2 0 0 1 2 2v4"/></svg> Copy</button>
+          </header>
+          <pre class="code__body"><code><span class="code__line">{</span>
+<span class="code__line">  <span class="code__token--type">"id"</span>: <span class="code__token--string">"evt_01HRX9TWK4N9QV2GBTYE"</span>,</span>
+<span class="code__line">  <span class="code__token--type">"type"</span>: <span class="code__token--string">"invoice.paid"</span>,</span>
+<span class="code__line">  <span class="code__token--type">"created"</span>: <span class="code__token--number">1747312842</span>,</span>
+<span class="code__line">  <span class="code__token--type">"livemode"</span>: <span class="code__token--keyword">true</span>,</span>
+<span class="code__line">  <span class="code__token--type">"data"</span>: {</span>
+<span class="code__line">    <span class="code__token--type">"id"</span>: <span class="code__token--string">"inv_2026_040"</span>,</span>
+<span class="code__line">    <span class="code__token--type">"number"</span>: <span class="code__token--string">"INV-2026-040"</span>,</span>
+<span class="code__line">    <span class="code__token--type">"client"</span>: <span class="code__token--string">"Aper"</span>,</span>
+<span class="code__line">    <span class="code__token--type">"amount"</span>: <span class="code__token--number">840000</span>,  <span class="code__token--comment">// minor units, EUR</span></span>
+<span class="code__line">    <span class="code__token--type">"currency"</span>: <span class="code__token--string">"eur"</span>,</span>
+<span class="code__line">    <span class="code__token--type">"status"</span>: <span class="code__token--string">"paid"</span>,</span>
+<span class="code__line">    <span class="code__token--type">"paid_at"</span>: <span class="code__token--string">"2026-05-12T11:24:02Z"</span></span>
+<span class="code__line">  }</span>
+<span class="code__line">}</span></code></pre>
+        </div>
+
+        <p>Every event has a unique <code class="code-inline">id</code>. Store it. If you see the same id twice, you have a duplicate — drop it and return <code class="code-inline">200</code> anyway.</p>
+
+        <h2 id="verify">3. Verify <em>the signature</em></h2>
+        <p>We sign every request with HMAC-SHA256 using the secret returned at endpoint creation. The signature is in the <code class="code-inline">Egg-Signature</code> header, alongside a timestamp.</p>
+
+        <div class="code code--ink">
+          <header class="code__header">
+            <span class="code__filename">verify.ts</span>
+            <span class="code__lang">typescript</span>
+            <span class="code__header-spacer"></span>
+            <button class="code__copy"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="6" height="6" rx="1"/><path d="M5 1h4a2 2 0 0 1 2 2v4"/></svg> Copy</button>
+          </header>
+          <pre class="code__body"><code><span class="code__line"><span class="code__token--keyword">import</span> { createHmac, timingSafeEqual } <span class="code__token--keyword">from</span> <span class="code__token--string">"node:crypto"</span>;</span>
+<span class="code__line"></span>
+<span class="code__line"><span class="code__token--keyword">export function</span> <span class="code__token--function">verifyEgg</span>(rawBody: <span class="code__token--type">string</span>, header: <span class="code__token--type">string</span>, secret: <span class="code__token--type">string</span>) {</span>
+<span class="code__line">  <span class="code__token--keyword">const</span> [tsPart, sigPart] = header.split(<span class="code__token--string">","</span>);</span>
+<span class="code__line">  <span class="code__token--keyword">const</span> ts  = tsPart.replace(<span class="code__token--string">"t="</span>, <span class="code__token--string">""</span>);</span>
+<span class="code__line">  <span class="code__token--keyword">const</span> sig = sigPart.replace(<span class="code__token--string">"v1="</span>, <span class="code__token--string">""</span>);</span>
+<span class="code__line"></span>
+<span class="code__line">  <span class="code__token--comment">// Reject anything older than 5 minutes — protects against replay.</span></span>
+<span class="code__line">  <span class="code__token--keyword">if</span> (<span class="code__token--function">Math</span>.abs(<span class="code__token--function">Date</span>.now()/<span class="code__token--number">1000</span> - +ts) &gt; <span class="code__token--number">300</span>) <span class="code__token--keyword">return false</span>;</span>
+<span class="code__line"></span>
+<span class="code__line">  <span class="code__token--keyword">const</span> expected = <span class="code__token--function">createHmac</span>(<span class="code__token--string">"sha256"</span>, secret)</span>
+<span class="code__line">    .update(<span class="code__token--string">`${ts}.${rawBody}`</span>)</span>
+<span class="code__line">    .digest(<span class="code__token--string">"hex"</span>);</span>
+<span class="code__line"></span>
+<span class="code__line">  <span class="code__token--keyword">return</span> <span class="code__token--function">timingSafeEqual</span>(<span class="code__token--function">Buffer</span>.from(expected), <span class="code__token--function">Buffer</span>.from(sig));</span>
+<span class="code__line">}</span></code></pre>
+        </div>
+
+        <div class="pull">
+          <p>"If a webhook's signature doesn't verify, treat the request as if it never happened. Don't log the body, don't enqueue it, don't reply with a hint about what failed."</p>
+          <cite>— Márton Kovács · engineering lead</cite>
+        </div>
+
+        <h2 id="retries">4. Retries <em>&amp; failures</em></h2>
+        <p>We retry any non-<code class="code-inline">2xx</code> response with exponential backoff for up to <strong>72 hours</strong>. After that, the event is marked <code class="code-inline">failed</code> and surfaced in the portal so a human can investigate.</p>
+
+        <ul>
+          <li>Return <code class="code-inline">2xx</code> as soon as you've durably queued the event. Don't keep us waiting on downstream work.</li>
+          <li>If you need to back off, return <code class="code-inline">429</code> — we'll respect <code class="code-inline">Retry-After</code>.</li>
+          <li>Disabled endpoints stop retrying immediately. Re-enable them to drain the queue.</li>
+        </ul>
+
+        <div class="alert alert--warning">
+          <svg class="alert__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 10 17H2L12 3z"/><path d="M12 10v4m0 3h.01"/></svg>
+          <div class="alert__body">
+            <div class="alert__title">Don't reply with the resource state</div>
+            <div class="alert__message">A common bug: handlers reply <code class="code-inline">200 OK</code> with a JSON body that hits a serializer error. The webhook is considered failed and gets retried. Reply with an empty body.</div>
+          </div>
+        </div>
+
+        <!-- Next/Prev -->
+        <nav class="nextprev">
+          <a href="#">
+            <span><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 3-4 4 4 4"/></svg>Previous</span>
+            <strong>Members &amp; roles</strong>
+          </a>
+          <a href="#" class="right">
+            <span>Next<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 3 4 4-4 4"/></svg></span>
+            <strong>Projects API</strong>
+          </a>
+        </nav>
+      </div>
+    </article>
+
+    <!-- ===== Right TOC ===== -->
+    <aside class="docs-toc">
+      <span class="docs-toc__label">On this page</span>
+      <a class="docs-toc__item is-on" href="#subscribe">1. Subscribe to events</a>
+      <a class="docs-toc__item docs-toc__item--subitem" href="#">Available events</a>
+      <a class="docs-toc__item" href="#payload">2. The payload</a>
+      <a class="docs-toc__item" href="#verify">3. Verify the signature</a>
+      <a class="docs-toc__item" href="#retries">4. Retries &amp; failures</a>
+
+      <div class="toc__feedback">
+        <small>Was this page useful?</small>
+        <div class="group">
+          <button title="Helpful">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M7 14H3a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h4m0 7h6.4a1.6 1.6 0 0 0 1.5-1.1l1-3.3a1.6 1.6 0 0 0-1.5-2.1H10l.5-2.5a1.5 1.5 0 0 0-2.5-1.3L7 5z"/></svg>
+          </button>
+          <button title="Not helpful">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2h4a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H9m0-7H2.6A1.6 1.6 0 0 0 1.1 3.1L0.1 6.4a1.6 1.6 0 0 0 1.5 2.1H6L5.5 11a1.5 1.5 0 0 0 2.5 1.3L9 11z"/></svg>
+          </button>
+        </div>
+        <small>Edit this page on GitHub →</small>
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- React + Babel + TanStack Table (mandatory table engine) -->
+  <script src="../../eggproject-design-components/assets/vendor/react.production.min.js"></script>
+  <script src="../../eggproject-design-components/assets/vendor/react-dom.production.min.js"></script>
+  <script src="../../eggproject-design-components/assets/vendor/babel.min.js"></script>
+  <script src="../../eggproject-design-components/assets/vendor/react-table.production.min.js"></script>
+  <script type="text/babel" src="docs-events.jsx"></script>
+</body>
+</html>

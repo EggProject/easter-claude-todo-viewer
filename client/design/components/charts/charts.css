@@ -1,0 +1,230 @@
+@import url('../../../eggproject-design/colors_and_type.css');
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: var(--ep-bg-sunken); color: var(--ep-fg); font-family: var(--ep-font-sans); -webkit-font-smoothing: antialiased; }
+button { font-family: inherit; cursor: pointer; border: 0; background: transparent; color: inherit; }
+h2 { font-weight: inherit; }
+
+/* ===== Card wrapper ===== */
+.line-chart-wrapper, .bar-chart-wrapper {
+  width: 100%;
+  max-width: 920px;
+  background: var(--ep-bg-elevated);
+  border: 1px solid var(--ep-border-subtle);
+  border-radius: var(--ep-radius-lg);
+  box-shadow: var(--ep-shadow-sm);
+  padding: 22px 24px 24px;
+  position: relative;
+}
+
+/* ===== Header (shared) ===== */
+.line-chart-header, .bar-chart-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 18px;
+}
+.line-chart-header__left, .bar-chart-header__left { display: flex; flex-direction: column; gap: 6px; }
+.line-chart-header__eyebrow, .bar-chart-header__eyebrow {
+  font: 500 11px var(--ep-font-sans);
+  letter-spacing: var(--ep-track-overline);
+  text-transform: uppercase;
+  color: var(--ep-fg-subtle);
+}
+.line-chart-header__title, .bar-chart-header__title { display: flex; align-items: baseline; gap: 12px; }
+.line-chart-header__value, .bar-chart-header__value {
+  font: 400 36px/1 var(--ep-font-display);
+  letter-spacing: -0.02em;
+  color: var(--ep-fg);
+}
+.line-chart-header__delta, .bar-chart-header__delta {
+  display: inline-flex; align-items: center; gap: 4px;
+  font: 600 13px var(--ep-font-mono);
+  padding: 3px 8px;
+  border-radius: var(--ep-radius-pill);
+}
+.line-chart-header__delta.is-pos, .bar-chart-header__delta.is-pos { background: #E1F4EB; color: #1F6849; }
+.line-chart-header__delta.is-neg, .bar-chart-header__delta.is-neg { background: #FADEE2; color: #8A2230; }
+.line-chart-header__subtitle, .bar-chart-header__subtitle {
+  font: var(--ep-text-meta); color: var(--ep-fg-subtle); font-family: var(--ep-font-mono);
+}
+
+/* ===== Legend ===== */
+.line-chart-legend, .bar-chart-legend {
+  display: flex; gap: 4px; flex-wrap: wrap;
+  align-items: center;
+}
+.line-chart-legend-item, .bar-chart-legend-item {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 10px;
+  border-radius: var(--ep-radius-md);
+  font: 500 12px var(--ep-font-sans);
+  color: var(--ep-fg);
+  transition: background-color var(--ep-dur-fast) var(--ep-ease-out),
+              color var(--ep-dur-fast) var(--ep-ease-out),
+              opacity var(--ep-dur-fast) var(--ep-ease-out);
+}
+.line-chart-legend-item:hover, .bar-chart-legend-item:hover { background: var(--ep-bg-sunken); }
+/* Keyboard focus: house-style outset ring on the series/category toggle buttons.
+   The wrapper is not clipped, so the ring shows in full; static, never animated. */
+.line-chart-legend-item:focus-visible, .bar-chart-legend-item:focus-visible {
+  outline: none;
+  box-shadow: var(--ep-shadow-focus);
+}
+.line-chart-legend-item.is-off, .bar-chart-legend-item.is-off { opacity: 0.4; }
+.line-chart-legend-item.is-off .line-chart-legend-item__dot, .bar-chart-legend-item.is-off .bar-chart-legend-item__dot { background: var(--ep-fg-faint) !important; }
+.line-chart-legend-item__dot, .bar-chart-legend-item__dot {
+  width: 10px; height: 10px;
+  border-radius: 2px;
+}
+.line-chart-legend-item__dot { border-radius: 50%; }
+
+/* ===== SVG (line chart) ===== */
+.line-chart-svg {
+  width: 100%; height: auto;
+  display: block;
+  cursor: crosshair;
+  overflow: visible;
+}
+
+/* Mount animation: line drawing */
+.line-chart-series .line-chart-line {
+  stroke-dasharray: 2000;
+  stroke-dashoffset: 2000;
+}
+.line-chart-series.is-mounted .line-chart-line {
+  animation: lc-draw 1.4s var(--ep-ease-out) forwards;
+}
+@keyframes lc-draw {
+  to { stroke-dashoffset: 0; }
+}
+
+/* ===== Tooltip ===== */
+.line-chart-tooltip, .bar-chart-tooltip {
+  position: absolute;
+  top: 90px;
+  transform: translateX(-50%);
+  background: var(--ep-ink-900);
+  color: var(--ep-paper-100);
+  border-radius: var(--ep-radius-md);
+  padding: 10px 14px;
+  min-width: 200px;
+  box-shadow: var(--ep-shadow-lg);
+  pointer-events: none;
+  z-index: 5;
+  animation: lc-tip-in 140ms var(--ep-ease-out);
+}
+@keyframes lc-tip-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(-4px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+.line-chart-tooltip__header, .bar-chart-tooltip__header {
+  font: 600 13px var(--ep-font-sans);
+  color: var(--ep-paper-50);
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.line-chart-tooltip__row, .bar-chart-tooltip__row {
+  display: grid;
+  grid-template-columns: 10px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 0;
+}
+.line-chart-tooltip__dot, .bar-chart-tooltip__dot { width: 8px; height: 8px; border-radius: 2px; }
+.line-chart-tooltip__dot { border-radius: 50%; }
+.line-chart-tooltip__label, .bar-chart-tooltip__label {
+  font: 500 12px var(--ep-font-sans);
+  color: var(--ep-slate-300);
+}
+.line-chart-tooltip__value, .bar-chart-tooltip__value {
+  font: 600 13px var(--ep-font-mono);
+  color: var(--ep-paper-50);
+  font-variant-numeric: tabular-nums;
+}
+.bar-chart-tooltip__total {
+  display: flex; justify-content: space-between;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  font: 500 12px var(--ep-font-sans);
+  color: var(--ep-slate-300);
+}
+.bar-chart-tooltip__total strong { font: 600 13px var(--ep-font-mono); color: var(--ep-paper-50); }
+
+/* ===== Bar chart ===== */
+.bar-chart-svg {
+  width: 100%; height: auto;
+  display: block;
+  overflow: visible;
+}
+.bar-chart-column { cursor: pointer; transition: opacity var(--ep-dur-fast) var(--ep-ease-out); }
+.bar-chart-column:hover .bar-chart-segment { filter: brightness(1.05); }
+.bar-chart-column.is-other .bar-chart-segment { opacity: 0.4; }
+
+.bar-chart-segment {
+  transform-box: fill-box;
+  transform-origin: bottom;
+  transition: filter var(--ep-dur-fast) var(--ep-ease-out);
+}
+
+/* Mount animation: bars grow */
+.bar-chart-svg .bar-chart-segment {
+  transform: scaleY(0);
+  transform-origin: bottom;
+}
+.bar-chart-svg.is-mounted .bar-chart-segment {
+  animation: bc-grow 0.6s var(--ep-ease-spring) forwards;
+}
+@keyframes bc-grow {
+  to { transform: scaleY(1); }
+}
+
+/* ===== Reduced motion =====
+   Drop the mount draw/grow animations, the tooltip fade and the legend/column
+   transitions, and pin every animated element to its final visible state so the
+   chart renders complete and static (never blank). No focus ring animates. */
+@media (prefers-reduced-motion: reduce) {
+  .line-chart-series .line-chart-line,
+  .line-chart-series.is-mounted .line-chart-line {
+    animation: none;
+    stroke-dasharray: none;
+    stroke-dashoffset: 0;
+  }
+  .bar-chart-svg .bar-chart-segment,
+  .bar-chart-svg.is-mounted .bar-chart-segment {
+    animation: none;
+    transform: scaleY(1);
+  }
+  .line-chart-tooltip, .bar-chart-tooltip { animation: none; }
+  .line-chart-legend-item, .bar-chart-legend-item,
+  .bar-chart-column, .bar-chart-segment { transition: none; }
+}
+
+/* ===== Forced colors (Windows High Contrast) =====
+   The hardcoded hex series/category colors flatten under the UA, so keep grid,
+   axes, marks, legend, tooltip and focus visible with system colors, and tell
+   line series apart with dash patterns (not just color). Series/category
+   identity also comes from the legend text and the SVG <desc>. System colors
+   only; no token/hex/rgb/hsl; no forced-color-adjust. */
+@media (forced-colors: active) {
+  .line-chart-wrapper, .bar-chart-wrapper { border-color: CanvasText; }
+  .line-chart-svg line, .bar-chart-svg line { stroke: CanvasText; }
+  .line-chart-svg text, .bar-chart-svg text { fill: CanvasText; }
+  .line-chart-line { stroke: CanvasText; }
+  .line-chart-series--1 .line-chart-line { stroke-dasharray: 7 4; }
+  .line-chart-series--2 .line-chart-line { stroke-dasharray: 2 3; }
+  .bar-chart-segment { fill: CanvasText; stroke: Canvas; stroke-width: 1.5px; }
+  .line-chart-legend-item, .bar-chart-legend-item { color: ButtonText; }
+  .line-chart-legend-item.is-off, .bar-chart-legend-item.is-off { color: GrayText; opacity: 1; }
+  .line-chart-legend-item:focus-visible, .bar-chart-legend-item:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+    box-shadow: none;
+  }
+  .line-chart-tooltip, .bar-chart-tooltip {
+    background: Canvas;
+    color: CanvasText;
+    border: 1px solid CanvasText;
+  }
+}

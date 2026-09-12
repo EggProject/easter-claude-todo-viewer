@@ -1,0 +1,72 @@
+@import url('../../../eggproject-design/colors_and_type.css');
+
+/* ============ Badge ============
+   Variants: info · success · warning · danger · yolk · ink · outline
+   Use `.badge .badge__dot` for a leading status dot.
+============================================ */
+.badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--ep-radius-pill);
+  font: 500 12px var(--ep-font-sans);
+  background: var(--ep-blue-100);
+  color: var(--ep-blue-800);
+}
+.badge__dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+.badge--info     { background: #E4ECFE;            color: #1F378E; }
+.badge--success  { background: #E1F4EB;            color: #1F6849; }
+.badge--warning  { background: #FBEED1;            color: #7A4D14; }
+.badge--danger   { background: #FADEE2;            color: #8A2230; }
+.badge--yolk     { background: var(--ep-badge-yolk-bg); color: var(--ep-badge-yolk-fg); }
+.badge--ink      { background: var(--ep-ink-900);  color: var(--ep-paper-100); }
+.badge--outline  { background: transparent;        color: var(--ep-fg-muted); box-shadow: inset 0 0 0 1px var(--ep-border); }
+
+/* ============ Chip ============
+   Identity tag with avatar/circle on the left.
+============================================ */
+.chip {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 12px 6px 6px;
+  border-radius: var(--ep-radius-pill);
+  background: var(--ep-bg-elevated);
+  border: 1px solid var(--ep-border);
+  font: 500 13px var(--ep-font-sans);
+  color: var(--ep-fg);
+}
+.chip__avatar { width: 22px; height: 22px; border-radius: 50%; background: linear-gradient(135deg, #2E5BE0, #4F7BEE); flex-shrink: 0; }
+
+/* ============================================================
+   Forced colors (Windows High Contrast): the tinted variant backgrounds and
+   the outline badge's inset box-shadow are stripped, which can collapse every
+   tone onto one system background and erase the outline badge's edge. Pin every
+   surface to a system colour with a CanvasText outline so the pill shape, text
+   and dot stay visible — meaning still lives in the real DOM text (never colour
+   alone), so no per-variant status colour is faked. The .badge__dot stays a
+   decorative CanvasText marker; .chip / .chip__avatar keep a visible surface and
+   swatch. System colours only; no token/hex/rgb/hsl; no forced-color-adjust; no
+   motion introduced. Live emulation not run — source/CSSOM-verified.
+   ============================================================ */
+@media (forced-colors: active) {
+  .badge {
+    background: ButtonFace;
+    color: CanvasText;
+    border: 1px solid CanvasText;
+  }
+  .badge--outline {
+    background: Canvas;
+    color: CanvasText;
+    border-color: CanvasText;
+    box-shadow: none;
+  }
+  .badge__dot { background: CanvasText; }
+  .chip {
+    background: ButtonFace;
+    color: CanvasText;
+    border: 1px solid CanvasText;
+  }
+  .chip__avatar {
+    background: Highlight;
+    border: 1px solid CanvasText;
+  }
+}

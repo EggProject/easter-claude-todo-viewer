@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>EggProject — DataTable</title>
+  <script src="../../../eggproject-design/preview/_theme.js" defer></script>
+  <meta name="viewport" content="width=1280" />
+  <link rel="stylesheet" href="datatable.css" />
+  <link rel="icon" href="../../../eggproject-design/assets/logo-mark.svg" />
+</head>
+<body>
+  <div id="root" data-screen-label="EggProject DataTable"></div>
+  <script src="../../assets/vendor/react.production.min.js"></script>
+  <script src="../../assets/vendor/react-dom.production.min.js"></script>
+  <script src="../../assets/vendor/babel.min.js"></script>
+  <!-- TanStack Table (mandatory table engine) -->
+  <script src="../../assets/vendor/react-table.production.min.js"></script>
+  <!-- Design-system Tooltip component (window.Tooltip) — reused by the table for hover labels -->
+  <script type="text/babel" src="../tooltip/Tooltip.jsx"></script>
+  <script type="text/babel" src="DataTable.jsx"></script>
+  <script type="text/babel">
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<DataTable />);
+  </script>
+</body>
+</html>

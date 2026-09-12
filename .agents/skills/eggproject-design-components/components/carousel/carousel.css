@@ -1,0 +1,158 @@
+@import url('../../../eggproject-design/colors_and_type.css');
+
+/* ============ Carousel ============
+   Structure:
+     .carousel
+       > .carousel__viewport
+         > .carousel__track
+           > .carousel__slide (one per item)
+       > .carousel__previous, .carousel__next (nav arrows)
+       > .carousel__dots
+         > .carousel__dot[ .is-active ]
+============================================ */
+.carousel {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border-radius: var(--ep-radius-xl);
+}
+
+.carousel__viewport {
+  width: 100%;
+  overflow: hidden;
+}
+
+.carousel__track {
+  display: flex;
+  transition: transform 360ms var(--ep-ease-out);
+  will-change: transform;
+}
+
+.carousel__slide {
+  flex: 0 0 100%;
+  min-width: 0;
+  position: relative;
+}
+
+/* Nav buttons */
+.carousel__previous,
+.carousel__next {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  border: 1px solid var(--ep-border);
+  background: var(--ep-bg-elevated);
+  color: var(--ep-fg);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--ep-shadow-sm);
+  transition: background var(--ep-dur-base) var(--ep-ease-out), border-color var(--ep-dur-base) var(--ep-ease-out);
+}
+.carousel__previous { left: 12px; }
+.carousel__next { right: 12px; }
+.carousel__previous:hover,
+.carousel__next:hover {
+  background: var(--ep-bg-hover);
+  border-color: var(--ep-fg-muted);
+}
+.carousel__previous:disabled,
+.carousel__next:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.carousel__previous svg,
+.carousel__next svg { width: 16px; height: 16px; }
+
+/* Dot indicators */
+.carousel__dots {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  padding: 12px 0 6px;
+}
+
+.carousel__dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--ep-border);
+  border: none;
+  cursor: pointer;
+  transition: background var(--ep-dur-base) var(--ep-ease-out), width var(--ep-dur-base) var(--ep-ease-out);
+  padding: 0;
+}
+.carousel__dot.is-active {
+  background: var(--ep-accent);
+  width: 20px;
+  border-radius: var(--ep-radius-pill);
+}
+
+/* Pause / play — rendered only when autoPlay is on */
+.carousel__pause {
+  position: absolute;
+  top: 12px; right: 12px;
+  z-index: 2;
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  border: 1px solid var(--ep-border);
+  background: var(--ep-bg-elevated);
+  color: var(--ep-fg);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--ep-shadow-sm);
+  transition: background var(--ep-dur-base) var(--ep-ease-out), border-color var(--ep-dur-base) var(--ep-ease-out);
+}
+.carousel__pause:hover {
+  background: var(--ep-bg-hover);
+  border-color: var(--ep-fg-muted);
+}
+.carousel__pause svg { width: 13px; height: 13px; }
+
+/* Visually-hidden live region for slide-change announcements */
+.carousel__status {
+  position: absolute;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Keyboard focus — house-style gold ring (:focus-visible only) */
+.carousel__previous:focus-visible,
+.carousel__next:focus-visible,
+.carousel__pause:focus-visible,
+.carousel__dot:focus-visible {
+  outline: none;
+  box-shadow: var(--ep-shadow-focus);
+}
+
+/* Reduced motion — kill slide/control/dot transitions */
+@media (prefers-reduced-motion: reduce) {
+  .carousel__track,
+  .carousel__previous,
+  .carousel__next,
+  .carousel__pause,
+  .carousel__dot {
+    transition: none;
+  }
+}
+
+/* Forced colors — visible focus + distinguishable active dot via system colors */
+@media (forced-colors: active) {
+  .carousel__previous:focus-visible,
+  .carousel__next:focus-visible,
+  .carousel__pause:focus-visible,
+  .carousel__dot:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+    box-shadow: none;
+  }
+  .carousel__dot.is-active {
+    background: Highlight;
+  }
+}

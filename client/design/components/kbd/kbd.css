@@ -1,0 +1,66 @@
+@import url('../../../eggproject-design/colors_and_type.css');
+
+/* ============ Kbd — keyboard shortcut chip ============
+   .kbd          — a single key
+   .kbd-combo    — wrapper for "⌘ + Shift + K" with thin connectors
+============================================ */
+.kbd {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 22px; height: 22px;
+  padding: 0 6px;
+  font: 500 12px/1 var(--ep-font-mono);
+  color: var(--ep-fg-muted);
+  background: var(--ep-bg-elevated);
+  border: 1px solid var(--ep-border);
+  border-radius: var(--ep-radius-sm);
+  box-shadow: 0 1px 0 var(--ep-border);
+  vertical-align: middle;
+}
+
+.kbd--sm { min-width: 18px; height: 18px; font-size: 11px; padding: 0 4px; }
+.kbd--lg { min-width: 28px; height: 28px; font-size: 13px; padding: 0 8px; }
+
+.kbd--ink {
+  background: var(--ep-ink-900);
+  color: var(--ep-paper-100);
+  border-color: rgba(255,255,255,0.12);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.08);
+}
+
+.kbd-combo {
+  display: inline-flex; align-items: center;
+  gap: 4px;
+  vertical-align: middle;
+}
+.kbd-combo__sep {
+  color: var(--ep-fg-faint);
+  font: 400 12px var(--ep-font-sans);
+  user-select: none;
+}
+
+/* ============================================================
+   Forced colors (Windows High Contrast): the keycap's faux-3D bottom edge
+   (box-shadow) and the tinted background/border tokens are stripped, so a key
+   could flatten into the page. Pin the key to system colours and give it a real
+   1px border so it stays a visible keycap outline; the label is real <kbd> text
+   and stays legible. .kbd--ink drops its dark-surface rgba tuning for system
+   colours. The separator keeps a system colour so "+" stays visible. .kbd-combo
+   is a pure layout flex wrapper — it needs no colour rule here. System colours
+   only; no token/hex/rgb/hsl; no forced-color-adjust; no motion. Live emulation
+   not run — source/CSSOM-verified.
+   ============================================================ */
+@media (forced-colors: active) {
+  .kbd {
+    background: ButtonFace;
+    color: CanvasText;
+    border: 1px solid CanvasText;
+    box-shadow: none;
+  }
+  .kbd--ink {
+    background: Canvas;
+    color: CanvasText;
+    border-color: CanvasText;
+    box-shadow: none;
+  }
+  .kbd-combo__sep { color: CanvasText; }
+}

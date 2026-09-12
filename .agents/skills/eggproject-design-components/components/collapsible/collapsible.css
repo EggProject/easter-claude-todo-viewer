@@ -1,0 +1,107 @@
+@import url('../../../eggproject-design/colors_and_type.css');
+
+/* ============ Collapsible ============
+   Structure:
+     .collapsible[ .is-open ]
+       > .collapsible__trigger (button/header)
+       > .collapsible__content (the body that shows/hides)
+   Closed content is hidden by the native `hidden` attribute (display:none); open content is
+   natural block flow with no height animation.
+============================================ */
+.collapsible {
+  border: 1px solid var(--ep-border);
+  border-radius: var(--ep-radius-lg);
+  background: var(--ep-bg-elevated);
+  overflow: hidden;
+}
+
+.collapsible__trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px;
+  background: transparent;
+  border: none;
+  font: 500 14px/1 var(--ep-font-sans);
+  color: var(--ep-fg);
+  cursor: pointer;
+  text-align: left;
+  transition: background var(--ep-dur-fast);
+}
+.collapsible__trigger:hover {
+  background: var(--ep-bg-hover);
+}
+.collapsible__trigger:focus-visible {
+  outline: none;
+  box-shadow: var(--ep-shadow-focus);
+}
+
+.collapsible__chevron {
+  width: 16px; height: 16px;
+  flex-shrink: 0;
+  color: var(--ep-fg-subtle);
+  transition: transform var(--ep-dur-base) var(--ep-ease-out);
+}
+.collapsible.is-open .collapsible__chevron {
+  transform: rotate(180deg);
+}
+
+/* Open content is natural block flow — no grid height-trick. A closed panel is removed from
+   layout, the Tab order and the accessibility tree purely by the native `hidden` attribute, so an
+   open panel takes its natural, uncapped height and grows freely with its content. */
+.collapsible__content[hidden] {
+  display: none;
+}
+.collapsible__inner {
+  padding: 0 18px;
+}
+.collapsible.is-open .collapsible__inner {
+  padding-bottom: 16px;
+}
+
+.collapsible__inner p,
+.collapsible__inner ul {
+  font: var(--ep-text-body);
+  color: var(--ep-fg-muted);
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* ============ Reduced motion ============
+   The only motion is the trigger background fade and the chevron rotation; make both instant.
+   The chevron's rotated end-state (.is-open) is a static transform, so the open/closed indication
+   survives — only the transition between states is removed. */
+@media (prefers-reduced-motion: reduce) {
+  .collapsible__trigger,
+  .collapsible__chevron { transition: none; }
+}
+
+/* ============ Forced colors (Windows High Contrast etc.) ============
+   The token border/colours and the box-shadow focus ring drop out here, so map the border, text
+   and chevron onto explicit system colours and replace the shadow ring with a real outline.
+   System colours are honoured without forced-color-adjust, so none is used. */
+@media (forced-colors: active) {
+  /* Real component boundary (the subtle token border flattens away). */
+  .collapsible { border-color: CanvasText; }
+
+  /* Trigger stays a readable button surface; hover uses the system highlight pair. */
+  .collapsible__trigger { color: CanvasText; }
+  .collapsible__trigger:hover {
+    background: Highlight;
+    color: HighlightText;
+  }
+  /* Own chevron rides currentColor so it doesn't vanish. */
+  .collapsible__chevron { color: CanvasText; }
+  /* Panel text stays readable. */
+  .collapsible__inner p,
+  .collapsible__inner ul { color: CanvasText; }
+
+  /* Keyboard focus: the box-shadow ring is invisible here — use a real system outline. */
+  .collapsible__trigger:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+    box-shadow: none;
+  }
+}

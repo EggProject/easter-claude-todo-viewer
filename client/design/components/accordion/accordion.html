@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>EggProject — Accordion</title>
+  <script src="../../../eggproject-design/preview/_theme.js" defer></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="accordion.css" />
+  <link rel="stylesheet" href="../button/button.css" />
+  <link rel="icon" href="../../../eggproject-design/assets/logo-mark.svg" />
+  <style>
+    /* demo-page chrome only — no .accordion / .accordion__* / .accordion--* / .is-open rules; the
+       component owns its CSS, its focus-visible, its hidden panel, its variants and its motion. */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--ep-bg); color: var(--ep-fg); font-family: var(--ep-font-sans); padding: 40px; min-height: 100vh; }
+    .page { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 22px; }
+    header { display: flex; flex-direction: column; gap: 8px; }
+    h1 { font: 400 36px/1.1 var(--ep-font-display); letter-spacing: -0.02em; color: var(--ep-fg); }
+    h1 em { font-weight: 700; }
+    .lead { font: var(--ep-text-body); color: var(--ep-fg-muted); max-width: 64ch; }
+    code { font-family: var(--ep-font-mono); font-size: 0.92em; color: var(--ep-fg); }
+
+    .panel { display: flex; flex-direction: column; align-items: stretch; gap: 12px;
+      background: var(--ep-bg-elevated); border: 1px solid var(--ep-border-subtle);
+      border-radius: var(--ep-radius-lg); padding: 20px 22px; }
+    .panel h2 { font: 600 15px var(--ep-font-sans); color: var(--ep-fg); }
+    .panel h3 { font: 600 13px var(--ep-font-sans); color: var(--ep-fg); margin-top: 6px; }
+
+    .field { display: flex; flex-direction: column; gap: 6px; max-width: 360px; }
+    .field-label { font: 500 12px var(--ep-font-sans); letter-spacing: 0.04em; text-transform: uppercase; color: var(--ep-fg-muted); }
+    .field input { width: 100%; background: var(--ep-bg); color: var(--ep-fg);
+      border: 1px solid var(--ep-border); border-radius: var(--ep-radius-sm);
+      padding: 7px 10px; font: var(--ep-text-small); font-family: inherit; }
+    .field input:focus-visible { outline: none; box-shadow: var(--ep-shadow-focus); }
+
+    .panel-body { display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
+    .panel-body p { font: var(--ep-text-body); color: var(--ep-fg-muted); max-width: 64ch; }
+
+    .link { color: var(--ep-accent); font: 500 13px var(--ep-font-sans); width: fit-content; }
+    .link:focus-visible { outline: none; box-shadow: var(--ep-shadow-focus); border-radius: var(--ep-radius-sm); }
+
+    .demo-form { display: flex; flex-direction: column; gap: 14px; align-items: flex-start; width: 100%; }
+
+    .status { font: var(--ep-text-small); color: var(--ep-fg-muted);
+      border-top: 1px solid var(--ep-divider); padding-top: 10px; width: 100%; }
+    .status strong { color: var(--ep-fg); font-weight: 600; }
+
+    .hint { font: var(--ep-text-small); color: var(--ep-fg-muted); max-width: 70ch; }
+    .hint code, .hint strong { color: var(--ep-fg); }
+
+    .keys { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 5px; }
+    .keys li { font: var(--ep-text-small); color: var(--ep-fg-muted); max-width: 72ch; }
+
+    kbd { font: 600 11px var(--ep-font-mono); background: var(--ep-bg-hover);
+      border: 1px solid var(--ep-border-subtle); border-radius: var(--ep-radius-sm); padding: 1px 5px; color: var(--ep-fg); }
+  </style>
+  <script src="../../assets/vendor/react.production.min.js"></script>
+  <script src="../../assets/vendor/react-dom.production.min.js"></script>
+  <script src="../../assets/vendor/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel" src="Accordion.jsx"></script>
+  <script type="text/babel">
+    const { useState } = React;
+
+    // Demo-only: this page never touches the accordion lifecycle. The exported Accordion owns the
+    // open state, the trigger ARIA (aria-expanded) and the panel `hidden` contract. Here we only
+    // render real <Accordion>/<AccordionItem>, pass real props, and keep a shared demo-status line
+    // plus one in-panel child-state counter. No timers, no listeners, no DOM access, no own toggle.
+
+    // A panel-local React-state control. It demonstrates that child state survives close/reopen
+    // (the panel is hidden, not unmounted) — it does NOT control the accordion's openness.
+    function Counter() {
+      const [count, setCount] = useState(0);
+      return (
+        <button type="button" className="btn btn--secondary btn--sm" onClick={() => setCount((value) => value + 1)}>
+          Count: {count}
+        </button>
+      );
+    }
+
+    // Demo-only panel-local state: appending rows shows the real panel grow to its natural
+    // height (no cap, no measurement). Like Counter, it does NOT control accordion openness.
+    function GrowingList() {
+      const [items, setItems] = useState(['First note', 'Second note', 'Third note']);
+      return (
+        <>
+          <ul className="keys">
+            {items.map((label, i) => <li key={i}>{label}</li>)}
+          </ul>
+          <button type="button" className="btn btn--secondary btn--sm" onClick={() => setItems((list) => [...list, `Note ${list.length + 1}`])}>
+            Add a row
+          </button>
+        </>
+      );
+    }
+
+    function App() {
+      const [status, setStatus] = useState('No action yet.');
+
+      return (
+        <main className="page">
+          <header>
+            <h1>Accordion · <em>expand to reveal</em></h1>
+            <p className="lead">Driven entirely by the exported <code>Accordion</code> / <code>AccordionItem</code>. The component owns the open state, the native <code>&lt;button type="button"&gt;</code> triggers with <code>aria-expanded</code>, and the <code>hidden</code> panel contract — this page only supplies content and props.</p>
+          </header>
+
+          <section className="panel" aria-labelledby="single-h">
+            <h2 id="single-h">Single · one open at a time</h2>
+            <Accordion type="single">
+              <AccordionItem title="What does an engagement look like?" meta="Process">
+                <div className="panel-body">
+                  <p>Each engagement starts with a short brief and a one-week scoping sprint. We deliver in two-week iterations with weekly check-ins.</p>
+                </div>
+              </AccordionItem>
+              <AccordionItem title="How do you handle scope changes?" meta="FAQ">
+                <div className="panel-body">
+                  <p>We re-scope at the end of each two-week iteration. If priorities change, we adjust the next sprint — never mid-stream.</p>
+                </div>
+              </AccordionItem>
+              <AccordionItem title="Who owns the code?" meta="Legal">
+                <div className="panel-body">
+                  <p>You do. Code is committed to your repository under your team's account from day one.</p>
+                </div>
+              </AccordionItem>
+            </Accordion>
+            <p className="hint">Opening one item closes the previously open one; re-activating the open item closes it (zero open is allowed). <kbd>Enter</kbd> / <kbd>Space</kbd> toggle via native button activation. There is no non-collapsible mode — that prop does not exist.</p>
+          </section>
+
+          <section className="panel" aria-labelledby="default-h">
+            <h2 id="default-h">Single · starts open with <code>defaultOpen</code></h2>
+            <Accordion type="single" defaultOpen={[1]}>
+              <AccordionItem title="Step one · brief" meta="Closed at start">
+                <div className="panel-body"><p>This item starts closed.</p></div>
+              </AccordionItem>
+              <AccordionItem title="Step two · scope" meta="Open at start">
+                <div className="panel-body"><p>Rendered open because its index is in <code>defaultOpen</code>. The component owns the state from here — it stays uncontrolled.</p></div>
+              </AccordionItem>
+              <AccordionItem title="Step three · build" meta="Closed at start">
+                <div className="panel-body"><p>This item starts closed.</p></div>
+              </AccordionItem>
+            </Accordion>
+            <p className="hint"><code>defaultOpen</code> is a list of <strong>indexes</strong> (<code>{'{[1]}'}</code> opens the second item), not an item-value API. There is no <code>value</code> / <code>defaultValue</code> prop.</p>
+          </section>
+
+          <section className="panel" aria-labelledby="multiple-h">
+            <h2 id="multiple-h">Multiple · independent toggling</h2>
+            <Accordion type="multiple" defaultOpen={[0, 2]}>
+              <AccordionItem title="Marketing site" meta="Open">
+                <div className="panel-body"><p>Several items can stay open at once.</p></div>
+              </AccordionItem>
+              <AccordionItem title="Client portal" meta="Closed">
+                <div className="panel-body"><p>Closing one item never closes the others.</p></div>
+              </AccordionItem>
+              <AccordionItem title="Billing integration" meta="Open">
+                <div className="panel-body"><p>Each panel carries its own <code>hidden</code> state.</p></div>
+              </AccordionItem>
+            </Accordion>
+            <p className="hint"><code>type="multiple"</code> with <code>defaultOpen={'{[0, 2]}'}</code> starts the first and third open. (The API is <code>type="multiple"</code>, not a <code>multiple</code> boolean.)</p>
+          </section>
+
+          <section className="panel" aria-labelledby="variant-h">
+            <h2 id="variant-h">Variants · plain · bordered · separated</h2>
+            <p className="hint">The component builds the root classes from <code>variant</code>; the demo never writes its own <code>accordion--*</code> class. <code>plain</code> gets no modifier.</p>
+
+            <h3>plain</h3>
+            <Accordion variant="plain" type="single" defaultOpen={[0]}>
+              <AccordionItem title="Divider between rows" meta="plain">
+                <div className="panel-body"><p>The default look: rows separated by a divider, no container chrome.</p></div>
+              </AccordionItem>
+              <AccordionItem title="Second row">
+                <div className="panel-body"><p>No surface, no card border.</p></div>
+              </AccordionItem>
+            </Accordion>
+
+            <h3>bordered</h3>
+            <Accordion variant="bordered" type="single" defaultOpen={[0]}>
+              <AccordionItem
+                title="Timeline"
+                meta="12 weeks"
+                icon={<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.75"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 1"/></svg>}
+              >
+                <div className="panel-body"><p>Kick-off Mar 18 · soft launch May 27 · v1.0.0 Jun 10.</p></div>
+              </AccordionItem>
+              <AccordionItem
+                title="Deliverables"
+                meta="8 items"
+                icon={<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.75"><path d="M3 4h10v8H3z"/><path d="M3 7h10"/></svg>}
+              >
+                <div className="panel-body"><p>Marketing site, client portal, billing, admin, brand kit, type system, component library, onboarding.</p></div>
+              </AccordionItem>
+            </Accordion>
+
+            <h3>separated</h3>
+            <Accordion variant="separated" type="single" defaultOpen={[0]}>
+              <AccordionItem title="Sprint 14 · retro" meta="Mar 12">
+                <div className="panel-body"><p>Velocity steady at 28 points. Two carry-overs to S15.</p></div>
+              </AccordionItem>
+              <AccordionItem title="Sprint 13 · retro" meta="Feb 26">
+                <div className="panel-body"><p>32 points delivered. All originally-scoped items shipped.</p></div>
+              </AccordionItem>
+            </Accordion>
+          </section>
+
+          <section className="panel" aria-labelledby="interactive-h">
+            <h2 id="interactive-h">Interactive panel content · hidden when closed</h2>
+            <Accordion type="single" defaultOpen={[0]}>
+              <AccordionItem title="Controls inside a panel" meta="Try Tab + close">
+                <div className="panel-body">
+                  <label className="field">
+                    <span className="field-label">Note (uncontrolled — value survives close/reopen)</span>
+                    <input type="text" defaultValue="Type, then close and reopen" />
+                  </label>
+                  <a className="link" href="#keyboard-h">A real in-panel link → jumps to “Keyboard &amp; focus”</a>
+                  <button type="button" className="btn btn--ghost btn--sm" onClick={() => setStatus('In-panel action button activated.')}>An in-panel action</button>
+                  <Counter />
+                </div>
+              </AccordionItem>
+              <AccordionItem title="A second item (open this to close the first)">
+                <div className="panel-body"><p>Opening this in single mode hides the first panel — its input, link, button and counter all leave the Tab order and the accessibility tree (<code>hidden</code>), yet their state is preserved on reopen.</p></div>
+              </AccordionItem>
+            </Accordion>
+            <ol className="keys">
+              <li>Open the first item, focus the <strong>Note</strong> field and type something.</li>
+              <li>Click the counter a few times.</li>
+              <li>Close the item (its trigger) or open the second item.</li>
+              <li><kbd>Tab</kbd> through the page — the closed panel's input, link and button are <strong>not</strong> reachable.</li>
+              <li>Reopen the first item: the typed note and the counter value are <strong>still there</strong> (the panel is hidden, not unmounted).</li>
+            </ol>
+          </section>
+
+          <section className="panel" aria-labelledby="tall-h">
+            <h2 id="tall-h">Long &amp; growing content · natural panel height</h2>
+            <Accordion type="single" defaultOpen={[0]}>
+              <AccordionItem title="A deliberately tall panel" meta="Read to the end">
+                <div className="panel-body">
+                  <p>An open panel takes its block height entirely from its content, so however long the content runs, all of it is shown and the last line stays reachable. There is <strong>no <code>max-height</code> cap</strong> to truncate it and no inner scrollbar.</p>
+                  <p>Real engagement pages need this: a single FAQ answer can run to many paragraphs, a policy section can carry a long list, and a changelog entry grows over time. None of that should be clipped or hidden behind a fixed height.</p>
+                  <p>The panel is a plain content region while open and is removed from layout entirely (<code>display:none</code> via the native <code>hidden</code> attribute) while closed — there is no half-open, measured, or animated intermediate height.</p>
+                  <ul className="keys">
+                    <li>Discovery call and a one-week scoping sprint to agree the brief.</li>
+                    <li>Two-week build iterations with a working demo at the end of each.</li>
+                    <li>Weekly written check-ins so priorities never drift silently.</li>
+                    <li>Design tokens, component library and page shells handed over as source.</li>
+                    <li>A soft-launch window before the tagged <code>v1.0.0</code> release.</li>
+                    <li>Two weeks of post-launch support folded into the final iteration.</li>
+                  </ul>
+                  <p>Because nothing caps the height, this panel keeps extending downward as content is added rather than scrolling within a fixed box. On a narrow viewport it is comfortably taller than the screen — exactly the case a fixed-height cap would break.</p>
+                  <p>The component owns this: the demo sets no pixel height, no inline <code>maxHeight</code>, and wraps the content in no overflow box of its own.</p>
+                  <p className="hint"><strong>Check:</strong> read all the way down — the last paragraph below is fully visible because the panel grew to fit it.</p>
+                  <p>This is the last line of the tall panel. If you can read it in full, the panel's height is driven only by its content; nothing is cut off.</p>
+                </div>
+              </AccordionItem>
+              <AccordionItem title="Grows on demand · panel-local state" meta="Add rows">
+                <div className="panel-body">
+                  <GrowingList />
+                  <p className="hint">Each <strong>Add a row</strong> click appends a list item and the panel's natural height follows immediately — no measurement, no <code>scrollHeight</code>, no cap, no clipping. The list is panel-local React state: it does <strong>not</strong> control the accordion's openness, and it survives close/reopen (the panel is <code>hidden</code>, not unmounted).</p>
+                </div>
+              </AccordionItem>
+            </Accordion>
+            <p className="hint">Height is owned entirely by the real Accordion panel: no fixed pixel height, no inline <code>maxHeight</code>, no demo overflow box, no “show more” logic.</p>
+          </section>
+
+          <section className="panel" aria-labelledby="form-h">
+            <h2 id="form-h">Inside a form</h2>
+            <form className="demo-form" onSubmit={(event) => { event.preventDefault(); setStatus('Form submitted (explicit submit only).'); }}>
+              <Accordion type="single">
+                <AccordionItem title="Shipping notes" meta="Optional">
+                  <div className="panel-body">
+                    <label className="field">
+                      <span className="field-label">Notes</span>
+                      <input type="text" name="notes" placeholder="A form field inside a panel" />
+                    </label>
+                    <button type="submit" className="btn btn--secondary btn--sm">Submit section</button>
+                  </div>
+                </AccordionItem>
+              </Accordion>
+              <button type="submit" className="btn btn--primary btn--sm">Submit form</button>
+            </form>
+            <p className="status" role="status" aria-live="polite">Last action: <strong>{status}</strong></p>
+            <p className="hint">The accordion trigger is a component-owned <code>type="button"</code>, so toggling never submits the form. A real <code>type="submit"</code> inside an open panel submits normally; a closed panel's submit is <code>hidden</code> and unreachable. Only the explicit submit buttons submit.</p>
+          </section>
+
+          <section className="panel" aria-labelledby="nested-h">
+            <h2 id="nested-h">Nested accordion</h2>
+            <Accordion type="single">
+              <AccordionItem title="Outer item" meta="Hosts an inner accordion">
+                <div className="panel-body">
+                  <p>This panel contains a second, independent accordion:</p>
+                  <Accordion variant="bordered" type="single">
+                    <AccordionItem title="Inner item A">
+                      <div className="panel-body"><p>Toggling me never toggles the outer item.</p></div>
+                    </AccordionItem>
+                    <AccordionItem title="Inner item B">
+                      <div className="panel-body"><p>Closing the outer item hides this whole inner accordion; reopening the outer preserves the inner state (no unmount).</p></div>
+                    </AccordionItem>
+                  </Accordion>
+                </div>
+              </AccordionItem>
+              <AccordionItem title="A sibling outer item">
+                <div className="panel-body"><p>Single mode at the outer level: opening this closes the outer item above.</p></div>
+              </AccordionItem>
+            </Accordion>
+            <p className="hint">Inner and outer each own their state; there is no global accordion state and no event-propagation hack.</p>
+          </section>
+
+          <section className="panel" aria-labelledby="multi-h">
+            <h2 id="multi-h">Two independent instances</h2>
+            <h3>Accordion A</h3>
+            <Accordion type="single">
+              <AccordionItem title="A · first">
+                <div className="panel-body"><p>My trigger and state are mine alone.</p></div>
+              </AccordionItem>
+              <AccordionItem title="A · second">
+                <div className="panel-body"><p>Opening B below does nothing to me.</p></div>
+              </AccordionItem>
+            </Accordion>
+            <h3>Accordion B</h3>
+            <Accordion type="multiple" defaultOpen={[0]}>
+              <AccordionItem title="B · first" meta="Open">
+                <div className="panel-body"><p>Separate state, separate <code>defaultOpen</code>.</p></div>
+              </AccordionItem>
+              <AccordionItem title="B · second">
+                <div className="panel-body"><p>Instances never share open state, indexes or behaviour.</p></div>
+              </AccordionItem>
+            </Accordion>
+          </section>
+
+          <section className="panel" aria-labelledby="keyboard-h">
+            <h2 id="keyboard-h">Keyboard &amp; focus</h2>
+            <ul className="keys">
+              <li><kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd> move through triggers and open-panel controls in natural document order — <strong>no focus trap</strong>.</li>
+              <li><kbd>Enter</kbd> / <kbd>Space</kbd> toggle the focused trigger via native button activation.</li>
+              <li>A closed panel's controls are <strong>not</strong> tabbable; an open panel's controls are reachable in DOM order.</li>
+              <li>There is <strong>no</strong> <kbd>↑</kbd> / <kbd>↓</kbd> / <kbd>Home</kbd> / <kbd>End</kbd> roving navigation — this is a plain disclosure set, not a roving widget.</li>
+              <li>Tab onto a trigger to see its <code>--ep-shadow-focus</code> ring; hover only changes the text colour; a pointer click alone may not show the ring.</li>
+            </ul>
+          </section>
+
+          <section className="panel" aria-labelledby="notes-h">
+            <h2 id="notes-h">Behaviour &amp; known limitations</h2>
+
+            <h3>Trigger, heading &amp; panel semantics</h3>
+            <p className="hint">Each trigger is a native <code>&lt;button type="button"&gt;</code> wrapped in a native <code>&lt;h3&gt;</code> heading, so the item titles join the document's heading outline. Per item a stable <code>React.useId()</code> pairs trigger and panel: the trigger carries <code>id</code>, <code>aria-controls</code> and <code>aria-expanded</code>; the panel carries the matching <code>id</code>, <code>role="region"</code>, <code>aria-labelledby</code> (pointing back at the trigger) and <code>hidden</code> while closed. The component's own chevron is decorative (<code>aria-hidden="true"</code>, <code>focusable="false"</code>); a closed panel leaves the Tab order and the accessibility tree.</p>
+
+            <h3>Panel height &amp; motion</h3>
+            <p className="hint">An open panel takes its <strong>natural, content-driven block height</strong> — there is <strong>no <code>max-height</code> cap</strong>, so tall or dynamically-growing content is never clipped, and a closed panel is hidden purely by the native <code>hidden</code> attribute (<code>display:none</code>). The panel height is <strong>not</strong> animated. In normal mode the header colour and the chevron <code>transform</code> rotation may transition; under <code>prefers-reduced-motion: reduce</code> both transitions are switched off and the change is instant, while the chevron's rotated open/closed end-state is preserved. There is no exit-state and no transitionend/animationend dependency — open and close are semantically immediate.</p>
+
+            <h3>Forced colors</h3>
+            <p className="hint">A targeted <code>forced-colors</code> block maps the component onto system colours: <code>bordered</code> and <code>separated</code> get real <code>CanvasText</code> borders, the title and panel text are <code>CanvasText</code>, the meta is <code>GrayText</code>, and the icon and chevron stay visible via <code>currentColor</code>. Keyboard focus switches from the normal box-shadow ring to a real <code>outline: 2px solid Highlight</code> with a <code>2px</code> offset (the box-shadow ring is turned off in this mode). No <code>forced-color-adjust: none</code> is used. Consumer controls placed inside a panel keep their own (or the browser's) forced-colors behaviour — the component does not override them.</p>
+
+            <h3>Focus</h3>
+            <p className="hint">The trigger's keyboard focus is <code>:focus-visible</code>-bound: in normal mode it is the <code>--ep-shadow-focus</code> box-shadow ring (no layout shift, not animated, and a pointer click alone may not show it); in forced-colors mode it is the <code>Highlight</code> outline above. Focus is never signalled by a colour change alone.</p>
+
+            <h3>Still-true known limitations</h3>
+            <ul className="keys">
+              <li>The heading level is a fixed <code>&lt;h3&gt;</code>; there is no configurable heading-level (or public <code>id</code>) prop.</li>
+              <li>No <code>disabled</code>, controlled, or item-value API; item identity is index-based.</li>
+              <li>No <kbd>↑</kbd> / <kbd>↓</kbd> / <kbd>Home</kbd> / <kbd>End</kbd> roving navigation — a plain disclosure set, not a roving widget.</li>
+              <li>The exports attach to the browser <code>window</code> (browser-only, no module build).</li>
+              <li>Panel open/close is intentionally not animated — a deterministic, accessible contract, not a missing feature.</li>
+              <li>Many open items mean many <code>role="region"</code> landmarks, which can raise landmark density on very long lists.</li>
+            </ul>
+            <p className="hint">These are documented design limits, not runtime errors or P1 accessibility bugs.</p>
+          </section>
+        </main>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+  </script>
+</body>
+</html>

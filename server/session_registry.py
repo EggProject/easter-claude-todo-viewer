@@ -50,11 +50,14 @@ class SessionRegistry:
         self.claude_home=pathlib.Path(claude_home).expanduser()
         self.projects_root=self.claude_home/'projects'
         self._cache=[]
+        self._file_cache={}
 
-    def discover(self):
+    def discover(self, force=False):
         sessions=[]
+        seen_paths=set()
         if not self.projects_root.is_dir():
             self._cache=[]
+            self._file_cache={}
             return []
         for project_dir in sorted(self.projects_root.iterdir()):
             if not project_dir.is_dir(): continue
@@ -62,15 +65,33 @@ class SessionRegistry:
             except OSError: files=[]
             for transcript in files:
                 if not transcript.is_file(): continue
-                info=self._scan_transcript(transcript, project_dir)
+                key=str(transcript)
+                seen_paths.add(key)
+                try: stat=transcript.stat(); signature=(int(stat.st_mtime_ns),int(stat.st_size))
+                except OSError: continue
+                cached=self._file_cache.get(key)
+                if not force and cached and cached.get('signature')==signature:
+                    info=dict(cached.get('info') or {})
+                else:
+                    info=self._scan_transcript(transcript, project_dir)
+                    if info:
+                        self._file_cache[key]={'signature':signature,'info':dict(info)}
                 if info: sessions.append(info)
+        for key in list(self._file_cache):
+            if key not in seen_paths: self._file_cache.pop(key,None)
         sessions.sort(key=lambda item: (_iso_key(item.get('lastActivity')), item.get('id') or ''), reverse=True)
-        self._cache=sessions
-        return [dict(item) for item in sessions]
+        self._cache=[dict(item) for item in sessions]
+        return self.snapshot()
 
-    def get(self, session_id):
-        for info in self.discover():
-            if info.get('id')==session_id: return info
+    def snapshot(self):
+        return [dict(item) for item in self._cache]
+
+    def get(self, session_id, refresh_if_missing=False):
+        for info in self._cache:
+            if info.get('id')==session_id: return dict(info)
+        if refresh_if_missing:
+            for info in self.discover():
+                if info.get('id')==session_id: return info
         return None
 
     def _scan_transcript(self, path, project_dir):

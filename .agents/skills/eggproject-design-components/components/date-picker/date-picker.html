@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>EggProject — Date picker</title>
+  <script src="../../../eggproject-design/preview/_theme.js" defer></script>
+  <meta name="viewport" content="width=720" />
+  <link rel="stylesheet" href="date-picker.css" />
+  <link rel="icon" href="../../../eggproject-design/assets/logo-mark.svg" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--ep-bg); color: var(--ep-fg); font-family: var(--ep-font-sans); padding: 40px; }
+    .page { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+    .label { font: var(--ep-text-overline); letter-spacing: var(--ep-track-overline); text-transform: uppercase; color: var(--ep-fg-subtle); margin-bottom: 8px; }
+    h1 { font: 400 36px/1.1 var(--ep-font-display); letter-spacing: -0.02em; color: var(--ep-fg); }
+ h1 em { font-weight: 700; }
+    .row { display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1>Date picker · <em>calendar grid</em></h1>
+
+    <div>
+      <span class="label">Trigger field</span>
+      <button class="date-picker-trigger">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75"><rect x="2.5" y="3.5" width="11" height="9" rx="1.5"/><path d="M2.5 6.5h11M5.5 2.5v2M10.5 2.5v2"/></svg>
+        Mar 14, 2026
+      </button>
+    </div>
+
+    <span class="label">Open calendar</span>
+    <div class="row">
+      <div class="date-picker">
+        <div class="date-picker__header">
+          <button class="date-picker__navigation" aria-label="Previous month"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M10 4 6 8l4 4"/></svg></button>
+          <span class="date-picker__month">March <em>2026</em></span>
+          <button class="date-picker__navigation" aria-label="Next month"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m6 4 4 4-4 4"/></svg></button>
+        </div>
+        <div class="date-picker__grid">
+          <span class="date-picker__weekday">Mo</span><span class="date-picker__weekday">Tu</span><span class="date-picker__weekday">We</span><span class="date-picker__weekday">Th</span><span class="date-picker__weekday">Fr</span><span class="date-picker__weekday">Sa</span><span class="date-picker__weekday">Su</span>
+          <button class="date-picker__day date-picker__day--muted">23</button><button class="date-picker__day date-picker__day--muted">24</button><button class="date-picker__day date-picker__day--muted">25</button><button class="date-picker__day date-picker__day--muted">26</button><button class="date-picker__day date-picker__day--muted">27</button><button class="date-picker__day date-picker__day--muted">28</button><button class="date-picker__day">1</button>
+          <button class="date-picker__day">2</button><button class="date-picker__day">3</button><button class="date-picker__day">4</button><button class="date-picker__day">5</button><button class="date-picker__day">6</button><button class="date-picker__day">7</button><button class="date-picker__day">8</button>
+          <button class="date-picker__day">9</button><button class="date-picker__day">10</button><button class="date-picker__day">11</button><button class="date-picker__day">12</button><button class="date-picker__day">13</button><button class="date-picker__day date-picker__day--selected">14</button><button class="date-picker__day">15</button>
+          <button class="date-picker__day">16</button><button class="date-picker__day">17</button><button class="date-picker__day">18</button><button class="date-picker__day">19</button><button class="date-picker__day">20</button><button class="date-picker__day">21</button><button class="date-picker__day">22</button>
+          <button class="date-picker__day">23</button><button class="date-picker__day">24</button><button class="date-picker__day">25</button><button class="date-picker__day">26</button><button class="date-picker__day">27</button><button class="date-picker__day">28</button><button class="date-picker__day">29</button>
+          <button class="date-picker__day">30</button><button class="date-picker__day">31</button><button class="date-picker__day date-picker__day--muted">1</button><button class="date-picker__day date-picker__day--muted">2</button><button class="date-picker__day date-picker__day--muted">3</button><button class="date-picker__day date-picker__day--muted">4</button><button class="date-picker__day date-picker__day--muted">5</button>
+        </div>
+        <div class="date-picker__footer">
+          <span>Today · Mar 14</span>
+          <div class="date-picker__quick"><button>Today</button><button>+7 days</button></div>
+        </div>
+      </div>
+
+      <div class="date-picker">
+        <div class="date-picker__header">
+          <button class="date-picker__navigation"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M10 4 6 8l4 4"/></svg></button>
+          <span class="date-picker__month">April <em>2026</em></span>
+          <button class="date-picker__navigation"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m6 4 4 4-4 4"/></svg></button>
+        </div>
+        <div class="date-picker__grid">
+          <span class="date-picker__weekday">Mo</span><span class="date-picker__weekday">Tu</span><span class="date-picker__weekday">We</span><span class="date-picker__weekday">Th</span><span class="date-picker__weekday">Fr</span><span class="date-picker__weekday">Sa</span><span class="date-picker__weekday">Su</span>
+          <button class="date-picker__day date-picker__day--muted">30</button><button class="date-picker__day date-picker__day--muted">31</button><button class="date-picker__day">1</button><button class="date-picker__day">2</button><button class="date-picker__day">3</button><button class="date-picker__day">4</button><button class="date-picker__day">5</button>
+          <button class="date-picker__day">6</button><button class="date-picker__day">7</button><button class="date-picker__day date-picker__day--range date-picker__day--start">8</button><button class="date-picker__day date-picker__day--range">9</button><button class="date-picker__day date-picker__day--range">10</button><button class="date-picker__day date-picker__day--range">11</button><button class="date-picker__day date-picker__day--range">12</button>
+          <button class="date-picker__day date-picker__day--range">13</button><button class="date-picker__day date-picker__day--range">14</button><button class="date-picker__day date-picker__day--range date-picker__day--end">15</button><button class="date-picker__day">16</button><button class="date-picker__day">17</button><button class="date-picker__day">18</button><button class="date-picker__day">19</button>
+          <button class="date-picker__day">20</button><button class="date-picker__day">21</button><button class="date-picker__day">22</button><button class="date-picker__day">23</button><button class="date-picker__day">24</button><button class="date-picker__day">25</button><button class="date-picker__day">26</button>
+          <button class="date-picker__day">27</button><button class="date-picker__day">28</button><button class="date-picker__day">29</button><button class="date-picker__day">30</button><button class="date-picker__day date-picker__day--muted">1</button><button class="date-picker__day date-picker__day--muted">2</button><button class="date-picker__day date-picker__day--muted">3</button>
+          <button class="date-picker__day date-picker__day--muted">4</button><button class="date-picker__day date-picker__day--muted">5</button><button class="date-picker__day date-picker__day--muted">6</button><button class="date-picker__day date-picker__day--muted">7</button><button class="date-picker__day date-picker__day--muted">8</button><button class="date-picker__day date-picker__day--muted">9</button><button class="date-picker__day date-picker__day--muted">10</button>
+        </div>
+        <div class="date-picker__footer">
+          <span>Range · 8 days</span>
+          <div class="date-picker__quick"><button>Clear</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Static-demo enhancement (vanilla, mirrors slider.html): give every day cell
+    // a full-date accessible name + programmatic selected/today state, matching the
+    // DatePicker.jsx contract so the demo does not ship numeric-only day names.
+    (function () {
+      const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+      const demoToday = new Date(2026, 2, 14); // this fixed snapshot's "today" = Mar 14, 2026
+      const sameDay = (a, b) => a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+      document.querySelectorAll('.date-picker').forEach((dp) => {
+        const label = dp.querySelector('.date-picker__month');
+        if (!label) return;
+        const parts = label.textContent.trim().split(/\s+/);
+        const monthIdx = MONTHS.indexOf(parts[0]);
+        const year = Number(parts[parts.length - 1]);
+        if (monthIdx < 0 || !year) return;
+        const days = Array.from(dp.querySelectorAll('.date-picker__day'));
+        const firstReal = days.findIndex((d) => !d.classList.contains('date-picker__day--muted'));
+        days.forEach((btn, i) => {
+          const num = Number(btn.textContent.trim());
+          if (!num) return;
+          let m = monthIdx, y = year;
+          if (btn.classList.contains('date-picker__day--muted')) {
+            if (i < firstReal) { m -= 1; if (m < 0) { m = 11; y -= 1; } }
+            else { m += 1; if (m > 11) { m = 0; y += 1; } }
+          }
+          const date = new Date(y, m, num);
+          btn.setAttribute('aria-label', date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }));
+          if (btn.classList.contains('date-picker__day--selected') || btn.classList.contains('date-picker__day--start') || btn.classList.contains('date-picker__day--end')) {
+            btn.setAttribute('aria-pressed', 'true');
+          }
+          if (sameDay(date, demoToday)) btn.setAttribute('aria-current', 'date');
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

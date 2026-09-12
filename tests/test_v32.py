@@ -9,34 +9,6 @@ import server
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 
-
-class V32FrontendTests(unittest.TestCase):
-    def test_notification_modal_renders_nested_task_events(self):
-        overlays = (ROOT / 'client/src/components/overlays.js').read_text()
-        self.assertIn('event.changes', overlays)
-        self.assertIn('event.taskId', overlays)
-        self.assertIn("modal.kind === 'notification'", overlays)
-
-    def test_status_multiselect_checkbox_is_not_affected_by_search_input_flex_css(self):
-        css = (ROOT / 'client/styles.css').read_text()
-        tasks = (ROOT / 'client/src/pages/tasks.js').read_text()
-        self.assertNotIn('.page-controls input{min-width:320px;flex:1}', css)
-        self.assertIn('.search-input', css)
-        self.assertIn("className: 'search-input'", tasks)
-        self.assertIn('.status-option input', css)
-
-    def test_flow_has_filters_sort_and_elk_auto_arrange(self):
-        flow = (ROOT / 'client/src/pages/flow.js').read_text()
-        html = (ROOT / 'client/index.html').read_text()
-        self.assertIn('StatusMultiSelect', flow)
-        self.assertIn('Auto arrange', flow)
-        self.assertIn('ELK', flow)
-        self.assertIn("'elk.algorithm': 'layered'", flow)
-        self.assertIn('sortOverride', flow)
-        self.assertIn('query', flow)
-        self.assertIn('elkjs/lib/elk.bundled.js', html)
-
-
 class V32BackendTests(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()

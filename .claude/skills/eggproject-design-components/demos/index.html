@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>EggProject — Component Gallery</title>
+  <script src="../../eggproject-design/preview/_theme.js" defer></script>
+  <meta name="viewport" content="width=1024" />
+  <link rel="stylesheet" href="../../eggproject-design/colors_and_type.css" />
+  <link rel="icon" href="../../eggproject-design/assets/logo-mark.svg" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--ep-bg); color: var(--ep-fg); font-family: var(--ep-font-sans); padding: 48px 40px; }
+    h1 { font: var(--ep-text-display-sm); margin-bottom: 8px; }
+    .subtitle { color: var(--ep-fg-subtle); margin-bottom: 40px; }
+    h2 { font: var(--ep-text-label-lg); letter-spacing: var(--ep-track-overline); text-transform: uppercase;
+         color: var(--ep-fg-subtle); margin: 32px 0 16px; border-bottom: 1px solid var(--ep-border); padding-bottom: 8px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-bottom: 8px; }
+    a.card { display: block; padding: 14px 16px; background: var(--ep-surface); border: 1px solid var(--ep-border);
+             border-radius: var(--ep-radius-md); color: var(--ep-fg); text-decoration: none;
+             transition: border-color var(--ep-dur-base) var(--ep-ease-out), box-shadow var(--ep-dur-base) var(--ep-ease-out); }
+    a.card:hover { border-color: var(--ep-accent); box-shadow: var(--ep-shadow-sm); }
+    .card-name { font-weight: 500; font-size: 14px; margin-bottom: 4px; }
+    .card-tag { font-size: 11px; color: var(--ep-fg-subtle); font-family: var(--ep-font-mono); }
+  </style>
+</head>
+<body>
+  <h1>EggProject Components</h1>
+  <p class="subtitle">52 UI components · one canonical demo each · shadcn/ui parity + EP extras</p>
+
+  <h2>Components</h2>
+  <div class="grid">
+    <a class="card" href="../components/accordion/accordion.html"><div class="card-name">Accordion</div><div class="card-tag">comp</div></a>
+    <a class="card" href="../components/alert/alert.html"><div class="card-name">Alert</div><div class="card-tag">comp</div></a>
+    <a class="card" href="../components/alert-dialog/alert-dialog.html"><div class="card-name">Alert Dialog</div><div class="card-tag">comp · ≈ shadcn/alert-dialog</div></a>
+    <a class="card" href="../components/aspect-ratio/aspect-ratio.html"><div class="card-name">Aspect Ratio</div><div class="card-tag">comp · ≈ shadcn/aspect-ratio</div></a>
+    <a class="card" href="../components/avatar/avatar.html"><div class="card-name">Avatar</div><div class="card-tag">comp</div></a>
+    <a class="card" href="../components/badge/badge.html"><div class="card-name">Badge</div><div class="card-tag">comp</div></a>
+    <a class="card" href="../components/breadcrumb/breadcrumb.html"><div class="card-name">Breadcrumb</div><div class="card-tag">comp</div></a>
+    <a class="card" href="../components/button/button.html"><div class="card-name">Button</div><div class="card-tag">comp</div></a>
+    <a class="card" href="../components/button-group/button-group.html"><div class="card-name">Button Group</div><div class="card-tag">comp · ≈ shadcn/button-group</div></a>
+    <a class="card" href="../components/calendar/calendar.html"><div class="card-name">Calendar</div><div class="card-tag">comp · ≈ shadcn/calendar</div></a>
+    <a class="card" href="../components/card/card.html"><div class="card-name">Card</div><div class="card-tag">comp</div></a>
+    <a class="card" href="../components/carousel/carousel.html"><div class="card-name">Carousel</div><div class="card-tag">comp · ≈ shadcn/carousel</div></a>
+    <a class="card" href="../components/charts/charts.html"><div class="card-name">Charts (SVG)</div><div class="card-tag">comp · BarChart + LineChart</div></a>
+    <a class="card" href="../components/code-block/code-block.html"><div class="card-name">Code Block</div><div class="card-tag">ep-extra</div></a>
+    <a class="card" href="../components/collapsible/collapsible.html"><div class="card-name">Collapsible</div><div class="card-tag">comp · ≈ shadcn/collapsible</div></a>
+    <a class="card" href="../components/command-palette/command-palette.html"><div class="card-name">Command Palette</div><div class="card-tag">comp · ≈ shadcn/command</div></a>
+    <a class="card" href="../components/context-menu/context-menu.html"><div class="card-name">Context Menu</div><div class="card-tag">comp · ≈ shadcn/context-menu</div></a>
+    <a class="card" href="../components/data-table/data-table.html"><div class="card-name">Data Table</div><div class="card-tag">common · TanStack</div></a>
+    <a class="card" href="../components/date-picker/date-picker.html"><div class="card-name">Date Picker</div><div class="card-tag">comp</div></a>
+    <a class="card" href="../components/divider/divider.html"><div class="card-name">Divider</div><div class="card-tag">comp · ≈ shadcn/separator</div></a>
+    <a class="card" href="../components/drawer/drawer.html"><div class="card-name">Drawer</div><div class="card-tag">comp · ≈ shadcn/sheet</div></a>
+    <a class="card" href="../components/empty/empty.html"><div class="card-name">Empty State</div><div class="card-tag">ep-extra</div></a>
+    <a class="card" href="../components/file-upload/file-upload.html"><div class="card-name">File Upload</div><div class="card-tag">ep-extra</div></a>
+    <a class="card" href="../components/form-controls/form-controls.html"><div class="card-name">Form Controls</div><div class="card-tag">comp · checkbox/radio/switch</div></a>
+    <a class="card" href="../components/hover-card/hover-card.html"><div class="card-name">Hover Card</div><div class="card-tag">comp · ≈ shadcn/hover-card</div></a>
+    <a class="card" href="../components/input/input.html"><div class="card-name">Input</div><div class="card-tag">comp</div></a>
+    <a class="card" href="../components/input-group/input-group.html"><div class="card-name">Input Group</div><div class="card-tag">comp · ≈ shadcn/input-group</div></a>
+    <a class="card" href="../components/input-otp/input-otp.html"><div class="card-name">Input OTP</div><div class="card-tag">comp · ≈ shadcn/input-otp</div></a>
+    <a class="card" href="../components/kbd/kbd.html"><div class="card-name">Kbd</div><div class="card-tag">ep-extra</div></a>
+    <a class="card" href="../components/loading/loading.html"><div class="card-name">Loading</div><div class="card-tag">comp · ≈ shadcn/progress</div></a>
+    <a class="card" href="../components/menu/menu.html"><div class="card-name">Menu</div><div class="card-tag">comp · ≈ shadcn/dropdown-menu</div></a>
+    <a class="card" href="../components/menubar/menubar.html"><div class="card-name">Menubar</div><div class="card-tag">comp · ≈ shadcn/menubar</div></a>
+    <a class="card" href="../components/modal/modal.html"><div class="card-name">Modal</div><div class="card-tag">comp · ≈ shadcn/dialog</div></a>
+    <a class="card" href="../components/nav/nav.html"><div class="card-name">Nav</div><div class="card-tag">comp · ≈ shadcn/navigation-menu</div></a>
+    <a class="card" href="../components/pagination/pagination.html"><div class="card-name">Pagination</div><div class="card-tag">comp</div></a>
+    <a class="card" href="../components/popover/popover.html"><div class="card-name">Popover</div><div class="card-tag">comp</div></a>
+    <a class="card" href="../components/resizable/resizable.html"><div class="card-name">Resizable</div><div class="card-tag">comp · ≈ shadcn/resizable</div></a>
+    <a class="card" href="../components/scroll-area/scroll-area.html"><div class="card-name">Scroll Area</div><div class="card-tag">comp · ≈ shadcn/scroll-area</div></a>
+    <a class="card" href="../components/select/select.html"><div class="card-name">Select</div><div class="card-tag">comp · combobox</div></a>
+    <a class="card" href="../components/skeleton/skeleton.html"><div class="card-name">Skeleton</div><div class="card-tag">comp</div></a>
+    <a class="card" href="../components/slider/slider.html"><div class="card-name">Slider</div><div class="card-tag">comp</div></a>
+    <a class="card" href="../components/splash/splash.html"><div class="card-name">Splash</div><div class="card-tag">ep-extra · branded loader</div></a>
+    <a class="card" href="../components/stat/stat.html"><div class="card-name">Stat</div><div class="card-tag">ep-extra · KPI</div></a>
+    <a class="card" href="../components/stepper/stepper.html"><div class="card-name">Stepper</div><div class="card-tag">ep-extra</div></a>
+    <a class="card" href="../components/tabs/tabs.html"><div class="card-name">Tabs</div><div class="card-tag">comp · underline/segmented/pills</div></a>
+    <a class="card" href="../components/tag-input/tag-input.html"><div class="card-name">Tag Input</div><div class="card-tag">ep-extra</div></a>
+    <a class="card" href="../components/textarea/textarea.html"><div class="card-name">Textarea</div><div class="card-tag">comp · ≈ shadcn/textarea</div></a>
+    <a class="card" href="../components/toast/toast.html"><div class="card-name">Toast</div><div class="card-tag">comp · ≈ shadcn/sonner</div></a>
+    <a class="card" href="../components/toggle/toggle.html"><div class="card-name">Toggle</div><div class="card-tag">comp · ≈ shadcn/toggle</div></a>
+    <a class="card" href="../components/tooltip/tooltip.html"><div class="card-name">Tooltip</div><div class="card-tag">comp</div></a>
+  </div>
+
+  <h2>Live-Data Atoms (trade-leaning, owned by B)</h2>
+  <div class="grid">
+    <a class="card" href="../components/dot/dot.html"><div class="card-name">Dot</div><div class="card-tag">trade-atom · 8 tones · 5 sizes</div></a>
+    <a class="card" href="../components/feed-indicator/feed-indicator.html"><div class="card-name">Feed Indicator</div><div class="card-tag">trade-atom · 5 states</div></a>
+  </div>
+</body>
+</html>

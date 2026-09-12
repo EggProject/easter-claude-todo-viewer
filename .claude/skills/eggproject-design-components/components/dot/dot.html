@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>EggProject — Dot</title>
+  <script src="../../../eggproject-design/preview/_theme.js" defer></script>
+  <meta name="viewport" content="width=820" />
+  <link rel="stylesheet" href="dot.css" />
+  <link rel="icon" href="../../../eggproject-design/assets/logo-mark.svg" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--ep-bg);
+      color: var(--ep-fg);
+      font-family: var(--ep-font-sans);
+      padding: 48px;
+      display: flex; flex-direction: column; gap: 28px;
+    }
+    .block { display: flex; flex-direction: column; gap: 12px; }
+    .row   { display: flex; gap: 24px; align-items: center; flex-wrap: wrap; }
+    .label {
+      font: var(--ep-text-overline);
+      letter-spacing: var(--ep-track-overline);
+      text-transform: uppercase;
+      color: var(--ep-fg-subtle);
+    }
+    .pair {
+      display: inline-flex; align-items: center; gap: 8px;
+      font: var(--ep-text-meta);
+      font-family: var(--ep-font-mono);
+      color: var(--ep-fg-muted);
+      min-width: 92px;
+    }
+    .swatch {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 28px; height: 28px;
+      border-radius: 6px;
+      background: var(--ep-bg-elevated);
+      border: 1px solid var(--ep-border-subtle);
+    }
+    .swatch--dense { background: var(--ep-ink-900); border-color: var(--ep-fg); }
+    .legend { font: var(--ep-text-meta); color: var(--ep-fg-subtle); }
+    .row--inline-context {
+      font: var(--ep-text-body);
+      color: var(--ep-fg);
+      gap: 12px;
+    }
+    .row--inline-context > span:not(.ep-dot) { color: var(--ep-fg-muted); }
+  </style>
+</head>
+<body>
+
+  <!-- Tones -->
+  <div class="block">
+    <span class="label">Tones · size md (8px) · with halo</span>
+    <div class="row">
+      <span class="pair"><span class="ep-dot ep-dot--neutral ep-dot--halo"></span>neutral</span>
+      <span class="pair"><span class="ep-dot ep-dot--info    ep-dot--halo"></span>info</span>
+      <span class="pair"><span class="ep-dot ep-dot--success ep-dot--halo"></span>success</span>
+      <span class="pair"><span class="ep-dot ep-dot--warning ep-dot--halo"></span>warning</span>
+      <span class="pair"><span class="ep-dot ep-dot--danger  ep-dot--halo"></span>danger</span>
+      <span class="pair"><span class="ep-dot ep-dot--yolk    ep-dot--halo"></span>yolk</span>
+      <span class="pair"><span class="ep-dot ep-dot--ink     ep-dot--halo"></span>ink</span>
+    </div>
+  </div>
+
+  <!-- Sizes -->
+  <div class="block">
+    <span class="label">Sizes</span>
+    <div class="row">
+      <span class="pair"><span class="ep-dot ep-dot--info ep-dot--xs"></span>xs · 4px</span>
+      <span class="pair"><span class="ep-dot ep-dot--info ep-dot--sm"></span>sm · 6px</span>
+      <span class="pair"><span class="ep-dot ep-dot--info ep-dot--md"></span>md · 8px</span>
+      <span class="pair"><span class="ep-dot ep-dot--info ep-dot--lg"></span>lg · 10px</span>
+      <span class="pair"><span class="ep-dot ep-dot--info ep-dot--xl"></span>xl · 12px</span>
+    </div>
+  </div>
+
+  <!-- Modifiers -->
+  <div class="block">
+    <span class="label">Modifiers</span>
+    <div class="row">
+      <span class="pair"><span class="ep-dot ep-dot--success"></span>plain</span>
+      <span class="pair"><span class="ep-dot ep-dot--success ep-dot--halo"></span>halo</span>
+      <span class="pair"><span class="ep-dot ep-dot--success ep-dot--pulse"></span>pulse</span>
+      <span class="pair"><span class="ep-dot ep-dot--warning ep-dot--blink"></span>blink</span>
+      <span class="pair"><span class="ep-dot ep-dot--danger  ep-dot--hollow"></span>hollow</span>
+      <span class="swatch swatch--dense"><span class="ep-dot ep-dot--yolk ep-dot--ring ep-dot--lg"></span></span>
+      <span class="legend">↑ ring (on ink bg)</span>
+    </div>
+  </div>
+
+  <!-- In context -->
+  <div class="block">
+    <span class="label">In running text</span>
+    <div class="row row--inline-context">
+      <span class="ep-dot ep-dot--success ep-dot--pulse" title="Live"></span>
+      <span>Live · api.eggproject.dev</span>
+    </div>
+    <div class="row row--inline-context">
+      <span class="ep-dot ep-dot--warning ep-dot--blink" title="Degraded"></span>
+      <span>Degraded · last heartbeat 42 s ago</span>
+    </div>
+    <div class="row row--inline-context">
+      <span class="ep-dot ep-dot--danger ep-dot--hollow" title="Offline"></span>
+      <span>Offline · reconnecting…</span>
+    </div>
+  </div>
+
+  <span class="legend">Standalone status atom · pairs with text, lives in tables, sits next to identifiers.</span>
+</body>
+</html>

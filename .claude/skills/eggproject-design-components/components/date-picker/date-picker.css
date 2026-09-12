@@ -1,0 +1,195 @@
+@import url('../../../eggproject-design/colors_and_type.css');
+
+/* ============ Date picker ============
+   .date-picker                   — calendar grid container
+   .date-picker__header             — month label + prev/next
+   .date-picker__month            — Roboto display month name
+   .date-picker__navigation              — icon button
+   .date-picker__grid             — 7-column grid
+   .date-picker__weekday          — uppercase column label
+   .date-picker__day              — cell button
+   .date-picker__day--muted       — out-of-month
+   .date-picker__day--today       — soft ring
+   .date-picker__day--selected    — sapphire fill
+   .date-picker__day--range       — between start/end (range mode)
+   .date-picker__day--start, --end
+============================================ */
+.date-picker {
+  width: 280px;
+  background: var(--ep-bg-elevated);
+  border: 1px solid var(--ep-border-subtle);
+  border-radius: var(--ep-radius-lg);
+  padding: 14px;
+  box-shadow: var(--ep-shadow-md);
+  font-family: var(--ep-font-sans);
+}
+
+.date-picker__header {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding: 0 4px;
+}
+.date-picker__month {
+  font: 400 22px/1 var(--ep-font-display);
+  letter-spacing: var(--ep-track-tight);
+  color: var(--ep-fg);
+}
+.date-picker__month em { font-weight: 700; }
+.date-picker__navigation {
+  width: 28px; height: 28px;
+  background: transparent; border: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  color: var(--ep-fg-muted);
+  cursor: pointer;
+  border-radius: var(--ep-radius-sm);
+}
+.date-picker__navigation:hover { background: var(--ep-bg-hover); color: var(--ep-fg); }
+.date-picker__navigation svg { width: 16px; height: 16px; }
+
+.date-picker__grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.date-picker__weekday {
+  font: 500 10px var(--ep-font-sans);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ep-fg-subtle);
+  text-align: center;
+  padding: 4px 0 8px;
+}
+
+.date-picker__day {
+  height: 32px;
+  font: 500 13px var(--ep-font-sans);
+  color: var(--ep-fg);
+  background: transparent;
+  border: 0;
+  border-radius: var(--ep-radius-sm);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-family: inherit;
+  transition: background var(--ep-dur-fast) var(--ep-ease-out);
+  position: relative;
+}
+.date-picker__day:hover:not(:disabled) { background: var(--ep-bg-hover); }
+.date-picker__day:focus-visible { outline: none; box-shadow: var(--ep-shadow-focus); }
+.date-picker__day--muted { color: var(--ep-fg-faint); }
+.date-picker__day--today {
+  font-weight: 700;
+  color: var(--ep-accent);
+}
+.date-picker__day--today::after {
+  content: '';
+  position: absolute;
+  bottom: 4px; left: 50%;
+  width: 4px; height: 4px;
+  margin-left: -2px;
+  border-radius: 50%;
+  background: var(--ep-accent);
+}
+.date-picker__day--selected,
+.date-picker__day--start, .date-picker__day--end {
+  background: var(--ep-accent);
+  color: var(--ep-accent-on);
+}
+.date-picker__day--selected:hover,
+.date-picker__day--start:hover, .date-picker__day--end:hover { background: var(--ep-accent-hover); }
+.date-picker__day--range {
+  background: var(--ep-accent-bg);
+  color: var(--ep-accent-fg);
+  border-radius: 0;
+}
+.date-picker__day--range.date-picker__day--start { border-top-left-radius: var(--ep-radius-sm); border-bottom-left-radius: var(--ep-radius-sm); }
+.date-picker__day--range.date-picker__day--end   { border-top-right-radius: var(--ep-radius-sm); border-bottom-right-radius: var(--ep-radius-sm); }
+.date-picker__day:disabled { color: var(--ep-fg-faint); cursor: not-allowed; }
+
+/* Footer with quick actions */
+.date-picker__footer {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--ep-divider);
+  font: var(--ep-text-meta);
+  color: var(--ep-fg-subtle);
+}
+.date-picker__quick { display: inline-flex; gap: 4px; }
+.date-picker__quick button {
+  background: transparent; border: 0; cursor: pointer;
+  font: 500 12px var(--ep-font-sans);
+  color: var(--ep-accent);
+  padding: 4px 8px;
+  border-radius: var(--ep-radius-sm);
+}
+.date-picker__quick button:hover { background: var(--ep-accent-bg); }
+
+/* Trigger field (input-like) */
+.date-picker-trigger {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--ep-bg-elevated);
+  border: 1px solid var(--ep-border);
+  border-radius: var(--ep-radius-md);
+  padding: 10px 14px;
+  font: var(--ep-text-body);
+  color: var(--ep-fg);
+  min-width: 200px;
+  cursor: pointer;
+}
+.date-picker-trigger:hover { border-color: var(--ep-fg); }
+.date-picker-trigger svg { width: 16px; height: 16px; color: var(--ep-fg-muted); }
+.date-picker-trigger__placeholder { color: var(--ep-fg-placeholder); }
+
+/* ---- Reduced motion: the only animated property is the day-cell background;
+        drop it (plus any future nav / quick / trigger transition) so no micro-
+        interaction plays. The focus ring is a static box-shadow, never animated. */
+@media (prefers-reduced-motion: reduce) {
+  .date-picker__day,
+  .date-picker__navigation,
+  .date-picker__quick button,
+  .date-picker-trigger {
+    transition: none;
+  }
+}
+
+/* ---- Forced colors (Windows High Contrast): color-only state cues are
+        flattened by the UA, so muted / today / selected / range / disabled are
+        re-expressed with system colors, and the box-shadow focus ring (dropped
+        by the UA) is restored as a real Highlight outline. System colors only. */
+@media (forced-colors: active) {
+  .date-picker { border-color: CanvasText; }
+  .date-picker__footer { border-top-color: CanvasText; }
+  .date-picker__navigation { color: ButtonText; }
+  .date-picker__navigation:hover { color: Highlight; }
+  .date-picker__quick button { color: ButtonText; }
+  .date-picker-trigger { border-color: CanvasText; }
+  .date-picker-trigger:hover { border-color: Highlight; }
+
+  /* Muted out-of-month recedes; never reads as active */
+  .date-picker__day--muted { color: GrayText; }
+
+  /* Today perceivable via its dot, independent of selection */
+  .date-picker__day--today { color: CanvasText; }
+  .date-picker__day--today::after { background: CanvasText; }
+
+  /* Selected single day — real Highlight surface */
+  .date-picker__day--selected,
+  .date-picker__day--start,
+  .date-picker__day--end { background: Highlight; color: HighlightText; }
+  /* Range band distinct from the solid selected day */
+  .date-picker__day--range { background: Canvas; color: Highlight; }
+  /* Selected + today: dot flips onto the Highlight fill */
+  .date-picker__day--selected.date-picker__day--today::after { background: HighlightText; }
+
+  /* Disabled last so GrayText dominates — a disabled day never looks active */
+  .date-picker__day:disabled { color: GrayText; }
+
+  /* Box-shadow focus ring is dropped by the UA → real Highlight outline */
+  .date-picker__day:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+    box-shadow: none;
+  }
+}

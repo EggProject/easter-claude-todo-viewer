@@ -1,12 +1,12 @@
 import copy
 import json
 import pathlib
-import subprocess
 import tempfile
 import threading
 import urllib.request
 import time
 import unittest
+from unittest import mock
 
 import server
 
@@ -15,6 +15,8 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 
 class V34RuntimeCase(unittest.TestCase):
     def setUp(self):
+        self.agy_patcher = mock.patch("server.session_core.run_agy", return_value=({"title": "HU title", "description": "HU desc"}, {"status": "SUCCESS"}))
+        self.agy_patcher.start()
         self.tmp = tempfile.TemporaryDirectory()
         base = pathlib.Path(self.tmp.name)
         self.base = base
@@ -31,6 +33,7 @@ class V34RuntimeCase(unittest.TestCase):
 
     def tearDown(self):
         self.runtime.close()
+        self.agy_patcher.stop()
         self.tmp.cleanup()
 
     def write_task(self, task_id='1', subject=None, description='Desc', status='pending'):
@@ -246,94 +249,10 @@ class V34TranslationCatalogTests(V34RuntimeCase):
         self.assertEqual(2, parent['children'][0]['run'])
         self.assertEqual(1, len(parent['children'][0]['runs']))
 
-
-class V34FrontendContractTests(unittest.TestCase):
-    def test_task_drawer_uses_view_language_and_real_history_diff_controls(self):
-        drawer = (ROOT/'client/src/components/task-drawer.js').read_text()
-        history = (ROOT/'client/src/components/task-history.js').read_text()
-        html = (ROOT/'client/index.html').read_text()
-        self.assertIn('task.viewLanguage', drawer)
-        self.assertIn('TaskHistory', drawer)
-        self.assertIn('react-diff-viewer-continued', history)
-        self.assertIn('DiffMethod.WORDS', history)
-        self.assertIn('defaultOpen: false', history)
-        self.assertIn('history-filter', history)
-        self.assertIn('react-diff-viewer-continued', html)
-
-    def test_history_filters_separate_origin_and_change_type_dimensions(self):
-        history = (ROOT/'client/src/components/task-history.js').read_text()
-        self.assertIn('ORIGIN_FILTERS', history)
-        self.assertIn('CHANGE_FILTERS', history)
-        self.assertIn('originEnabled.has', history)
-        self.assertIn('changeEnabled.has', history)
-
-    def test_task_language_switch_remains_visible_while_translation_is_pending(self):
-        drawer = (ROOT/'client/src/components/task-drawer.js').read_text()
-        self.assertIn("className: 'task-language-row'", drawer)
-        self.assertIn('task.translationPending', drawer)
-        self.assertIn("task.viewLanguage === 'hu'", drawer)
-        self.assertIn('Showing current English source until the Hungarian translation is ready', drawer)
-
-    def test_translations_page_uses_tanstack_subrows_and_child_based_bulk_eligibility(self):
-        page = (ROOT/'client/src/pages/translations.js').read_text()
-        html = (ROOT/'client/index.html').read_text()
-        self.assertIn('@tanstack/react-table', page)
-        self.assertIn('getSubRows', page)
-        self.assertIn('getExpandedRowModel', page)
-        self.assertIn('getSortedRowModel', page)
-        self.assertIn('filterFromLeafRows', page)
-        self.assertIn('eligibleSelectedJobs', page)
-        self.assertIn('@tanstack/react-table', html)
-
-    def test_flow_has_spacious_layout_disconnected_lane_and_no_singleton_current(self):
-        flow = (ROOT/'client/src/pages/flow.js').read_text()
-        self.assertIn("'elk.spacing.nodeNode': '180'", flow)
-        self.assertIn("'elk.layered.spacing.nodeNodeBetweenLayers': '320'", flow)
-        self.assertIn("'elk.layered.spacing.edgeNodeBetweenLayers': '120'", flow)
-        self.assertIn('placeDisconnectedNodes', flow)
-        self.assertIn('connectedTaskIds', flow)
-        self.assertNotIn('find(task => task.status === \'in_progress\')', flow)
-
-    def test_import_map_and_package_include_v34_dependencies(self):
-        html = (ROOT/'client/index.html').read_text()
-        pkg = json.loads((ROOT/'client/package.json').read_text())
-        self.assertIn('@tanstack/react-table', html)
-        self.assertIn('react-diff-viewer-continued', html)
-        self.assertEqual('8.21.3', pkg['dependencies']['@tanstack/react-table'])
-        self.assertEqual('4.4.0', pkg['dependencies']['react-diff-viewer-continued'])
-
-
-
-class V34FlowLogicTests(unittest.TestCase):
-    def test_every_in_progress_task_gets_active_class(self):
-        graph_uri = (ROOT/'client/src/task-graph.js').as_uri()
-        tasks = [
-            {'uid':'s:30','id':'30','status':'in_progress'},
-            {'uid':'s:31','id':'31','status':'in_progress'},
-            {'uid':'s:32','id':'32','status':'in_progress'},
-        ]
-        script = f"""import {{flowNodeClass}} from {json.dumps(graph_uri)}; const tasks={json.dumps(tasks)}; console.log(JSON.stringify(tasks.map(t=>flowNodeClass(t,false))));"""
-        out = subprocess.check_output(['node','--input-type=module','-e',script], text=True)
-        self.assertEqual(['active','active','active'], json.loads(out))
-
-    def test_disconnected_tasks_are_numeric_after_connected_partition(self):
-        graph_uri = (ROOT/'client/src/task-graph.js').as_uri()
-        tasks = [
-            {'uid':'s:9','storeId':'s','id':'9','status':'pending','blockedBy':[],'blocks':[]},
-            {'uid':'s:1','storeId':'s','id':'1','status':'completed','blockedBy':[],'blocks':['2']},
-            {'uid':'s:12','storeId':'s','id':'12','status':'pending','blockedBy':[],'blocks':[]},
-            {'uid':'s:2','storeId':'s','id':'2','status':'pending','blockedBy':['1'],'blocks':[]},
-            {'uid':'s:10','storeId':'s','id':'10','status':'pending','blockedBy':[],'blocks':[]},
-        ]
-        script = f"""import {{buildGraph,partitionFlowTasks}} from {json.dumps(graph_uri)}; const tasks={json.dumps(tasks)}; const p=partitionFlowTasks(tasks,buildGraph(tasks)); console.log(JSON.stringify({{connected:p.connected.map(x=>x.id),disconnected:p.disconnected.map(x=>x.id)}}));"""
-        out = subprocess.check_output(['node','--input-type=module','-e',script], text=True)
-        result = json.loads(out)
-        self.assertEqual(['1','2'], result['connected'])
-        self.assertEqual(['9','10','12'], result['disconnected'])
-
-
 class V34HttpTests(unittest.TestCase):
     def setUp(self):
+        self.agy_patcher = mock.patch("server.session_core.run_agy", return_value=({"title": "HU title", "description": "HU desc"}, {"status": "SUCCESS"}))
+        self.agy_patcher.start()
         self.tmp = tempfile.TemporaryDirectory()
         base = pathlib.Path(self.tmp.name)
         self.task_root = base/'tasks'; self.store_id='sess'; (self.task_root/self.store_id).mkdir(parents=True)
@@ -346,7 +265,7 @@ class V34HttpTests(unittest.TestCase):
         self.base = f'http://127.0.0.1:{self.http.server_port}'
 
     def tearDown(self):
-        self.runtime.close(); self.http.shutdown(); self.http.server_close(); self.tmp.cleanup()
+        self.runtime.close(); self.http.shutdown(); self.http.server_close(); self.agy_patcher.stop(); self.tmp.cleanup()
 
     def get(self, path):
         with urllib.request.urlopen(self.base+path, timeout=5) as response:

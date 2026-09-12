@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>EggProject — Badge &amp; Chip</title>
+  <script src="../../../eggproject-design/preview/_theme.js" defer></script>
+  <meta name="viewport" content="width=720" />
+  <link rel="stylesheet" href="badge.css" />
+  <link rel="icon" href="../../../eggproject-design/assets/logo-mark.svg" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--ep-bg); color: var(--ep-fg); font-family: var(--ep-font-sans); padding: 40px; display: flex; flex-direction: column; gap: 18px; }
+    .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .label { font: var(--ep-text-overline); letter-spacing: var(--ep-track-overline); text-transform: uppercase; color: var(--ep-fg-subtle); }
+  </style>
+</head>
+<body>
+  <div class="row">
+    <span class="badge badge--info"><span class="badge__dot"></span>In progress</span>
+    <span class="badge badge--success"><span class="badge__dot"></span>Shipped</span>
+    <span class="badge badge--warning"><span class="badge__dot"></span>Review</span>
+    <span class="badge badge--danger"><span class="badge__dot"></span>Blocked</span>
+    <span class="badge badge--yolk">★ Featured</span>
+    <span class="badge badge--ink">v1.2.0</span>
+    <span class="badge badge--outline">Draft</span>
+  </div>
+  <div class="row">
+    <div class="chip"><div class="chip__avatar"></div>Adam K.</div>
+    <div class="chip"><div class="chip__avatar" style="background: linear-gradient(135deg, #D4AC5E, #8C6A1F)"></div>Project Atlas</div>
+    <div class="chip"><div class="chip__avatar" style="background: linear-gradient(135deg, #2F9C6A, #1F6849)"></div>Backend team</div>
+  </div>
+  <span class="label">Badges &amp; chips — status, tags, identity</span>
+</body>
+</html>

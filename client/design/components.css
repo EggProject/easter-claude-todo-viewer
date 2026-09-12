@@ -1,0 +1,65 @@
+/* ============================================================
+   EggProject Design Components — styles.css
+   Root CSS aggregator: tokens (from skill A) + all 52 component CSS.
+   Imports ONLY — does NOT define any custom properties.
+   Does NOT include shell, preview-frame, or ui-kit CSS (context-specific).
+   ============================================================ */
+
+/* --- Tokens from skill A (cross-skill import) -------------- */
+@import url('./colors_and_type.css');
+
+/* --- Components -------------------------------------------- */
+@import url('./components/accordion/accordion.css');
+@import url('./components/alert/alert.css');
+@import url('./components/avatar/avatar.css');
+@import url('./components/badge/badge.css');
+@import url('./components/breadcrumb/breadcrumb.css');
+@import url('./components/button/button.css');
+@import url('./components/card/card.css');
+@import url('./components/charts/charts.css');
+@import url('./components/code-block/code-block.css');
+@import url('./components/command-palette/command-palette.css');
+@import url('./components/data-table/datatable.css');
+@import url('./components/date-picker/date-picker.css');
+@import url('./components/divider/divider.css');
+@import url('./components/dot/dot.css');
+@import url('./components/drawer/drawer.css');
+@import url('./components/empty/empty.css');
+@import url('./components/feed-indicator/feed-indicator.css');
+@import url('./components/file-upload/file-upload.css');
+@import url('./components/form-controls/form-controls.css');
+@import url('./components/input/input.css');
+@import url('./components/kbd/kbd.css');
+@import url('./components/loading/loading.css');
+@import url('./components/menu/menu.css');
+@import url('./components/modal/modal.css');
+@import url('./components/nav/nav.css');
+@import url('./components/pagination/pagination.css');
+@import url('./components/popover/popover.css');
+@import url('./components/select/select.css');
+@import url('./components/skeleton/skeleton.css');
+@import url('./components/slider/slider.css');
+@import url('./components/splash/splash.css');
+@import url('./components/stat/stat.css');
+@import url('./components/stepper/stepper.css');
+@import url('./components/tabs/tabs.css');
+@import url('./components/tag-input/tag-input.css');
+@import url('./components/toast/toast.css');
+@import url('./components/tooltip/tooltip.css');
+
+/* --- shadcn Components (added) ----------------------------- */
+@import url('./components/alert-dialog/alert-dialog.css');
+@import url('./components/aspect-ratio/aspect-ratio.css');
+@import url('./components/calendar/calendar.css');
+@import url('./components/carousel/carousel.css');
+@import url('./components/collapsible/collapsible.css');
+@import url('./components/context-menu/context-menu.css');
+@import url('./components/hover-card/hover-card.css');
+@import url('./components/input-otp/input-otp.css');
+@import url('./components/menubar/menubar.css');
+@import url('./components/resizable/resizable.css');
+@import url('./components/scroll-area/scroll-area.css');
+@import url('./components/textarea/textarea.css');
+@import url('./components/toggle/toggle.css');
+@import url('./components/button-group/button-group.css');
+@import url('./components/input-group/input-group.css');

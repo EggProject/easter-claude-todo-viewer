@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>EggProject — Aspect Ratio</title>
+  <script src="../../../eggproject-design/preview/_theme.js" defer></script>
+  <meta name="viewport" content="width=720" />
+  <link rel="stylesheet" href="aspect-ratio.css" />
+  <link rel="icon" href="../../../eggproject-design/assets/logo-mark.svg" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--ep-bg); color: var(--ep-fg); font-family: var(--ep-font-sans); padding: 40px; }
+    .page { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+    h1 { font: 400 36px/1.1 var(--ep-font-display); letter-spacing: -0.02em; }
+    h1 em { font-weight: 700; }
+    .lead { font: var(--ep-text-body); color: var(--ep-fg-muted); }
+    .label { font: var(--ep-text-overline); letter-spacing: var(--ep-track-overline); text-transform: uppercase; color: var(--ep-fg-subtle); }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .placeholder {
+      background: var(--ep-bg-sunken);
+      display: flex; align-items: center; justify-content: center;
+      font: var(--ep-text-meta); color: var(--ep-fg-subtle);
+      border-radius: var(--ep-radius-md);
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1>Aspect Ratio · <em>constrained boxes</em></h1>
+    <p class="lead">CSS-only aspect-ratio containers. Five ratio modifiers out of the box; use <code>--ratio</code> for custom values.</p>
+    <span class="label">Ratio variants</span>
+    <div class="grid">
+      <div>
+        <div class="label" style="margin-bottom:6px">16 / 9 (video)</div>
+        <div class="aspect-ratio aspect-ratio--video">
+          <div class="placeholder">16:9</div>
+        </div>
+      </div>
+      <div>
+        <div class="label" style="margin-bottom:6px">1 / 1 (square)</div>
+        <div class="aspect-ratio aspect-ratio--square">
+          <div class="placeholder">1:1</div>
+        </div>
+      </div>
+      <div>
+        <div class="label" style="margin-bottom:6px">3 / 4 (portrait)</div>
+        <div class="aspect-ratio aspect-ratio--portrait">
+          <div class="placeholder">3:4</div>
+        </div>
+      </div>
+      <div>
+        <div class="label" style="margin-bottom:6px">4 / 3</div>
+        <div class="aspect-ratio aspect-ratio--4-3">
+          <div class="placeholder">4:3</div>
+        </div>
+      </div>
+      <div>
+        <div class="label" style="margin-bottom:6px">21 / 9 (cinema)</div>
+        <div class="aspect-ratio aspect-ratio--cinema" style="grid-column: span 2;">
+          <div class="placeholder">21:9</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,611 @@
+@import url('../../../eggproject-design/colors_and_type.css');
+/* Reuse the design-system's OWN form components for the filter row + search */
+@import url('../input/input.css');
+@import url('../select/select.css');
+/* Reuse the design-system's OWN Tooltip look for hover labels */
+@import url('../tooltip/tooltip.css');
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: var(--ep-bg-sunken); color: var(--ep-fg); font-family: var(--ep-font-sans); -webkit-font-smoothing: antialiased; }
+button { font-family: inherit; cursor: pointer; border: 0; background: transparent; color: inherit; }
+h2 { font-weight: inherit; }
+
+#root { padding: 32px; min-height: 100vh; display: flex; align-items: flex-start; justify-content: center; }
+
+/* ===== Wrapper ===== */
+.data-table-wrapper {
+  width: 100%;
+  max-width: 1180px;
+  /* HEIGHT-ONLY RESIZE — drag the bottom edge to resize the card vertically.
+     resize:vertical locks the width. ALWAYS ASK THE USER how many rows they want
+     visible and set --dt-wrap-h to match (toolbar ~60 + header 40 + filter ~50 +
+     footer ~50 + rows × 56). The body scrolls within whatever height is set. */
+  height: var(--dt-wrap-h, 640px);
+  min-height: 340px;
+  max-height: 92vh;
+  resize: vertical;
+  display: flex; flex-direction: column;
+  background: var(--ep-bg-elevated);
+  border: 1px solid var(--ep-border-subtle);
+  border-radius: var(--ep-radius-lg);
+  overflow: hidden;
+  box-shadow: var(--ep-shadow-sm);
+}
+
+/* ===== Toolbar ===== */
+.data-table-toolbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--ep-divider);
+  gap: 16px;
+}
+.data-table-toolbar__title { display: flex; align-items: baseline; gap: 12px; }
+.data-table-toolbar__title h2 {
+  font: 400 22px var(--ep-font-display);
+  letter-spacing: -0.01em;
+  color: var(--ep-fg);
+}
+.data-table-toolbar__count {
+  font: var(--ep-text-meta); font-family: var(--ep-font-mono);
+  color: var(--ep-fg-subtle);
+}
+
+/* Toolbar tools (search / filter / columns) */
+.data-table-toolbar__tools { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.data-table-toolbar__engine {
+  font: 500 10px var(--ep-font-mono);
+  letter-spacing: var(--ep-track-overline);
+  text-transform: uppercase;
+  color: var(--ep-second);
+  background: var(--ep-second-bg, rgba(46,91,224,0.1));
+  padding: 2px 8px;
+  border-radius: var(--ep-radius-pill);
+}
+
+/* Toolbar search uses the design-system .input-with-icon + .input */
+.data-table-toolbar__search { width: 230px; flex: 0 1 230px; min-width: 130px; }
+.data-table-toolbar__search .input { width: 100%; min-width: 0; }
+/* `.input` ships `transition: all`, which the preview freezes — keep border-color instant
+   so the filled-state accent border shows. The default border uses the brighter
+   --ep-control-border (same visible border as the .data-table-checkbox checkbox), per request. */
+.data-table-toolbar__search .input { transition: box-shadow var(--ep-dur-base) var(--ep-ease-out); border-color: var(--ep-control-border); }
+
+.data-table-select { position: relative; display: inline-flex; align-items: center; }
+.data-table-select select {
+  appearance: none; -webkit-appearance: none;
+  font: 500 13px var(--ep-font-sans);
+  color: var(--ep-fg);
+  padding: 8px 30px 8px 12px;
+  border: 1px solid var(--ep-border);
+  border-radius: var(--ep-radius-md);
+  background: var(--ep-bg-elevated);
+  cursor: pointer;
+  transition: border-color var(--ep-dur-fast) var(--ep-ease-out);
+}
+.data-table-select select:hover { border-color: var(--ep-fg-faint); }
+.data-table-select select:focus-visible { outline: none; border-color: var(--ep-accent); box-shadow: var(--ep-shadow-focus); }
+.data-table-select svg { position: absolute; right: 10px; color: var(--ep-fg-subtle); pointer-events: none; }
+.data-table-select--small select { padding: 5px 26px 5px 10px; font-size: 12px; }
+.data-table-select--small svg { right: 8px; }
+
+.data-table-tool-button {
+  display: inline-flex; align-items: center; gap: 7px;
+  font: 500 13px var(--ep-font-sans);
+  color: var(--ep-fg);
+  padding: 8px 12px;
+  border: 1px solid var(--ep-control-border);
+  border-radius: var(--ep-radius-md);
+  background: var(--ep-bg-elevated);
+  /* NB: not `transition: all` — the preview freezes `all`-transitions at their pre-change
+     value, which would stop the .is-changed accent border from ever showing. Transition
+     only background/color so border-color applies instantly. */
+  transition: background var(--ep-dur-fast) var(--ep-ease-out), color var(--ep-dur-fast) var(--ep-ease-out);
+}
+.data-table-tool-button:hover { border-color: var(--ep-fg-faint); }
+.data-table-tool-button { flex: 0 0 auto; }
+.data-table-tool-button.is-on { border-color: var(--ep-accent); color: var(--ep-fg); }
+/* Active-state border (search filled / columns changed / filters applied) — same accent
+   treatment via design-system tokens. */
+.data-table-tool-button.is-changed { border-color: var(--ep-accent); color: var(--ep-fg); }
+/* Search filled state — match the tool buttons: accent border only, no focus glow.
+   The glow still appears on actual :focus (from .input:focus). Room reserved on the
+   right for the clear button. */
+.data-table-toolbar__search .input.is-filled { border-color: var(--ep-accent); padding-right: 32px; }
+
+/* Clear-search button — shows inside the field while it holds a value, vertically
+   centered over the input's right edge (never overlaps the typed text: the input
+   reserves 32px of right padding while filled). */
+.data-table-search-clear {
+  position: absolute; right: 9px; top: 50%; transform: translateY(-50%);
+  width: 22px; height: 22px; z-index: 2;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: var(--ep-radius-sm);
+  color: var(--ep-fg-subtle);
+  transition: color var(--ep-dur-fast) var(--ep-ease-out), background var(--ep-dur-fast) var(--ep-ease-out);
+}
+.data-table-search-clear:hover { color: var(--ep-fg); background: var(--ep-bg-hover); }
+/* The DS `.input-with-icon svg` rule absolutely positions ANY descendant svg at left:14px —
+   that greedily catches the X icon inside the clear button and slides it out to the right.
+   Reset it so the X centers inside its own button. */
+.data-table-search-clear svg { position: static; left: auto; top: auto; right: auto; transform: none; }
+
+/* Icon-only tool button (the clear-all-filters reset) */
+.data-table-tool-button--icon { padding: 8px; gap: 0; }
+/* Resting state shows the gold (arany) accent border so it reads as the active escape hatch. */
+.data-table-filter-reset { color: var(--ep-fg-subtle); border-color: var(--ep-accent); }
+.data-table-filter-reset:hover { border-color: var(--ep-danger); color: var(--ep-danger); }
+
+/* Hover tooltip now uses the design-system Tooltip component (.tooltip). Keep its appearance,
+   but make the open/close instant inside the table — the preview can freeze opacity
+   transitions at their pre-change value, which would leave the bubble invisible. */
+.data-table-wrapper .tooltip, .data-table-tooltip-wrapper .tooltip { transition: none; }
+.data-table-tooltip-wrapper { display: inline-flex; }
+.data-table-filter-cell .tooltip-anchor { width: 100%; }
+
+/* Hover tooltip — now uses the design-system Tooltip component (.tooltip); wrapper layout only */
+.data-table-toolbar__tools > .data-table-tooltip-wrapper { flex: 0 0 auto; }
+
+.data-table-column-menu { position: relative; }
+.data-table-column-menu__popover {
+  position: absolute; top: calc(100% + 6px); right: 0; z-index: 20;
+  min-width: 200px;
+  background: var(--ep-bg-elevated);
+  border: 1px solid var(--ep-border);
+  border-radius: var(--ep-radius-md);
+  box-shadow: var(--ep-shadow-lg);
+  padding: 8px;
+}
+.data-table-column-menu__header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.data-table-column-menu__title {
+  display: block;
+  font: 500 10px var(--ep-font-sans);
+  letter-spacing: var(--ep-track-overline);
+  text-transform: uppercase;
+  color: var(--ep-fg-subtle);
+  padding: 4px 8px 8px;
+}
+.data-table-column-menu__reset {
+  font: 500 11px var(--ep-font-sans);
+  color: var(--ep-accent-fg);
+  padding: 3px 8px;
+  border-radius: var(--ep-radius-sm);
+  margin-bottom: 4px;
+}
+.data-table-column-menu__reset:hover { background: var(--ep-accent-bg); }
+.data-table-column-menu__row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 7px 8px;
+  border-radius: var(--ep-radius-sm);
+  font: 500 13px var(--ep-font-sans);
+  color: var(--ep-fg);
+  cursor: pointer;
+}
+.data-table-column-menu__row:hover { background: var(--ep-bg-sunken); }
+
+/* Bulk actions — collapsing bar under the toolbar */
+.data-table-bulk {
+  display: flex; align-items: center; gap: 8px;
+  padding: 0 20px;
+  max-height: 0; opacity: 0; overflow: hidden;
+  border-bottom: 1px solid transparent;
+  background: var(--ep-accent-bg);
+  transition: max-height var(--ep-dur-base) var(--ep-ease-out), opacity var(--ep-dur-base) var(--ep-ease-out), padding var(--ep-dur-base) var(--ep-ease-out);
+}
+.data-table-bulk.is-on { max-height: 56px; opacity: 1; padding: 11px 20px; border-bottom-color: var(--ep-divider); }
+.data-table-bulk__count {
+  font: 500 13px var(--ep-font-sans);
+  color: var(--ep-fg-muted);
+  margin-right: 4px;
+}
+.data-table-bulk__count strong { color: var(--ep-fg); font-weight: 600; }
+.data-table-bulk__button {
+  font: 500 12px var(--ep-font-sans);
+  padding: 6px 12px;
+  border-radius: var(--ep-radius-md);
+  background: var(--ep-bg-hover);
+  border: 1px solid var(--ep-border-subtle);
+  color: var(--ep-fg);
+  transition: all var(--ep-dur-fast) var(--ep-ease-out);
+}
+.data-table-bulk__button:hover { background: var(--ep-bg-pressed); }
+.data-table-bulk__button--danger { color: var(--ep-danger); }
+.data-table-bulk__button--danger:hover { background: var(--ep-danger-bg); border-color: var(--ep-danger); }
+.data-table-bulk__clear {
+  font: 500 12px var(--ep-font-sans);
+  color: var(--ep-fg-subtle);
+  padding: 6px 8px;
+}
+.data-table-bulk__clear:hover { color: var(--ep-fg); }
+
+/* ===== Table ===== */
+.data-table { display: flex; flex-direction: column; }
+
+/* The header row is wrapped in a role="rowgroup" for correct ARIA table semantics.
+   `display: contents` keeps that wrapper out of the box tree, so the sticky
+   .data-table__header still resolves its sticky containing block against .data-table
+   (not the wrapper) — the header stays stuck on vertical scroll, and column alignment
+   is unchanged. */
+.data-table__header-group { display: contents; }
+
+.data-table__header {
+  display: flex; align-items: center;
+  padding: 0 8px;
+  background: var(--ep-bg-sunken);
+  border-bottom: 1px solid var(--ep-divider);
+  height: 40px;
+}
+
+.data-table__body { display: flex; flex-direction: column; }
+
+.data-table__row {
+  display: flex; align-items: center;
+  padding: 0 8px;
+  border-bottom: 1px solid var(--ep-divider);
+  cursor: pointer;
+  transition: background var(--ep-dur-fast) var(--ep-ease-out);
+  min-height: 56px;
+  position: relative;
+}
+.data-table__row:last-child { border-bottom: 0; }
+.data-table__row:hover { background: var(--ep-bg-sunken); }
+.data-table__row.is-selected { background: var(--ep-accent-bg); }
+.data-table__row.is-selected:hover { background: var(--ep-accent-bg); }
+.data-table__row.is-active::before {
+  content: "";
+  position: absolute; left: 0; top: 8px; bottom: 8px;
+  width: 2px;
+  background: var(--ep-accent);
+  border-radius: 0 2px 2px 0;
+}
+
+/* ===== Cells ===== */
+.data-table__cell {
+  padding: 0 10px;
+  font: var(--ep-text-body);
+  color: var(--ep-fg);
+  display: flex; align-items: center;
+  min-width: 0;
+}
+.data-table__cell { flex: 0 0 auto; }
+.data-table__cell--checkbox, .data-table__cell--center { justify-content: center; padding: 0; }
+.data-table__cell--right { justify-content: flex-end; text-align: right; }
+.data-table__cell--header {
+  font: 500 11px var(--ep-font-sans);
+  letter-spacing: var(--ep-track-overline);
+  text-transform: uppercase;
+  color: var(--ep-fg-subtle);
+  gap: 6px;
+  user-select: none;
+  position: relative;
+}
+.data-table__cell--header .data-table__label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Right-aligned headers keep the natural label → sort → grip order (cluster pushed right
+   via justify-content) so the sort caret + drag handle sit AFTER the label, same as every
+   other column — no row-reverse. */
+.data-table__cell--header.is-sortable { cursor: pointer; transition: color var(--ep-dur-fast) var(--ep-ease-out); }
+.data-table__cell--header.is-sortable:hover { color: var(--ep-fg); }
+.data-table__cell--header.is-sorted { color: var(--ep-fg); }
+/* Keyboard focus for now-focusable sortable headers. Inset ring (never an outer glow):
+   the header is position:sticky at the top of .data-table-scroll (overflow:auto), so an
+   outer --ep-shadow-focus would clip. Inset never clips, never shifts layout, isn't
+   animated. Ink band (2–4px) guarantees ≥3:1 (WCAG 1.4.11); gold band carries brand. */
+.data-table__cell--header.is-sortable:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--ep-accent), inset 0 0 0 4px var(--ep-ink-900);
+}
+@media (forced-colors: active) {
+  .data-table__cell--header.is-sortable:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+    box-shadow: none;
+  }
+}
+.data-table__cell--mono { font: var(--ep-text-meta); font-family: var(--ep-font-mono); color: var(--ep-fg); font-size: 12px; }
+
+/* ===== Cell content types ===== */
+.data-table-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.data-table-main strong { font: 600 14px var(--ep-font-sans); color: var(--ep-fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.data-table-main span { font: var(--ep-text-meta); font-family: var(--ep-font-mono); color: var(--ep-fg-subtle); }
+
+.data-table-owner { display: flex; align-items: center; gap: 8px; font: 400 13px var(--ep-font-sans); color: var(--ep-fg); }
+.data-table-avatar {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--ep-second), var(--ep-blue-800));
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font: 600 10px var(--ep-font-sans);
+  flex-shrink: 0;
+}
+
+.data-table-status {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 3px 9px;
+  border-radius: var(--ep-radius-pill);
+  font: 500 12px var(--ep-font-sans);
+}
+.data-table-status__dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+.data-table-status--progress { background: var(--ep-accent-bg); color: var(--ep-accent-fg); }
+.data-table-status--review   { background: #FBEED1;          color: #7A4D14; }
+.data-table-status--hold     { background: var(--ep-bg-pressed); color: var(--ep-fg-muted); }
+.data-table-status--shipped  { background: #E1F4EB;          color: #1F6849; }
+
+.data-table-priority {
+  font: 500 12px var(--ep-font-sans);
+}
+.data-table-priority--high   { color: var(--ep-danger); }
+.data-table-priority--medium { color: var(--ep-fg); }
+.data-table-priority--low    { color: var(--ep-fg-subtle); }
+.data-table-priority::before {
+  content: ""; display: inline-block;
+  width: 4px; height: 12px;
+  border-radius: 2px;
+  background: currentColor;
+  margin-right: 6px;
+  vertical-align: -2px;
+  opacity: 0.85;
+}
+.data-table-priority--low::before { height: 6px; opacity: 0.5; vertical-align: middle; }
+.data-table-priority--medium::before { height: 9px; }
+
+/* ===== Checkbox ===== */
+.data-table-checkbox {
+  width: 18px; height: 18px;
+  border-radius: 4px;
+  border: 1.5px solid var(--ep-control-border);
+  background: var(--ep-bg-elevated);
+  display: inline-flex; align-items: center; justify-content: center;
+  color: var(--ep-accent-on);
+  /* not `transition: all` — the preview freezes all-transitions, which would pin the checked
+     background at its empty value (gold fill never shows). Transition border/shadow only. */
+  transition: border-color var(--ep-dur-fast) var(--ep-ease-out), box-shadow var(--ep-dur-fast) var(--ep-ease-out);
+}
+.data-table-checkbox:hover { border-color: var(--ep-accent); }
+.data-table-checkbox--on, .data-table-checkbox--partial {
+  background: var(--ep-accent);
+  border-color: var(--ep-accent);
+}
+.data-table-checkbox--on:hover, .data-table-checkbox--partial:hover { background: var(--ep-accent-hover); border-color: var(--ep-accent); }
+.data-table-checkbox:focus-visible { outline: none; box-shadow: var(--ep-shadow-focus); }
+/* Forced-colors fallback — the --ep-shadow-focus ring drops out in forced-colors, so the
+   keyboard focus would be invisible. Outer Highlight outline is safe: the 18px box is
+   centered with ≥9px margin in its 44px cell / 40px header, so the ring never clips. */
+@media (forced-colors: active) {
+  .data-table-checkbox:focus-visible { outline: 2px solid Highlight; outline-offset: 2px; box-shadow: none; }
+}
+
+/* ===== Footer ===== */
+.data-table-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 20px;
+  border-top: 1px solid var(--ep-divider);
+  background: var(--ep-bg-sunken);
+  font: var(--ep-text-small);
+  color: var(--ep-fg-muted);
+}
+.data-table-footer code { font: var(--ep-text-meta); font-family: var(--ep-font-mono); background: var(--ep-accent-bg); color: var(--ep-accent-fg); padding: 1px 6px; border-radius: 4px; }
+.data-table-footer__message { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ===== Scroll region =====
+   The card is height-resizable (see .data-table-wrapper). The body fills the remaining space and
+   scrolls; the header, filter row AND pinned rows stay stuck to the top while it does. */
+.data-table-scroll { flex: 1 1 auto; min-height: 0; overflow: auto; }
+.data-table-scroll::-webkit-scrollbar { height: 8px; width: 8px; }
+.data-table-scroll::-webkit-scrollbar-thumb { background: var(--ep-border); border-radius: 4px; }
+.data-table { min-width: 100%; }
+/* Header + filter row stay put while the body scrolls vertically */
+.data-table__header { position: sticky; top: 0; z-index: 5; }
+.data-table__filter-row { position: sticky; top: 40px; z-index: 4; }
+
+/* ===== Column reorder (drag header) ===== */
+.data-table-grip {
+  color: var(--ep-fg-faint);
+  opacity: 0; flex: 0 0 auto;
+  margin-left: 2px;
+  transition: opacity var(--ep-dur-fast) var(--ep-ease-out);
+  cursor: grab;
+}
+.data-table__cell--header.is-draggable:hover .data-table-grip { opacity: 0.7; }
+.data-table__cell--header.is-dragging { opacity: 0.4; background: var(--ep-bg-pressed); cursor: grabbing; }
+.data-table__cell--header.is-dragover {
+  background: var(--ep-accent-bg);
+  box-shadow: inset 2px 0 0 var(--ep-accent);
+}
+
+/* ===== Column resize handle ===== */
+.data-table__resizer {
+  position: absolute; right: 0; top: 0; height: 100%;
+  width: 10px;
+  cursor: col-resize;
+  touch-action: none;
+  user-select: none;
+  display: flex; align-items: center; justify-content: center;
+}
+.data-table__resizer::after {
+  content: ""; width: 2px; height: 16px;
+  background: var(--ep-border);
+  border-radius: 1px;
+  opacity: 0;
+  transition: opacity var(--ep-dur-fast) var(--ep-ease-out), background var(--ep-dur-fast) var(--ep-ease-out);
+}
+.data-table__cell--header:hover .data-table__resizer::after { opacity: 1; }
+.data-table__resizer:hover::after,
+.data-table__resizer.is-resizing::after { opacity: 1; background: var(--ep-accent); width: 2px; height: 100%; }
+
+/* ===== Empty state ===== */
+.data-table__empty {
+  padding: 48px 20px;
+  text-align: center;
+  font: var(--ep-text-body);
+  color: var(--ep-fg-subtle);
+}
+
+/* ===== Pagination ===== */
+.data-table-pager { display: flex; align-items: center; gap: 18px; }
+.data-table-pager__size { display: flex; align-items: center; gap: 8px; }
+.data-table-pager__size > span { font: var(--ep-text-small); color: var(--ep-fg-subtle); }
+.data-table-pager__range { font: var(--ep-text-meta); font-family: var(--ep-font-mono); color: var(--ep-fg-subtle); }
+.data-table-pager__navigation { display: flex; align-items: center; gap: 6px; }
+.data-table-pager__button {
+  width: 28px; height: 28px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid var(--ep-border);
+  border-radius: var(--ep-radius-sm);
+  background: var(--ep-bg-elevated);
+  color: var(--ep-fg);
+  transition: all var(--ep-dur-fast) var(--ep-ease-out);
+}
+.data-table-pager__button:hover:not(:disabled) { border-color: var(--ep-accent); color: var(--ep-accent-fg); }
+.data-table-pager__button:disabled { opacity: 0.4; cursor: not-allowed; }
+.data-table-pager__page { font: var(--ep-text-meta); font-family: var(--ep-font-mono); color: var(--ep-fg); min-width: 48px; text-align: center; }
+
+/* ===== Tool button badge (active filter count) ===== */
+.data-table-tool-button__badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 17px; height: 17px; padding: 0 4px;
+  border-radius: var(--ep-radius-pill);
+  background: var(--ep-accent); color: var(--ep-accent-on);
+  font: 600 10px var(--ep-font-mono);
+}
+
+/* ===== Per-column filter row ===== */
+.data-table__filter-row {
+  display: flex; align-items: center;
+  background: var(--ep-bg-sunken);
+  border-bottom: 1px solid var(--ep-divider);
+  padding: 9px 8px;
+}
+.data-table__cell--filter { display: flex; align-items: center; justify-content: stretch; padding: 0 6px; min-width: 0; }
+.data-table-filter-cell { width: 100%; min-width: 0; padding: 0; display: flex; }
+/* Filter controls are the design-system's OWN .input / .select / .menu (imported at
+   the top of this file) — no bespoke filter inputs live here. The shared .select/.menu
+   default their text to --ep-ink-900 (a light-theme ink); remap to the semantic
+   --ep-fg so they read correctly in the data-table's dark theme too. */
+.data-table__filter-row .select { color: var(--ep-fg); min-width: 0; width: 100%; }
+.data-table__filter-row .select__value--placeholder { color: var(--ep-fg-placeholder); }
+.data-table__filter-row .menu { color: var(--ep-fg); }
+
+/* ===== Filter popover (owner autocomplete / hours / updated range) ===== */
+.data-table-filter-popover { min-width: 0; gap: 2px; }
+.data-table-filter-popover__search {
+  position: relative; display: flex; align-items: center; margin-bottom: 4px;
+}
+.data-table-filter-popover__search svg {
+  position: absolute; left: 10px; color: var(--ep-fg-subtle); pointer-events: none;
+}
+.data-table-filter-popover__search .input { width: 100%; padding-left: 30px; }
+.data-table-filter-popover__list { max-height: 196px; overflow-y: auto; display: flex; flex-direction: column; }
+.data-table-filter-popover__empty { padding: 12px; text-align: center; font: var(--ep-text-small); color: var(--ep-fg-subtle); }
+.data-table-filter-popover__clear {
+  margin-top: 4px; padding: 7px 10px;
+  font: 500 12px var(--ep-font-sans); color: var(--ep-fg-subtle);
+  border-radius: var(--ep-radius-sm); text-align: left;
+}
+.data-table-filter-popover__clear:hover { background: var(--ep-bg-hover); color: var(--ep-fg); }
+.data-table-filter-popover__error {
+  display: flex; align-items: flex-start; gap: 6px;
+  margin: 4px 2px 0; padding: 7px 9px;
+  font: 500 11.5px var(--ep-font-sans); line-height: 1.35;
+  color: var(--ep-danger);
+  background: var(--ep-danger-bg);
+  border-radius: var(--ep-radius-sm);
+}
+
+/* Owner selected chips */
+.data-table-chips { display: flex; flex-wrap: wrap; gap: 5px; padding: 2px 2px 6px; }
+.data-table-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 7px 3px 9px;
+  font: 500 12px var(--ep-font-sans); color: var(--ep-accent-fg);
+  background: var(--ep-accent-bg); border: 1px solid transparent;
+  border-radius: var(--ep-radius-pill);
+}
+.data-table-chip:hover { border-color: var(--ep-accent); }
+.data-table-chip__remove { font-size: 14px; line-height: 1; color: var(--ep-fg-subtle); }
+.data-table-chip:hover .data-table-chip__remove { color: var(--ep-accent-fg); }
+
+/* Hours min/max/equals rows */
+.data-table-number-row { display: flex; align-items: center; gap: 10px; padding: 5px 4px; }
+.data-table-number-row__checkbox { display: flex; align-items: center; gap: 8px; width: 96px; flex: 0 0 auto; cursor: pointer; }
+.data-table-number-row__label { font: 500 13px var(--ep-font-sans); color: var(--ep-fg-muted); }
+.data-table-number-row.is-on .data-table-number-row__label { color: var(--ep-fg); }
+.data-table-number-row .input { flex: 1; min-width: 0; }
+.data-table-number-row:not(.is-on) .input { opacity: 0.62; }
+/* Enabled hours input — brighter control-border edge so it reads as active. */
+.data-table-number-row.is-on .input { border-color: var(--ep-control-border); }
+
+/* Updated dual-range slider */
+.data-table-range { padding: 6px 4px 2px; }
+.data-table-range__header {
+  display: flex; justify-content: space-between; align-items: baseline;
+  font: var(--ep-text-meta); font-family: var(--ep-font-mono);
+  color: var(--ep-fg); margin-bottom: 12px;
+}
+.data-table-range__mid { color: var(--ep-fg-faint); text-transform: uppercase; letter-spacing: var(--ep-track-overline); font-size: 10px; }
+.data-table-range__track { position: relative; height: 22px; }
+.data-table-range__track::before {
+  content: ""; position: absolute; left: 0; right: 0; top: 9px;
+  height: 4px; border-radius: 2px; background: var(--ep-border);
+}
+.data-table-range__fill { position: absolute; top: 9px; height: 4px; border-radius: 2px; background: var(--ep-accent); }
+.data-table-range input[type=range] {
+  position: absolute; left: 0; right: 0; top: 0; width: 100%; height: 22px;
+  margin: 0; background: transparent; pointer-events: none;
+  -webkit-appearance: none; appearance: none;
+}
+.data-table-range input[type=range]:focus-visible { outline: none; }
+.data-table-range input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: var(--ep-bg-elevated); border: 2px solid var(--ep-accent);
+  box-shadow: var(--ep-shadow-sm); cursor: grab; pointer-events: auto;
+}
+.data-table-range input[type=range]::-webkit-slider-thumb:active { cursor: grabbing; }
+.data-table-range input[type=range]::-moz-range-thumb {
+  width: 16px; height: 16px; border-radius: 50%;
+  background: var(--ep-bg-elevated); border: 2px solid var(--ep-accent);
+  box-shadow: var(--ep-shadow-sm); cursor: grab; pointer-events: auto;
+}
+.data-table-range__scale {
+  display: flex; justify-content: space-between;
+  font: 500 10px var(--ep-font-mono); color: var(--ep-fg-faint); margin-top: 8px;
+}
+
+/* ===== Column pinning (sticky) — opt-in via the Columns menu, no edge box ===== */
+.data-table__cell--pinned { background: var(--ep-bg-elevated); }
+.data-table__cell--header.data-table__cell--pinned { background: var(--ep-bg-sunken); }
+.data-table__filter-row .data-table__cell--pinned { background: var(--ep-bg-elevated); }
+.data-table__row:hover .data-table__cell--pinned { background: var(--ep-bg-sunken); }
+.data-table__row.is-selected .data-table__cell--pinned { background: var(--ep-accent-bg); }
+.data-table__row--pinned .data-table__cell--pinned { background: var(--ep-bg-sunken); }
+
+/* ===== Row pinning ===== */
+/* Pinned group is sticky so pinned rows stay visible below the header while scrolling.
+   Its `top` is set inline (40px, or 90px when the filter row is shown). */
+.data-table__body--pinned { border-bottom: 2px solid var(--ep-border); position: sticky; z-index: 3; }
+.data-table__row--pinned { background: var(--ep-bg-sunken); }
+.data-table-pin {
+  width: 28px; height: 28px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--ep-fg-faint);
+  opacity: 0;
+  transition: opacity var(--ep-dur-fast) var(--ep-ease-out), color var(--ep-dur-fast) var(--ep-ease-out), border-color var(--ep-dur-fast) var(--ep-ease-out), background var(--ep-dur-fast) var(--ep-ease-out);
+}
+.data-table__row:hover .data-table-pin { opacity: 1; }
+.data-table-pin:hover { color: var(--ep-accent-fg); border-color: var(--ep-accent); background: var(--ep-accent-bg); }
+.data-table-pin.is-on { opacity: 1; color: var(--ep-accent-fg); border-color: var(--ep-accent); background: var(--ep-accent-bg); }
+
+/* ===== Columns menu — pin toggle row ===== */
+.data-table-column-menu__row { justify-content: space-between; }
+.data-table-column-menu__visibility { display: flex; align-items: center; gap: 10px; flex: 1; cursor: pointer; }
+.data-table-column-menu__pin {
+  width: 26px; height: 26px; flex: 0 0 auto;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: var(--ep-radius-sm);
+  color: var(--ep-fg-faint);
+  transition: all var(--ep-dur-fast) var(--ep-ease-out);
+}
+.data-table-column-menu__pin:hover { background: var(--ep-bg-pressed); color: var(--ep-fg-subtle); }
+.data-table-column-menu__pin.is-on { color: var(--ep-accent-fg); background: var(--ep-accent-bg); }

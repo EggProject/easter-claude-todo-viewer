@@ -1,0 +1,166 @@
+@import url('../../../eggproject-design/colors_and_type.css');
+
+/* ============ Hover Card ============
+   Structure:
+     .hover-card__trigger (the anchor/target element)
+       + .hover-card__panel (the floating card, positioned by JS)
+   The .hover-card__panel appears on :hover of .hover-card__trigger via
+   JS toggle or CSS (see demo). Animates in/out.
+============================================ */
+.hover-card {
+  position: relative;
+  display: inline-block;
+}
+
+.hover-card__trigger {
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-style: dashed;
+  text-underline-offset: 3px;
+  color: var(--ep-fg);
+}
+
+.hover-card__panel {
+  position: absolute;
+  z-index: 900;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--ep-bg-elevated);
+  border: 1px solid var(--ep-border);
+  border-radius: var(--ep-radius-xl);
+  box-shadow: var(--ep-shadow-lg);
+  padding: 16px;
+  min-width: 240px;
+  max-width: 320px;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(-50%) translateY(4px);
+  transition: opacity var(--ep-dur-base) var(--ep-ease-out),
+              transform var(--ep-dur-base) var(--ep-ease-out);
+}
+
+/* Visible state is driven solely by the React `open` state via .is-open, so the
+   panel's visibility and the trigger's aria-expanded never disagree. (A former
+   CSS-only `.hover-card:hover` reveal opened the panel without the JS state,
+   drifting from aria-expanded; hover now reveals through the JS handlers.) */
+.hover-card__panel.is-open {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Arrow */
+.hover-card__panel::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: var(--ep-border);
+}
+.hover-card__panel::before {
+  content: '';
+  position: absolute;
+  top: calc(100% - 1px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: var(--ep-bg-elevated);
+  z-index: 1;
+}
+
+.hover-card__header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.hover-card__avatar {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  background: var(--ep-bg-sunken);
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.hover-card__name {
+  font: 600 14px/1 var(--ep-font-sans);
+  color: var(--ep-fg);
+}
+.hover-card__subtitle {
+  font: var(--ep-text-meta);
+  color: var(--ep-fg-subtle);
+  margin-top: 2px;
+}
+
+.hover-card__body {
+  font: var(--ep-text-body);
+  color: var(--ep-fg-muted);
+  line-height: 1.55;
+}
+
+.hover-card__footer {
+  margin-top: 12px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.hover-card__tag {
+  font: var(--ep-text-meta);
+  background: var(--ep-bg-sunken);
+  border: 1px solid var(--ep-border);
+  border-radius: var(--ep-radius-sm);
+  padding: 3px 8px;
+  color: var(--ep-fg-muted);
+}
+
+/* Keyboard focus: the trigger is the only focusable element and reveals the
+   panel on focus. House-style outset ring; the .hover-card is not clipped, so
+   it shows in full. The ring is a static box-shadow, never transitioned. */
+.hover-card__trigger:focus-visible {
+  outline: none;
+  box-shadow: var(--ep-shadow-focus);
+}
+
+/* Forced colors (Windows High Contrast): the token bg/border chrome, the arrow,
+   the avatar disc, the tag chips and the focus ring flatten under the UA, so
+   re-express separation, text and focus with system colors. System colors only. */
+@media (forced-colors: active) {
+  .hover-card__trigger { color: CanvasText; }
+  .hover-card__trigger:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+    box-shadow: none;
+  }
+  .hover-card__panel {
+    background: Canvas;
+    border-color: CanvasText;
+  }
+  .hover-card__panel::after { border-top-color: CanvasText; }
+  .hover-card__panel::before { border-top-color: Canvas; }
+  .hover-card__avatar { border: 1px solid CanvasText; }
+  .hover-card__name { color: CanvasText; }
+  .hover-card__subtitle { color: CanvasText; }
+  .hover-card__body { color: CanvasText; }
+  .hover-card__tag {
+    border-color: CanvasText;
+    color: CanvasText;
+  }
+}
+
+/* Reduced motion: drop the panel's opacity + translateY fade so the reveal is
+   instant and nothing slides. Visibility still toggles via .is-open; only the
+   animation is removed. The focus ring is a static box-shadow, never animated. */
+@media (prefers-reduced-motion: reduce) {
+  .hover-card__panel {
+    transition: none;
+    transform: translateX(-50%);
+  }
+  .hover-card__panel.is-open {
+    transform: translateX(-50%);
+  }
+}

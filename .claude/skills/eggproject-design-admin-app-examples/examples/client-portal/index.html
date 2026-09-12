@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<!-- @dsCard group="Admin Examples" name="Example · Client portal" subtitle="Multi-page dashboard — sidebar, KPIs, project list, activity" viewport="1440x900" -->
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>EggProject — Client Portal</title>
+  <meta name="viewport" content="width=1440" />
+  <link rel="stylesheet" href="../../../eggproject-design-components/styles.css" />
+  <link rel="stylesheet" href="../../../eggproject-design-app-common/_shell.css" />
+  <link rel="stylesheet" href="portal.css" />
+  <link rel="icon" href="../../../eggproject-design/assets/logo-mark.svg" />
+</head>
+<body>
+  <div id="root" data-screen-label="EggProject Portal"></div>
+  <script src="../../../eggproject-design-components/assets/vendor/react.production.min.js"></script>
+  <script src="../../../eggproject-design-components/assets/vendor/react-dom.production.min.js"></script>
+  <script src="../../../eggproject-design-components/assets/vendor/babel.min.js"></script>
+  <script type="text/babel" src="Portal.jsx"></script>
+  <script type="text/babel">
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<Portal />);
+  </script>
+</body>
+</html>

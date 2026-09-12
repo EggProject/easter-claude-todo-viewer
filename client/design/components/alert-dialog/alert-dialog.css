@@ -1,0 +1,109 @@
+@import url('../../../eggproject-design/colors_and_type.css');
+
+/* ============ Alert Dialog ============
+   Structure:
+     .alert-dialog-overlay > .alert-dialog
+       > .alert-dialog__icon (optional)
+       > .alert-dialog__title
+       > .alert-dialog__description
+       > .alert-dialog__footer
+   Variants: default · danger · warning · success
+============================================ */
+.alert-dialog-overlay {
+  position: fixed; inset: 0;
+  background: rgba(10, 18, 48, 0.48);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 32px;
+  z-index: 1100;
+  animation: alert-dialog-overlay-in var(--ep-dur-base) var(--ep-ease-out);
+}
+
+@keyframes alert-dialog-overlay-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.alert-dialog {
+  background: var(--ep-bg-elevated);
+  border-radius: var(--ep-radius-xl);
+  box-shadow: var(--ep-shadow-xl);
+  width: 100%;
+  max-width: 420px;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: alert-dialog-in var(--ep-dur-base) var(--ep-ease-out);
+}
+
+@keyframes alert-dialog-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.alert-dialog__icon {
+  width: 44px; height: 44px;
+  border-radius: var(--ep-radius-lg);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.alert-dialog__icon svg { width: 22px; height: 22px; }
+
+.alert-dialog--danger  .alert-dialog__icon { background: var(--ep-danger-bg);  color: var(--ep-danger); }
+.alert-dialog--warning .alert-dialog__icon { background: var(--ep-warning-bg); color: var(--ep-warning-fg); }
+.alert-dialog--success .alert-dialog__icon { background: var(--ep-success-bg); color: var(--ep-success); }
+.alert-dialog--info    .alert-dialog__icon { background: var(--ep-info-bg);    color: var(--ep-info); }
+
+.alert-dialog__title {
+  font: 600 17px/1.3 var(--ep-font-sans);
+  color: var(--ep-fg);
+  margin: 0;
+}
+
+.alert-dialog__description {
+  font: var(--ep-text-body);
+  color: var(--ep-fg-muted);
+  margin: 0;
+  line-height: 1.55;
+}
+
+.alert-dialog__footer {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  padding-top: 4px;
+}
+
+/* ============ Reduced motion ============
+   Drop the backdrop fade and the panel scale/translate entrance; the keyframe end states
+   equal the natural rendered state, so the dialog still appears fully formed and instantly.
+   No close button here — the footer cancel/confirm Buttons keep their own family rules. */
+@media (prefers-reduced-motion: reduce) {
+  .alert-dialog-overlay,
+  .alert-dialog { animation: none; }
+}
+
+/* ============ Forced colors (Windows High Contrast etc.) ============
+   Shadows and rgba tints drop out here, so map panel, backdrop and text onto explicit
+   system colors and give the panel a real border for separation. The cancel/confirm
+   Buttons inherit the Button family's own forced-colors rules — not duplicated here.
+   System colors are honoured without forced-color-adjust, so none is used. */
+@media (forced-colors: active) {
+  /* Backdrop: solid system fill, no blur — the panel stays primary via its border. */
+  .alert-dialog-overlay {
+    background: Canvas;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  /* Panel: Canvas fill + CanvasText hairline. border-box (global reset) → no layout shift. */
+  .alert-dialog {
+    background: Canvas;
+    color: CanvasText;
+    border: 1px solid CanvasText;
+  }
+  /* Title and the description (the primary message) both stay full-contrast CanvasText. */
+  .alert-dialog__title,
+  .alert-dialog__description { color: CanvasText; }
+}

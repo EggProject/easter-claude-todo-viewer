@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>EggProject — Slider</title>
+  <script src="../../../eggproject-design/preview/_theme.js" defer></script>
+  <meta name="viewport" content="width=720" />
+  <link rel="stylesheet" href="slider.css" />
+  <link rel="icon" href="../../../eggproject-design/assets/logo-mark.svg" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--ep-bg); color: var(--ep-fg); font-family: var(--ep-font-sans); padding: 40px; }
+    .page { max-width: 560px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+    .frame { background: var(--ep-bg-elevated); border: 1px solid var(--ep-border-subtle); border-radius: 12px; padding: 20px 24px; }
+    .frame--ink { background: var(--ep-ink-900); border-color: transparent; }
+    h1 { font: 400 36px/1.1 var(--ep-font-display); letter-spacing: -0.02em; color: var(--ep-fg); }
+ h1 em { font-weight: 700; }
+  </style>
+  <script>
+    // Vanilla sync for the static demo: keep --val in sync with value on input.
+    document.addEventListener('input', (e) => {
+      const el = e.target;
+      if (!el.classList || !el.classList.contains('slider__track')) return;
+      const min = Number(el.min || 0), max = Number(el.max || 100);
+      const pct = ((Number(el.value) - min) / (max - min)) * 100;
+      el.style.setProperty('--val', pct);
+      const head = el.closest('.slider')?.querySelector('.slider__value');
+      const fmt = head ? head.dataset.fmt : '';
+      let text = el.value;
+      if (fmt === 'percent') text = Math.round(Number(el.value)) + '%';
+      else if (fmt === 'eur') text = '€' + Number(el.value).toLocaleString();
+      if (head) head.textContent = text;
+      // Mirror the formatted readout to assistive tech; raw values are already
+      // conveyed by the native aria-valuenow.
+      if (fmt === 'percent' || fmt === 'eur') el.setAttribute('aria-valuetext', text);
+      else el.removeAttribute('aria-valuetext');
+    });
+    // Initial paint
+    window.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.slider__track').forEach((el) => el.dispatchEvent(new Event('input', {bubbles: true})));
+    });
+  </script>
+</head>
+<body>
+  <div class="page">
+    <h1>Slider · <em>numeric range</em></h1>
+
+    <div class="frame">
+      <div class="slider">
+        <div class="slider__header">
+          <span class="slider__label" id="sl-density-label">Team density</span>
+          <span class="slider__value" data-fmt="">42</span>
+        </div>
+        <input class="slider__track" type="range" min="0" max="100" value="42" aria-labelledby="sl-density-label">
+      </div>
+    </div>
+
+    <div class="frame">
+      <div class="slider">
+        <div class="slider__header">
+          <span class="slider__label" id="sl-retainer-label">Retainer · monthly budget</span>
+          <span class="slider__value" data-fmt="eur">€8400</span>
+        </div>
+        <input class="slider__track" type="range" min="2000" max="20000" step="200" value="8400" aria-labelledby="sl-retainer-label" aria-valuetext="€8,400">
+        <div class="slider__ticks">
+          <span class="slider__tick">€2k</span>
+          <span class="slider__tick">€8k</span>
+          <span class="slider__tick">€14k</span>
+          <span class="slider__tick">€20k</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="frame">
+      <div class="slider">
+        <div class="slider__header">
+          <span class="slider__label" id="sl-disabled-label">Disabled</span>
+          <span class="slider__value" data-fmt="percent">60%</span>
+        </div>
+        <input class="slider__track" type="range" min="0" max="100" value="60" disabled aria-labelledby="sl-disabled-label" aria-valuetext="60%">
+      </div>
+    </div>
+
+    <div class="frame frame--ink">
+      <div class="slider slider--dark">
+        <div class="slider__header">
+          <span class="slider__label" id="sl-concurrency-label">Deploy concurrency</span>
+          <span class="slider__value" data-fmt="">8</span>
+        </div>
+        <input class="slider__track" type="range" min="1" max="16" value="8" aria-labelledby="sl-concurrency-label">
+        <div class="slider__ticks">
+          <span class="slider__tick">1</span>
+          <span class="slider__tick">8</span>
+          <span class="slider__tick">16</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

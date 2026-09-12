@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<!-- @dsCard group="Web Examples" name="Web examples — gallery" subtitle="Index of every web-app example page" -->
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>EggProject — Web examples</title>
+  <script src="../../eggproject-design/preview/_theme.js" defer></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" href="../../eggproject-design/assets/logo-mark.svg" />
+  <link rel="stylesheet" href="../../eggproject-design/colors_and_type.css" />
+  <link rel="stylesheet" href="../../eggproject-design-components/components/button/button.css" />
+  <link rel="stylesheet" href="../../eggproject-design-components/components/badge/badge.css" />
+  <style>
+    body { background: var(--ep-bg); color: var(--ep-fg); }
+    .wrap { max-width: 1080px; margin: 0 auto; padding: 56px 32px 96px; }
+    .head { display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+    .head__brand { display: flex; align-items: center; gap: 10px; }
+    .head__brand img { width: 26px; height: 26px; }
+    .head__brand b { font: 600 18px var(--ep-font-sans); letter-spacing: -0.02em; }
+    .head__brand b em { font-family: var(--ep-font-display); font-weight: 700; color: var(--ep-accent); }
+    h1 { font: 400 clamp(40px, 5vw, 60px)/1 var(--ep-font-display); letter-spacing: var(--ep-track-tight); margin: 40px 0 0; }
+    h1 em { font-weight: 700; }
+    .lead { margin: 16px 0 0; font: 400 18px/1.55 var(--ep-font-sans); color: var(--ep-fg-muted); max-width: 64ch; }
+    .section-label { margin: 48px 0 16px; font: 500 12px var(--ep-font-sans); letter-spacing: var(--ep-track-overline); text-transform: uppercase; color: var(--ep-fg-subtle); }
+    .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+    .card {
+      background: var(--ep-bg-elevated);
+      border: 1px solid var(--ep-border-subtle);
+      border-radius: var(--ep-radius-xl);
+      padding: 22px 24px 20px;
+      display: flex; flex-direction: column; gap: 10px;
+      text-decoration: none; color: inherit;
+      transition: transform var(--ep-dur-fast) var(--ep-ease-out), box-shadow var(--ep-dur-fast) var(--ep-ease-out), border-color var(--ep-dur-fast) var(--ep-ease-out);
+    }
+    .card:hover { transform: translateY(-2px); box-shadow: var(--ep-shadow-md); border-color: var(--ep-ink-900); }
+    .card__top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .card h2 { font: 600 17px var(--ep-font-sans); color: var(--ep-fg); }
+    .card p { font: 400 14px/1.5 var(--ep-font-sans); color: var(--ep-fg-muted); }
+    .card .path { font: 500 12px var(--ep-font-mono); color: var(--ep-fg-subtle); }
+    .card--multi { background: var(--ep-ink-900); border-color: transparent; }
+    .card--multi h2, .card--multi .path { color: var(--ep-paper-50); }
+    .card--multi p { color: var(--ep-slate-300); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="head">
+      <div class="head__brand">
+        <img src="../../eggproject-design/assets/logo-mark.svg" alt="" />
+        <b>EggProject<em>.</em></b>
+      </div>
+      <button class="ep-theme-toggle" type="button" data-ep-theme-toggle aria-label="Switch theme">
+        <svg class="ep-theme-toggle__moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="ep-theme-toggle__sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      </button>
+    </header>
+
+    <h1>Web <em>examples</em></h1>
+    <p class="lead">Full-page compositions for website-style, marketing, and public-facing frontends &mdash; built on the EggProject shells and components. Every example lives in this <code>examples/</code> folder.</p>
+
+    <div class="section-label">Single-page examples</div>
+    <div class="grid">
+      <a class="card" href="signin.html">
+        <div class="card__top"><h2>Sign in</h2><span class="badge badge--outline">focus &middot; split</span></div>
+        <p>Split-layout auth with an editorial left panel and an email/OAuth form.</p>
+        <span class="path">signin.html</span>
+      </a>
+      <a class="card" href="pricing.html">
+        <div class="card__top"><h2>Pricing</h2><span class="badge badge--outline">marketing</span></div>
+        <p>Three-tier pricing with a compare table and FAQ on the marketing shell.</p>
+        <span class="path">pricing.html</span>
+      </a>
+      <a class="card" href="onboarding.html">
+        <div class="card__top"><h2>Onboarding</h2><span class="badge badge--outline">focus</span></div>
+        <p>Four-step new-project wizard with a stepper on the focus shell.</p>
+        <span class="path">onboarding.html</span>
+      </a>
+      <a class="card" href="docs.html">
+        <div class="card__top"><h2>Documentation</h2><span class="badge badge--outline">docs</span></div>
+        <p>API docs page with code blocks, callouts, TOC, and a TanStack events table.</p>
+        <span class="path">docs.html</span>
+      </a>
+      <a class="card" href="status.html">
+        <div class="card__top"><h2>Status</h2><span class="badge badge--outline">marketing</span></div>
+        <p>Public uptime page with service health and an incident history.</p>
+        <span class="path">status.html</span>
+      </a>
+      <a class="card" href="not-found.html">
+        <div class="card__top"><h2>Not found</h2><span class="badge badge--outline">focus &middot; ink</span></div>
+        <p>Dark editorial 404 page on the inked focus shell.</p>
+        <span class="path">not-found.html</span>
+      </a>
+    </div>
+
+    <div class="section-label">Multi-page example</div>
+    <div class="grid">
+      <a class="card card--multi" href="marketing-site/index.html">
+        <div class="card__top"><h2>Marketing site</h2><span class="badge badge--yolk">multi-page</span></div>
+        <p>Full editorial brochure site &mdash; hero, services, selected work, quote, CTA, footer. A React composition spanning several sections.</p>
+        <span class="path">marketing-site/index.html</span>
+      </a>
+    </div>
+  </div>
+</body>
+</html>
