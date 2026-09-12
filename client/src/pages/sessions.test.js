@@ -239,7 +239,7 @@ describe('SessionsPage', () => {
     });
   });
 
-  it('handles row clicks to switch session and ignores click on current session row', async () => {
+  it('handles row clicks and keyboard events to switch session with interactive child guards', async () => {
     renderPage();
     const currentRow = document.querySelector('.current-session-row');
     const nonCurrentRow = document.querySelector(
@@ -253,11 +253,41 @@ describe('SessionsPage', () => {
     fireEvent.click(currentRow);
     expect(mockApp.switchSessionOptimistic).not.toHaveBeenCalled();
 
+    // Keydown on current session row does not switch
+    fireEvent.keyDown(currentRow, { key: 'Enter' });
+    expect(mockApp.switchSessionOptimistic).not.toHaveBeenCalled();
+
+    // Keydown on interactive element inside non-current row (e.g. switch button) is ignored
+    const innerBtn = nonCurrentRow.querySelector('button');
+    expect(innerBtn).not.toBeNull();
+    fireEvent.keyDown(innerBtn, { key: 'Enter' });
+    expect(mockApp.switchSessionOptimistic).not.toHaveBeenCalled();
+
+    // Non-Enter/Space key on non-current row does not switch
+    fireEvent.keyDown(nonCurrentRow, { key: 'ArrowDown' });
+    expect(mockApp.switchSessionOptimistic).not.toHaveBeenCalled();
+
+    // Keydown Space on non-current row triggers switchCurrent
+    await act(async () => {
+      fireEvent.keyDown(nonCurrentRow, { key: ' ' });
+    });
+    expect(mockApp.switchSessionOptimistic).toHaveBeenCalledTimes(1);
+
+    mockApp.switchSessionOptimistic.mockClear();
+
+    // Keydown Enter on non-current row triggers switchCurrent
+    await act(async () => {
+      fireEvent.keyDown(nonCurrentRow, { key: 'Enter' });
+    });
+    expect(mockApp.switchSessionOptimistic).toHaveBeenCalledTimes(1);
+
+    mockApp.switchSessionOptimistic.mockClear();
+
     // Clicking non-current row triggers switchCurrent
     await act(async () => {
       fireEvent.click(nonCurrentRow);
     });
-    expect(mockApp.switchSessionOptimistic).toHaveBeenCalled();
+    expect(mockApp.switchSessionOptimistic).toHaveBeenCalledTimes(1);
   });
 
   it('handles global search filter, verifies filtered rows, clear button, and localStorage persistence', () => {

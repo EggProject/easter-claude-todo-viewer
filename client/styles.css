@@ -2326,6 +2326,8 @@ table.data-table tr.selected td {
   flex: 0 0 auto;
 }
 .sessions-page .data-table-wrapper {
+  width: 100%;
+  max-width: 100%;
   flex: 1 1 auto;
   min-height: 0;
   height: 100%;
@@ -2349,6 +2351,15 @@ table.data-table tr.selected td {
 }
 .sessions-table .current-session-row:hover {
   background: rgba(203, 166, 247, 0.08);
+}
+.sessions-table .data-table__cell {
+  overflow: hidden;
+  box-sizing: border-box;
+}
+.sessions-table .nowrap-cell {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .watch-btn {
   font-size: 16px;

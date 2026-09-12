@@ -886,7 +886,7 @@ export default function SessionsPage(): ReactElement {
             className="data-table sessions-table"
             role="table"
             aria-label="Claude sessions"
-            style={{ width: '100%', minWidth: Math.max(1700, table.getTotalSize()) }}
+            style={{ width: '100%', minWidth: table.getTotalSize() }}
           >
             <div role="rowgroup" className="data-table__header-group">
               {table.getHeaderGroups().map((headerGroup) => (
@@ -1150,8 +1150,8 @@ function buildSessionColumns(
     {
       id: 'watched',
       header: 'Watch',
-      size: 60,
-      minSize: 50,
+      size: 50,
+      minSize: 44,
       meta: { fixed: true } satisfies ColumnMetaProps,
       accessorFn: (row) => (row.watched ? 1 : 0),
       cell: ({ row }) => (
@@ -1178,8 +1178,8 @@ function buildSessionColumns(
     {
       id: 'current',
       header: 'Current',
-      size: 60,
-      minSize: 50,
+      size: 50,
+      minSize: 44,
       meta: { fixed: true } satisfies ColumnMetaProps,
       accessorFn: (row) => (row.current ? 1 : 0),
       cell: ({ row }) =>
@@ -1194,8 +1194,8 @@ function buildSessionColumns(
     {
       id: 'action',
       header: 'Action',
-      size: 100,
-      minSize: 90,
+      size: 90,
+      minSize: 80,
       enableSorting: false,
       meta: { fixed: true } satisfies ColumnMetaProps,
       cell: ({ row }) =>
@@ -1218,8 +1218,8 @@ function buildSessionColumns(
     {
       id: 'language',
       header: 'Language',
-      size: 125,
-      minSize: 110,
+      size: 115,
+      minSize: 100,
       accessorFn: (row) => row.globalLanguage || 'en',
       cell: ({ row }) => <SessionLanguageControl session={row.original} app={app} />,
     },
@@ -1227,7 +1227,7 @@ function buildSessionColumns(
       id: 'label',
       header: 'Name / summary',
       size: 280,
-      minSize: 220,
+      minSize: 200,
       meta: { grow: true } satisfies ColumnMetaProps,
       accessorFn: (row) => row.label || row.id,
       cell: ({ row }) => {
@@ -1248,15 +1248,15 @@ function buildSessionColumns(
     {
       accessorKey: 'id',
       header: 'Session ID',
-      size: 130,
-      minSize: 100,
+      size: 115,
+      minSize: 90,
       cell: ({ getValue }) => <span className="mono small">{shortId(getValue())}</span>,
     },
     {
       accessorKey: 'cwd',
       header: 'Project',
-      size: 180,
-      minSize: 120,
+      size: 160,
+      minSize: 110,
       cell: ({ getValue }) => {
         const text = String(getValue() || '');
         return (
@@ -1269,8 +1269,8 @@ function buildSessionColumns(
     {
       accessorKey: 'gitBranch',
       header: 'Branch',
-      size: 150,
-      minSize: 100,
+      size: 125,
+      minSize: 90,
       cell: ({ getValue }) => {
         const text = String(getValue() || '');
         return (
@@ -1297,33 +1297,33 @@ function buildSessionColumns(
     {
       accessorKey: 'messageCount',
       header: 'Messages',
-      size: 85,
+      size: 95,
       minSize: 75,
     },
     {
       accessorKey: 'fileSize',
       header: 'File size',
-      size: 90,
-      minSize: 80,
+      size: 95,
+      minSize: 75,
       cell: ({ getValue }) => fmtBytes(getValue()),
     },
     {
       accessorKey: 'taskCount',
       header: 'Tasks',
-      size: 80,
+      size: 85,
       minSize: 70,
     },
     {
       accessorKey: 'deletedTaskCount',
       header: 'Deleted',
-      size: 80,
+      size: 85,
       minSize: 70,
     },
     {
       accessorKey: 'translationCount',
       header: 'Translations',
-      size: 100,
-      minSize: 85,
+      size: 115,
+      minSize: 80,
     },
   ];
 }
