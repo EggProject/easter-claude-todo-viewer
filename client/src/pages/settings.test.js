@@ -389,4 +389,3 @@ describe('SettingsPage', () => {
     expect(grid?.querySelector('.prompts-card')).not.toBeNull();
   });
 });
-

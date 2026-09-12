@@ -42,9 +42,17 @@ export function usePersistentPageFilters(
     return safeParse(window.localStorage.getItem(storageKey), fallback);
   });
 
+  const defaultsKey = Object.entries(defaults)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([k, v]) => `${k}:${v}`)
+    .join('|');
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const stableDefaults = useMemo(() => defaults, [defaultsKey]);
+
   const values = useMemo(
-    () => resolvePersistedFilters(defaults, searchParams, stored),
-    [defaults, searchParams, stored],
+    () => resolvePersistedFilters(stableDefaults, searchParams, stored),
+    [stableDefaults, searchParams, stored],
   );
 
   const setFilter = useCallback(
@@ -56,7 +64,7 @@ export function usePersistentPageFilters(
         window.localStorage.setItem(storageKey, JSON.stringify(nextState));
       }
       const next = new URLSearchParams(searchParams);
-      const defVal = defaults[key];
+      const defVal = stableDefaults[key];
       const defaultValue = defVal == null ? '' : String(defVal);
       if (stringValue === defaultValue) {
         next.delete(key);
@@ -65,7 +73,7 @@ export function usePersistentPageFilters(
       }
       setSearchParams(next, { replace: true });
     },
-    [values, storageKey, searchParams, setSearchParams, defaults],
+    [values, storageKey, searchParams, setSearchParams, stableDefaults],
   );
 
   return [values, setFilter];

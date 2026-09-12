@@ -1,6 +1,8 @@
 import React, { Suspense } from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
+import { MemoryRouter, Route, Routes } from 'react-router';
+import * as debugModule from './debug.js';
 import Router from './router.js';
 
 vi.mock('./components/topbar.js', () => ({
@@ -97,5 +99,64 @@ describe('router module', () => {
     await waitFor(() => {
       expect(screen.getByText('Tasks Page')).toBeDefined();
     });
+  });
+
+  it('renders BrowserRouter with useTransitions={false} and ShellLayout route wrapper', () => {
+    const tree = Router();
+    expect(tree.props.useTransitions).toBe(false);
+
+    const children = React.Children.toArray(tree.props.children);
+    const routesElement = children.find((child) => child && child.props && child.props.children);
+    expect(routesElement).toBeDefined();
+
+    const rootRoute = routesElement.props.children;
+    expect(rootRoute.props.element).toBeDefined();
+
+    function SuspendingComponent() {
+      throw new Promise(() => {});
+    }
+
+    const { container } = render(
+      React.createElement(
+        MemoryRouter,
+        { initialEntries: ['/testing-suspense'] },
+        React.createElement(
+          Routes,
+          null,
+          React.createElement(
+            Route,
+            { element: rootRoute.props.element },
+            React.createElement(Route, {
+              path: '/testing-suspense',
+              element: React.createElement(SuspendingComponent),
+            }),
+          ),
+        ),
+      ),
+    );
+
+    expect(container.querySelector('.boot')).not.toBeNull();
+    expect(container.querySelector('.splash-spinner')).not.toBeNull();
+  });
+
+  it('logs route changes via NavigationLogger and navigates across routes with Outlet and Suspense', async () => {
+    const debugSpy = vi.spyOn(debugModule, 'debugLog');
+
+    const { unmount } = renderWithRoute('/flow/sess-1/task-1');
+    await waitFor(() => {
+      expect(screen.getByText('Flow Page')).toBeDefined();
+      expect(debugSpy).toHaveBeenCalledWith(
+        'Router',
+        expect.stringContaining('/flow/sess-1/task-1'),
+      );
+    });
+    unmount();
+
+    const { unmount: u2 } = renderWithRoute('/sessions');
+    await waitFor(() => {
+      expect(screen.getByText('Sessions Page')).toBeDefined();
+      expect(debugSpy).toHaveBeenCalledWith('Router', expect.stringContaining('/sessions'));
+    });
+    u2();
   });
 });

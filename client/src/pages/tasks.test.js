@@ -390,11 +390,19 @@ describe('TasksPage', () => {
 
     currentScope = ['sess-alpha'];
     rerender(
-      React.createElement(MemoryRouter, { initialEntries: ['/tasks'] }, React.createElement(TasksPage, null)),
+      React.createElement(
+        MemoryRouter,
+        { initialEntries: ['/tasks'] },
+        React.createElement(TasksPage, null),
+      ),
     );
 
     rerender(
-      React.createElement(MemoryRouter, { initialEntries: ['/tasks'] }, React.createElement(TasksPage, null)),
+      React.createElement(
+        MemoryRouter,
+        { initialEntries: ['/tasks'] },
+        React.createElement(TasksPage, null),
+      ),
     );
 
     await new Promise((resolve) => setTimeout(resolve, 50));
@@ -418,13 +426,21 @@ describe('TasksPage', () => {
     expect(mockApp.loadState).toHaveBeenLastCalledWith(['sess-alpha']);
 
     rerender(
-      React.createElement(MemoryRouter, { initialEntries: ['/tasks'] }, React.createElement(TasksPage, null)),
+      React.createElement(
+        MemoryRouter,
+        { initialEntries: ['/tasks'] },
+        React.createElement(TasksPage, null),
+      ),
     );
     expect(mockApp.loadState).toHaveBeenCalledTimes(1);
 
     mockApp.revision = 2;
     rerender(
-      React.createElement(MemoryRouter, { initialEntries: ['/tasks'] }, React.createElement(TasksPage, null)),
+      React.createElement(
+        MemoryRouter,
+        { initialEntries: ['/tasks'] },
+        React.createElement(TasksPage, null),
+      ),
     );
 
     await waitFor(() => {
@@ -433,7 +449,11 @@ describe('TasksPage', () => {
 
     currentScope = ['sess-beta'];
     rerender(
-      React.createElement(MemoryRouter, { initialEntries: ['/tasks'] }, React.createElement(TasksPage, null)),
+      React.createElement(
+        MemoryRouter,
+        { initialEntries: ['/tasks'] },
+        React.createElement(TasksPage, null),
+      ),
     );
 
     await waitFor(() => {

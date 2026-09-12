@@ -79,13 +79,10 @@ export default function TranslationsPage(): ReactElement {
     [allData, sessionFilter],
   );
 
-  const sessionOptions = useMemo(
-    () =>
-      app.sessionsState.sessions.filter((session) =>
-        allData.some((row) => row.sessionId === session.id),
-      ),
-    [app.sessionsState.sessions, allData],
-  );
+  const sessionOptions = useMemo(() => {
+    const sessionIds = new Set(allData.map((row) => row.sessionId));
+    return app.sessionsState.sessions.filter((session) => sessionIds.has(session.id));
+  }, [app.sessionsState.sessions, allData]);
 
   const columns = useMemo(() => buildColumns(app, navigate), [app, navigate]);
 

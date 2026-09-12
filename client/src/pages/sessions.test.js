@@ -101,8 +101,10 @@ describe('SessionsPage', () => {
     },
   ];
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
+    const actualTable = await vi.importActual('@tanstack/react-table');
+    vi.mocked(tanstackTableModule.useReactTable).mockImplementation(actualTable.useReactTable);
     mockApp = {
       sessionsState: {
         sessions: [...sampleSessions],
@@ -374,7 +376,7 @@ describe('SessionsPage', () => {
     });
   });
 
-  it('covers non-function setSorting updater, missing label, isPlaceholder header, and null session id', () => {
+  it('covers non-function setSorting updater, missing label, isPlaceholder header, and null session id', async () => {
     let capturedOnSortingChange;
 
     // Test session with empty label and null id
@@ -392,13 +394,9 @@ describe('SessionsPage', () => {
     ];
 
     // Spy to inject placeholder header
-    const origUseReactTable = tanstackTableModule.useReactTable;
-    let injectedTable = null;
+    const actualTable = await vi.importActual('@tanstack/react-table');
     vi.mocked(tanstackTableModule.useReactTable).mockImplementation((options) => {
       capturedOnSortingChange = options.onSortingChange;
-      // Get table instance from normal mock or implementation
-      const table = vi.importActual('@tanstack/react-table');
-      // create table using basic core logic
       const inst = {
         getHeaderGroups: () => [
           {
@@ -427,8 +425,14 @@ describe('SessionsPage', () => {
             },
           ],
         }),
+        getState: () => ({ pagination: { pageIndex: 0, pageSize: 50 }, sorting: [] }),
+        setPageSize: vi.fn(),
+        previousPage: vi.fn(),
+        getCanPreviousPage: () => false,
+        nextPage: vi.fn(),
+        getCanNextPage: () => false,
+        getPageCount: () => 1,
       };
-      injectedTable = inst;
       return inst;
     });
 
@@ -438,7 +442,7 @@ describe('SessionsPage', () => {
       capturedOnSortingChange([{ id: 'label', desc: true }]);
     });
     unmount();
-    vi.mocked(tanstackTableModule.useReactTable).mockRestore();
+    vi.mocked(tanstackTableModule.useReactTable).mockImplementation(actualTable.useReactTable);
   });
 
   it('covers missing session label and null session id with real table rendering', () => {
@@ -458,5 +462,75 @@ describe('SessionsPage', () => {
     const { unmount } = renderPage();
     expect(screen.getByText('Claude sessions')).toBeDefined();
     unmount();
+  });
+
+  it('handles pagination controls and correctly slices data according to page size', () => {
+    const generatedSessions = Array.from({ length: 75 }, (_, i) => ({
+      id: `session-page-test-${i + 1}`,
+      label: `Session Number ${i + 1}`,
+      summary: `Summary ${i + 1}`,
+      cwd: `/projects/p-${i + 1}`,
+      gitBranch: 'main',
+      firstPrompt: `Prompt ${i + 1}`,
+      watched: false,
+      current: i === 0,
+      globalLanguage: 'en',
+      globalTranslationPending: false,
+      createdAt: '2026-01-01T10:00:00.000Z',
+      lastActivity: '2026-01-01T12:00:00.000Z',
+      messageCount: 1,
+      fileSize: 100,
+      taskCount: 1,
+      deletedTaskCount: 0,
+      translationCount: 0,
+    }));
+    mockApp.sessionsState.sessions = generatedSessions;
+
+    renderPage();
+
+    expect(screen.getByText('Showing 1 to 50 of 75 sessions')).toBeDefined();
+    expect(screen.getByText('Page 1 of 2')).toBeDefined();
+
+    const initialRows = document.querySelectorAll('tbody tr');
+    expect(initialRows).toHaveLength(50);
+    expect(screen.getByText('Session Number 1')).toBeDefined();
+    expect(screen.getByText('Session Number 50')).toBeDefined();
+    expect(screen.queryByText('Session Number 51')).toBeNull();
+
+    const prevBtn = screen.getByRole('button', { name: 'Previous page' });
+    const nextBtn = screen.getByRole('button', { name: 'Next page' });
+    expect(prevBtn.disabled).toBe(true);
+    expect(nextBtn.disabled).toBe(false);
+
+    fireEvent.click(nextBtn);
+
+    expect(screen.getByText('Showing 51 to 75 of 75 sessions')).toBeDefined();
+    expect(screen.getByText('Page 2 of 2')).toBeDefined();
+    const page2Rows = document.querySelectorAll('tbody tr');
+    expect(page2Rows).toHaveLength(25);
+    expect(screen.queryByText('Session Number 50')).toBeNull();
+    expect(screen.getByText('Session Number 51')).toBeDefined();
+    expect(screen.getByText('Session Number 75')).toBeDefined();
+
+    expect(nextBtn.disabled).toBe(true);
+    expect(prevBtn.disabled).toBe(false);
+
+    fireEvent.click(prevBtn);
+    expect(screen.getByText('Showing 1 to 50 of 75 sessions')).toBeDefined();
+    expect(screen.getByText('Page 1 of 2')).toBeDefined();
+
+    const sizeSelect = screen.getByRole('combobox', { name: 'Select page size' });
+    fireEvent.change(sizeSelect, { target: { value: '25' } });
+
+    expect(screen.getByText('Showing 1 to 25 of 75 sessions')).toBeDefined();
+    expect(screen.getByText('Page 1 of 3')).toBeDefined();
+    expect(document.querySelectorAll('tbody tr')).toHaveLength(25);
+
+    fireEvent.change(sizeSelect, { target: { value: '100' } });
+    expect(screen.getByText('Showing 1 to 75 of 75 sessions')).toBeDefined();
+    expect(screen.getByText('Page 1 of 1')).toBeDefined();
+    expect(document.querySelectorAll('tbody tr')).toHaveLength(75);
+    expect(prevBtn.disabled).toBe(true);
+    expect(nextBtn.disabled).toBe(true);
   });
 });

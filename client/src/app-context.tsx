@@ -27,6 +27,7 @@ import {
   isPrompt,
   errorMessage,
 } from './types.js';
+import { debugLog } from './debug.js';
 
 const AppContext = createContext<AppContextValue | null>(null);
 
@@ -126,6 +127,9 @@ export function AppProvider({ children }: { children?: ReactNode }): ReactElemen
   const [bootstrapError, setBootstrapError] = useState<string | null>(null);
   const [bootstrapPhase, setBootstrapPhase] = useState('Connecting to multi-session daemon');
   const modalQueue = useRef<ModalState[]>([]);
+  const loadedSessionIdRef = useRef<string | null>(null);
+  const lastSwitchedTimeRef = useRef<number>(0);
+  const inFlightSwitchRef = useRef<Map<string, Promise<void>>>(new Map());
 
   const currentSessionId = sessionsState.currentSessionId;
   const currentSession = useMemo<Session | null>(
@@ -165,7 +169,9 @@ export function AppProvider({ children }: { children?: ReactNode }): ReactElemen
 
   const refreshState = useCallback(async () => {
     try {
-      setState(await loadState(currentSessionId ? [currentSessionId] : []));
+      const nextState = await loadState(currentSessionId ? [currentSessionId] : []);
+      setState(nextState);
+      loadedSessionIdRef.current = currentSessionId;
     } catch {}
   }, [loadState, currentSessionId]);
 
@@ -237,6 +243,7 @@ export function AppProvider({ children }: { children?: ReactNode }): ReactElemen
       setSettings(parseSettings(nextSettingsRaw));
       setPrompts(parsePrompts(nextPromptsRaw));
       setState(nextState);
+      loadedSessionIdRef.current = current;
       setBootstrapPhase('Loading interface');
       setBootstrapStatus('ready');
       loadHeavyData().catch((error: unknown) => {
@@ -257,9 +264,17 @@ export function AppProvider({ children }: { children?: ReactNode }): ReactElemen
   useEffect(() => {
     if (bootstrapStatus !== 'ready') return;
     if (currentSessionId) {
+      if (loadedSessionIdRef.current === currentSessionId) {
+        debugLog(
+          'AppState',
+          `Skipping redundant refreshState() for session ${currentSessionId} (already in state)`,
+        );
+        return;
+      }
       void refreshState();
     } else {
       setState(null);
+      loadedSessionIdRef.current = null;
     }
   }, [currentSessionId, revision, bootstrapStatus, refreshState]);
 
@@ -269,6 +284,8 @@ export function AppProvider({ children }: { children?: ReactNode }): ReactElemen
     es.onerror = () => setLive('RECONNECTING');
 
     let stateInvalidatedTimer: ReturnType<typeof setTimeout> | null = null;
+    let appStateChangedTimer: ReturnType<typeof setTimeout> | null = null;
+    let sessionsChangedTimer: ReturnType<typeof setTimeout> | null = null;
     let pendingReasons: string[] = [];
 
     const handleStateInvalidated = (e?: unknown): void => {
@@ -295,6 +312,21 @@ export function AppProvider({ children }: { children?: ReactNode }): ReactElemen
         pendingReasons = [];
         const onlySessionSwitched =
           reasons.length > 0 && reasons.every((r) => r === 'session-switched');
+        const now = Date.now();
+        const justSwitched = now - lastSwitchedTimeRef.current < 1500;
+
+        if (justSwitched && onlySessionSwitched) {
+          debugLog(
+            'SSE',
+            'Skipping state-invalidated refetches because session switch was just performed',
+          );
+          return;
+        }
+
+        if (!onlySessionSwitched) {
+          loadedSessionIdRef.current = null;
+        }
+
         setRevision((x) => x + 1);
         const tasks = [refreshSessionsSnapshot(), refreshHistory()];
         if (!onlySessionSwitched) {
@@ -307,16 +339,51 @@ export function AppProvider({ children }: { children?: ReactNode }): ReactElemen
     es.addEventListener('state-invalidated', (e: Event) => {
       handleStateInvalidated(e);
     });
-    es.addEventListener('app-state-changed', () => {
-      refreshSessionsSnapshot()
-        .then(() => setRevision((x) => x + 1))
-        .catch(() => {});
-    });
-    es.addEventListener('sessions-changed', () => {
-      refreshSessionsSnapshot()
-        .then(() => setRevision((x) => x + 1))
-        .catch(() => {});
-    });
+
+    const handleAppStateChanged = (): void => {
+      if (appStateChangedTimer !== null) {
+        clearTimeout(appStateChangedTimer);
+      }
+      appStateChangedTimer = setTimeout(() => {
+        appStateChangedTimer = null;
+        const now = Date.now();
+        const justSwitched = now - lastSwitchedTimeRef.current < 1500;
+        if (justSwitched) {
+          debugLog(
+            'SSE',
+            'Skipping app-state-changed refetch because session switch was just performed',
+          );
+          return;
+        }
+        refreshSessionsSnapshot()
+          .then(() => setRevision((x) => x + 1))
+          .catch(() => {});
+      }, 100);
+    };
+    es.addEventListener('app-state-changed', handleAppStateChanged);
+
+    const handleSessionsChanged = (): void => {
+      if (sessionsChangedTimer !== null) {
+        clearTimeout(sessionsChangedTimer);
+      }
+      sessionsChangedTimer = setTimeout(() => {
+        sessionsChangedTimer = null;
+        const now = Date.now();
+        const justSwitched = now - lastSwitchedTimeRef.current < 1500;
+        if (justSwitched) {
+          debugLog(
+            'SSE',
+            'Skipping sessions-changed refetch because session switch was just performed',
+          );
+          return;
+        }
+        refreshSessionsSnapshot()
+          .then(() => setRevision((x) => x + 1))
+          .catch(() => {});
+      }, 100);
+    };
+    es.addEventListener('sessions-changed', handleSessionsChanged);
+
     es.addEventListener('notification', (e: MessageEvent) => {
       try {
         const parsed: unknown = JSON.parse(String(e.data));
@@ -359,6 +426,12 @@ export function AppProvider({ children }: { children?: ReactNode }): ReactElemen
       if (stateInvalidatedTimer !== null) {
         clearTimeout(stateInvalidatedTimer);
       }
+      if (appStateChangedTimer !== null) {
+        clearTimeout(appStateChangedTimer);
+      }
+      if (sessionsChangedTimer !== null) {
+        clearTimeout(sessionsChangedTimer);
+      }
       if (translationJobsTimer !== null) {
         clearTimeout(translationJobsTimer);
       }
@@ -376,6 +449,13 @@ export function AppProvider({ children }: { children?: ReactNode }): ReactElemen
 
   const switchSessionOptimistic = useCallback(
     async (sessionId: string) => {
+      const pending = inFlightSwitchRef.current.get(sessionId);
+      if (pending) {
+        debugLog('Session', `Reusing in-flight switch for session: ${sessionId}`);
+        return pending;
+      }
+
+      debugLog('Session', `Starting switchSessionOptimistic for: ${sessionId}`);
       const previous = sessionsState;
       const watched = new Set(previous.watchedSessionIds);
       watched.add(sessionId);
@@ -390,21 +470,33 @@ export function AppProvider({ children }: { children?: ReactNode }): ReactElemen
         })),
       };
       setSessionsState(optimistic);
-      try {
-        await postJSON(`/api/sessions/${encodeURIComponent(sessionId)}/switch`, {});
-        const [snapshot, nextState] = await Promise.all([
-          loadSessionsSnapshot(),
-          loadState([sessionId]),
-        ]);
-        setSessionsState(snapshot);
-        setState(nextState);
-        setRevision((x) => x + 1);
-      } catch (error: unknown) {
-        setSessionsState(previous);
-        const message = errorMessage(error);
-        enqueue({ kind: 'error', title: 'Session switch failed', message });
-        throw error;
-      }
+
+      const runSwitch = async (): Promise<void> => {
+        try {
+          await postJSON(`/api/sessions/${encodeURIComponent(sessionId)}/switch`, {});
+          const [snapshot, nextState] = await Promise.all([
+            loadSessionsSnapshot(),
+            loadState([sessionId]),
+          ]);
+          setSessionsState(snapshot);
+          setState(nextState);
+          loadedSessionIdRef.current = sessionId;
+          lastSwitchedTimeRef.current = Date.now();
+          debugLog('Session', `Successfully switched to session: ${sessionId}`);
+          setRevision((x) => x + 1);
+        } catch (error: unknown) {
+          setSessionsState(previous);
+          const message = errorMessage(error);
+          enqueue({ kind: 'error', title: 'Session switch failed', message });
+          throw error;
+        } finally {
+          inFlightSwitchRef.current.delete(sessionId);
+        }
+      };
+
+      const promise = runSwitch();
+      inFlightSwitchRef.current.set(sessionId, promise);
+      return promise;
     },
     [sessionsState, loadSessionsSnapshot, loadState, enqueue],
   );
@@ -433,7 +525,9 @@ export function AppProvider({ children }: { children?: ReactNode }): ReactElemen
         const snapshot = await loadSessionsSnapshot();
         setSessionsState(snapshot);
         if (sessionId === currentSessionId) {
-          setState(await loadState([sessionId]));
+          const nextState = await loadState([sessionId]);
+          setState(nextState);
+          loadedSessionIdRef.current = sessionId;
         }
         setRevision((x) => x + 1);
       } catch (error: unknown) {

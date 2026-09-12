@@ -1,7 +1,7 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { MemoryRouter } from 'react-router';
+import { MemoryRouter, Route, Routes } from 'react-router';
 import { Shell } from './shell.js';
 import * as appContextModule from '../app-context.js';
 
@@ -252,5 +252,48 @@ describe('Shell component', () => {
     expect(tooltip).toContain('Last activity: 2026-03-02T00:00:00Z');
 
     toLocaleStringSpy.mockRestore();
+  });
+
+  it('renders child element via backward compatible children prop', () => {
+    render(
+      React.createElement(
+        MemoryRouter,
+        { initialEntries: ['/'] },
+        React.createElement(
+          Shell,
+          null,
+          React.createElement('div', { 'data-testid': 'legacy-child' }, 'Legacy Child Content'),
+        ),
+      ),
+    );
+
+    expect(screen.getByTestId('legacy-child').textContent).toBe('Legacy Child Content');
+  });
+
+  it('renders route content via Outlet when no children prop is provided', () => {
+    render(
+      React.createElement(
+        MemoryRouter,
+        { initialEntries: ['/nested'] },
+        React.createElement(
+          Routes,
+          null,
+          React.createElement(
+            Route,
+            { element: React.createElement(Shell, null) },
+            React.createElement(Route, {
+              path: '/nested',
+              element: React.createElement(
+                'div',
+                { 'data-testid': 'outlet-child' },
+                'Rendered by Outlet',
+              ),
+            }),
+          ),
+        ),
+      ),
+    );
+
+    expect(screen.getByTestId('outlet-child').textContent).toBe('Rendered by Outlet');
   });
 });

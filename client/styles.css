@@ -2238,3 +2238,46 @@ code {
   vertical-align: -0.15em;
   margin-right: 0.25em;
 }
+
+/* Sessions pagination controls */
+.sessions-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 12px 4px 24px;
+  font-size: 13px;
+  color: var(--ep-fg-muted);
+}
+.sessions-pagination__left {
+  display: flex;
+  align-items: center;
+}
+.sessions-pagination__controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sessions-pagination__size {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.sessions-pagination__size select {
+  background: var(--ep-bg-elevated);
+  color: var(--ep-fg);
+  border: 1px solid var(--ep-border);
+  border-radius: var(--ep-radius-sm);
+  padding: 3px 8px;
+  font-size: 13px;
+}
+.sessions-pagination .pagination-page-indicator {
+  font-weight: 500;
+  color: var(--ep-fg);
+  padding: 0 4px;
+}
+.sessions-pagination .pagination-btn {
+  padding: 4px 10px;
+  font-size: 13px;
+}

@@ -75,7 +75,8 @@ export default function FlowPage(): ReactElement {
   const location = useLocation();
   const { selectedSessionIds, setSelectedSessionIds } = useSessionScope();
   const sessionScopeKey = selectedSessionIds.join(',');
-  const memoizedSelectedSessionIds = selectedSessionIds;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const memoizedSelectedSessionIds = useMemo(() => selectedSessionIds, [sessionScopeKey]);
   const [scopedState, setScopedState] = useState<AppStateData | null>(null);
   const scopedTasks = scopedState?.tasks;
   const tasks = useMemo(() => scopedTasks || [], [scopedTasks]);

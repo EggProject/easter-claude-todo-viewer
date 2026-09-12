@@ -286,7 +286,7 @@ describe('app-context module', () => {
     });
     expect(mockFetch).toHaveBeenCalledWith(
       expect.stringContaining('/api/sessions/sess-2/switch'),
-      expect.any(Object),
+      expect.objectContaining({}),
     );
 
     // Failure path
@@ -769,7 +769,9 @@ describe('app-context module', () => {
       expect(callsAfterSwitched.some((url) => url.includes('/api/sessions'))).toBe(true);
       expect(callsAfterSwitched.some((url) => url.includes('/api/history'))).toBe(true);
       expect(callsAfterSwitched.some((url) => url.includes('/api/translations'))).toBe(false);
-      expect(callsAfterSwitched.some((url) => url.includes('/api/translation-catalog'))).toBe(false);
+      expect(callsAfterSwitched.some((url) => url.includes('/api/translation-catalog'))).toBe(
+        false,
+      );
 
       mockFetch.mockClear();
 
@@ -860,6 +862,256 @@ describe('app-context module', () => {
       vi.useRealTimers();
     }
   });
+
+  it('deduplicates concurrent switchSessionOptimistic calls while in-flight and logs debug message', async () => {
+    window.localStorage.setItem('debug-logs', '1');
+    const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    try {
+      let resolveSwitchFetch;
+      const switchPromise = new Promise((resolve) => {
+        resolveSwitchFetch = resolve;
+      });
+
+      mockFetch.mockImplementation(async (url) => {
+        const urlStr = String(url);
+        if (urlStr.includes('/switch')) {
+          await switchPromise;
+          return { ok: true, json: async () => ({ ok: true }) };
+        }
+        if (urlStr.includes('/api/sessions')) {
+          return { ok: true, json: async () => defaultSessions };
+        }
+        if (urlStr.includes('/api/state')) {
+          return { ok: true, json: async () => ({ tasks: [] }) };
+        }
+        return { ok: true, json: async () => ({}) };
+      });
+
+      let latestApp = null;
+      render(
+        React.createElement(
+          AppProvider,
+          null,
+          React.createElement(TestConsumer, { onApp: (app) => (latestApp = app) }),
+        ),
+      );
+
+      await waitFor(() => expect(latestApp.bootstrapStatus).toBe('ready'));
+
+      let p1, p2;
+      act(() => {
+        p1 = latestApp.switchSession('sess-2');
+        p2 = latestApp.switchSession('sess-2');
+      });
+
+      expect(consoleSpy).toHaveBeenCalledWith(
+        '[Session]',
+        'Starting switchSessionOptimistic for: sess-2',
+      );
+      expect(consoleSpy).toHaveBeenCalledWith(
+        '[Session]',
+        'Reusing in-flight switch for session: sess-2',
+      );
+
+      await act(async () => {
+        resolveSwitchFetch();
+        await Promise.all([p1, p2]);
+      });
+
+      const switchCalls = mockFetch.mock.calls.filter(([url]) =>
+        String(url).includes('/api/sessions/sess-2/switch'),
+      );
+      expect(switchCalls).toHaveLength(1);
+
+      expect(consoleSpy).toHaveBeenCalledWith(
+        '[Session]',
+        'Successfully switched to session: sess-2',
+      );
+    } finally {
+      window.localStorage.removeItem('debug-logs');
+      consoleSpy.mockRestore();
+    }
+  });
+
+  it('skips redundant refreshState when loadedSessionIdRef matches currentSessionId', async () => {
+    window.localStorage.setItem('debug-logs', '1');
+    const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    try {
+      let latestApp = null;
+      render(
+        React.createElement(
+          AppProvider,
+          null,
+          React.createElement(TestConsumer, { onApp: (app) => (latestApp = app) }),
+        ),
+      );
+
+      await waitFor(() => expect(latestApp.bootstrapStatus).toBe('ready'));
+
+      mockFetch.mockClear();
+
+      const es = EventSourceMock.instances[EventSourceMock.instances.length - 1];
+      vi.useFakeTimers();
+      try {
+        await act(async () => {
+          es.dispatchEvent(
+            Object.assign(new Event('state-invalidated'), {
+              data: JSON.stringify({ reason: 'session-switched' }),
+            }),
+          );
+          vi.advanceTimersByTime(150);
+        });
+
+        await act(async () => {});
+
+        const stateCalls = mockFetch.mock.calls.filter(([url]) =>
+          String(url).includes('/api/state'),
+        );
+        expect(stateCalls).toHaveLength(0);
+
+        expect(consoleSpy).toHaveBeenCalledWith(
+          '[AppState]',
+          'Skipping redundant refreshState() for session sess-1 (already in state)',
+        );
+      } finally {
+        vi.useRealTimers();
+      }
+    } finally {
+      window.localStorage.removeItem('debug-logs');
+      consoleSpy.mockRestore();
+    }
+  });
+
+  it('controls debug logging based on debug-logs flag and skips when disabled', async () => {
+    const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    window.localStorage.removeItem('debug-logs');
+    delete window.__DEBUG_ROUTER__;
+
+    let latestApp = null;
+    render(
+      React.createElement(
+        AppProvider,
+        null,
+        React.createElement(TestConsumer, { onApp: (app) => (latestApp = app) }),
+      ),
+    );
+
+    await waitFor(() => expect(latestApp.bootstrapStatus).toBe('ready'));
+
+    const sessionLogsBefore = consoleSpy.mock.calls.filter(([cat]) => cat === '[Session]');
+    expect(sessionLogsBefore).toHaveLength(0);
+
+    window.localStorage.setItem('debug-logs', '1');
+
+    await act(async () => {
+      await latestApp.switchSession('sess-2');
+    });
+
+    const sessionLogsAfter = consoleSpy.mock.calls.filter(([cat]) => cat === '[Session]');
+    expect(sessionLogsAfter.length).toBeGreaterThan(0);
+
+    window.localStorage.removeItem('debug-logs');
+    consoleSpy.mockRestore();
+  });
+
+  it('skips refetches on state-invalidated, app-state-changed, and sessions-changed when session switch was just performed', async () => {
+    window.localStorage.setItem('debug-logs', '1');
+    const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    try {
+      let latestApp = null;
+      render(
+        React.createElement(
+          AppProvider,
+          null,
+          React.createElement(TestConsumer, { onApp: (app) => (latestApp = app) }),
+        ),
+      );
+
+      await waitFor(() => expect(latestApp.bootstrapStatus).toBe('ready'));
+
+      await act(async () => {
+        await latestApp.switchSession('sess-2');
+      });
+
+      const es = EventSourceMock.instances[EventSourceMock.instances.length - 1];
+      vi.useFakeTimers();
+      try {
+        mockFetch.mockClear();
+
+        await act(async () => {
+          es.dispatchEvent(
+            Object.assign(new Event('state-invalidated'), {
+              data: JSON.stringify({ reason: 'session-switched' }),
+            }),
+          );
+          vi.advanceTimersByTime(150);
+        });
+
+        expect(consoleSpy).toHaveBeenCalledWith(
+          '[SSE]',
+          'Skipping state-invalidated refetches because session switch was just performed',
+        );
+
+        await act(async () => {
+          es.dispatchEvent(new Event('app-state-changed'));
+          es.dispatchEvent(new Event('app-state-changed'));
+          vi.advanceTimersByTime(150);
+        });
+
+        expect(consoleSpy).toHaveBeenCalledWith(
+          '[SSE]',
+          'Skipping app-state-changed refetch because session switch was just performed',
+        );
+
+        await act(async () => {
+          es.dispatchEvent(new Event('sessions-changed'));
+          es.dispatchEvent(new Event('sessions-changed'));
+          vi.advanceTimersByTime(150);
+        });
+
+        expect(consoleSpy).toHaveBeenCalledWith(
+          '[SSE]',
+          'Skipping sessions-changed refetch because session switch was just performed',
+        );
+
+        vi.advanceTimersByTime(2000);
+
+        await act(async () => {
+          es.dispatchEvent(new Event('app-state-changed'));
+          vi.advanceTimersByTime(150);
+        });
+
+        await act(async () => {
+          es.dispatchEvent(new Event('sessions-changed'));
+          vi.advanceTimersByTime(150);
+        });
+
+        mockFetch.mockImplementation(async (url) => {
+          if (String(url).includes('/api/sessions')) {
+            throw new Error('Sessions snapshot error');
+          }
+          return { ok: true, json: async () => ({}) };
+        });
+
+        await act(async () => {
+          es.dispatchEvent(new Event('app-state-changed'));
+          vi.advanceTimersByTime(150);
+        });
+
+        await act(async () => {
+          es.dispatchEvent(new Event('sessions-changed'));
+          vi.advanceTimersByTime(150);
+        });
+      } finally {
+        vi.useRealTimers();
+      }
+    } finally {
+      window.localStorage.removeItem('debug-logs');
+      consoleSpy.mockRestore();
+    }
+  });
 });
-
-

@@ -87,6 +87,7 @@ export function NotificationSidebar(): ReactElement | null {
   }, [app]);
 
   const events = useMemo(() => {
+    if (!app.sidebar) return [];
     const needle = historyQuery.trim().toLowerCase();
     const result = (app.history || []).filter((event) => {
       if (historySessionFilter !== 'all' && event.sessionId !== historySessionFilter) return false;
@@ -101,7 +102,14 @@ export function NotificationSidebar(): ReactElement | null {
         (historySort === 'oldest' ? 1 : -1),
     );
     return result;
-  }, [app.history, historyQuery, historySessionFilter, historyTypeFilter, historySort]);
+  }, [
+    app.sidebar,
+    app.history,
+    historyQuery,
+    historySessionFilter,
+    historyTypeFilter,
+    historySort,
+  ]);
 
   if (!app.sidebar) return null;
   const watched = app.watchedSessions || [];

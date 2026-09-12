@@ -4,8 +4,10 @@ import {
   ColumnDef,
   flexRender,
   getCoreRowModel,
+  getPaginationRowModel,
   getSortedRowModel,
   OnChangeFn,
+  PaginationState,
   SortingState,
   useReactTable,
 } from '@tanstack/react-table';
@@ -28,6 +30,10 @@ export default function SessionsPage(): ReactElement {
     const next = typeof updater === 'function' ? updater(sorting) : updater;
     setFilter('sort', serializeSorting(next));
   };
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: 50,
+  });
   const [switching, setSwitching] = useState<string | null>(null);
   const switchingRef = useRef<string | null>(null);
 
@@ -64,10 +70,12 @@ export default function SessionsPage(): ReactElement {
   const table = useReactTable({
     data,
     columns,
-    state: { sorting },
+    state: { sorting, pagination },
     onSortingChange: setSorting,
+    onPaginationChange: setPagination,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
   });
 
   return (
@@ -131,6 +139,52 @@ export default function SessionsPage(): ReactElement {
             ))}
           </tbody>
         </table>
+      </div>
+      <div className="sessions-pagination">
+        <div className="sessions-pagination__left">
+          <span className="pagination-range">
+            Showing {data.length === 0 ? 0 : pagination.pageIndex * pagination.pageSize + 1} to{' '}
+            {Math.min((pagination.pageIndex + 1) * pagination.pageSize, data.length)} of{' '}
+            {data.length} sessions
+          </span>
+        </div>
+        <div className="sessions-pagination__controls">
+          <label className="sessions-pagination__size">
+            <span>Rows:</span>
+            <select
+              aria-label="Select page size"
+              value={table.getState().pagination.pageSize}
+              onChange={(e) => table.setPageSize(Number(e.target.value))}
+            >
+              {[25, 50, 100, 200].map((size) => (
+                <option key={size} value={size}>
+                  {size}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button
+            type="button"
+            className="btn btn--secondary btn--sm pagination-btn"
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}
+            aria-label="Previous page"
+          >
+            Previous
+          </button>
+          <span className="pagination-page-indicator" aria-live="polite">
+            Page {table.getState().pagination.pageIndex + 1} of {Math.max(1, table.getPageCount())}
+          </span>
+          <button
+            type="button"
+            className="btn btn--secondary btn--sm pagination-btn"
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+            aria-label="Next page"
+          >
+            Next
+          </button>
+        </div>
       </div>
     </div>
   );

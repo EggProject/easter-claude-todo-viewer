@@ -1,5 +1,5 @@
 import React, { ReactElement, ReactNode, useState, useEffect } from 'react';
-import { NavLink, Link, useLocation } from 'react-router';
+import { NavLink, Link, useLocation, Outlet } from 'react-router';
 import { useOptionalApp } from '../app-context.js';
 import { Session, SessionsState } from '../types.js';
 import { NotificationSidebar, RequiredModal } from './overlays.js';
@@ -284,7 +284,7 @@ export function Shell({ children }: { children?: ReactNode }): ReactElement {
             </button>
           </div>
         </header>
-        <section className="app-content">{children}</section>
+        <section className="app-content">{children ?? <Outlet />}</section>
       </main>
       <NotificationSidebar />
       <RequiredModal />
