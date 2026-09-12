@@ -1,26 +1,44 @@
-import React, { ReactElement, useCallback, useMemo, useRef, useState } from 'react';
+import React, { ReactElement, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Layers } from 'lucide-react';
 import {
+  Column,
   ColumnDef,
+  ColumnFiltersState,
+  ColumnSizingState,
+  FilterFn,
   flexRender,
   getCoreRowModel,
+  getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   OnChangeFn,
   PaginationState,
+  Row,
   SortingState,
   useReactTable,
+  VisibilityState,
 } from '@tanstack/react-table';
 import { useApp } from '../app-context.js';
 import { parseSorting, serializeSorting, usePersistentPageFilters } from '../filter-state.js';
 import { AppContextValue, Session } from '../types.js';
 
-interface ColumnMetaWithGrow {
+interface ColumnMetaProps {
   grow?: boolean;
+  fixed?: boolean;
 }
 
-function isGrowMeta(meta: unknown): meta is ColumnMetaWithGrow {
-  return typeof meta === 'object' && meta !== null && 'grow' in meta;
+function isGrowMeta(meta: unknown): boolean {
+  if (typeof meta === 'object' && meta !== null && 'grow' in meta) {
+    return meta.grow === true;
+  }
+  return false;
+}
+
+function isFixedColumn(meta: unknown): boolean {
+  if (typeof meta === 'object' && meta !== null && 'fixed' in meta) {
+    return meta.fixed === true;
+  }
+  return false;
 }
 
 function SortIcon({ direction }: { direction: false | 'asc' | 'desc' | null }): ReactElement {
@@ -119,16 +137,147 @@ function PageIcon({ direction }: { direction: 'prev' | 'next' }): ReactElement {
   );
 }
 
+function ColumnsIcon(): ReactElement {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <rect x="2" y="2.5" width="12" height="11" rx="1.5" />
+      <path d="M6.5 2.5v11M10 2.5v11" />
+    </svg>
+  );
+}
+
+function FilterIcon(): ReactElement {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M2 3.5h12l-4.5 5.5v3.5l-3 1.5V9L2 3.5Z" />
+    </svg>
+  );
+}
+
+function FilterResetIcon(): ReactElement {
+  return (
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M2 3.2h8.5" />
+      <path d="M2 8h5" />
+      <path d="M2 12.8h3" />
+      <path d="M10.5 9.5 14.5 13.5M14.5 9.5 10.5 13.5" />
+    </svg>
+  );
+}
+
+function GripIcon(): ReactElement {
+  return (
+    <svg
+      className="data-table-grip"
+      width="10"
+      height="14"
+      viewBox="0 0 10 14"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <circle cx="3" cy="3" r="1.1" />
+      <circle cx="7" cy="3" r="1.1" />
+      <circle cx="3" cy="7" r="1.1" />
+      <circle cx="7" cy="7" r="1.1" />
+      <circle cx="3" cy="11" r="1.1" />
+      <circle cx="7" cy="11" r="1.1" />
+    </svg>
+  );
+}
+
+function FilterResetButton({ onClick }: { onClick: () => void }): ReactElement {
+  return (
+    <button
+      type="button"
+      className="data-table-tool-button data-table-tool-button--icon data-table-filter-reset"
+      onClick={onClick}
+      title="Clear all filters"
+      aria-label="Clear all filters"
+    >
+      <FilterResetIcon />
+    </button>
+  );
+}
+
+function ColumnFilterInput({ column }: { column: Column<Session> }): ReactElement {
+  const filterValue = column.getFilterValue();
+  const stringValue = typeof filterValue === 'string' ? filterValue : '';
+
+  if (column.id === 'language') {
+    return (
+      <div className="data-table-filter-cell">
+        <select
+          className="select select--sm"
+          value={stringValue}
+          aria-label="Filter language"
+          onChange={(e) => column.setFilterValue(e.target.value || undefined)}
+        >
+          <option value="">All</option>
+          <option value="en">EN</option>
+          <option value="hu">HU</option>
+        </select>
+      </div>
+    );
+  }
+
+  if (['label', 'id', 'cwd', 'gitBranch'].includes(column.id)) {
+    return (
+      <div className="data-table-filter-cell">
+        <input
+          type="text"
+          className="input input--sm"
+          value={stringValue}
+          onChange={(e) => column.setFilterValue(e.target.value || undefined)}
+          placeholder={`Filter ${column.id}...`}
+          aria-label={`Filter ${column.id}`}
+        />
+      </div>
+    );
+  }
+
+  return <div className="data-table-filter-cell" />;
+}
+
 function cellClass(id: string): string {
   switch (id) {
     case 'watched': {
-      return 'sessions-watch-cell data-table__cell--checkbox';
+      return 'sessions-watch-cell data-table__cell--center';
     }
     case 'current': {
       return 'sessions-current-cell data-table__cell--center';
     }
     case 'action': {
-      return 'sessions-action-cell';
+      return 'sessions-action-cell data-table__cell--center';
     }
     case 'id': {
       return 'data-table__cell--mono';
@@ -146,13 +295,136 @@ function cellClass(id: string): string {
   }
 }
 
+function loadStoredPageSize(fallback: number): number {
+  try {
+    const raw = localStorage.getItem('sessions-pagination-page-size');
+    if (!raw) return fallback;
+    const parsed = Number(raw);
+    if ([10, 25, 50, 100, 200].includes(parsed)) {
+      return parsed;
+    }
+  } catch {
+    // ignore
+  }
+  return fallback;
+}
+
+function loadStoredBoolean(key: string, fallback: boolean): boolean {
+  try {
+    const val = localStorage.getItem(key);
+    if (val === 'true') return true;
+    if (val === 'false') return false;
+  } catch {
+    // ignore
+  }
+  return fallback;
+}
+
+function loadStoredVisibility(): VisibilityState {
+  try {
+    const raw = localStorage.getItem('sessions-column-visibility');
+    if (!raw) return {};
+    const parsed: unknown = JSON.parse(raw);
+    if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
+      const result: VisibilityState = {};
+      for (const [k, v] of Object.entries(parsed)) {
+        if (typeof v === 'boolean') {
+          result[k] = v;
+        }
+      }
+      return result;
+    }
+  } catch {
+    // ignore
+  }
+  return {};
+}
+
+function loadStoredOrder(): string[] {
+  try {
+    const raw = localStorage.getItem('sessions-column-order');
+    if (!raw) return [];
+    const parsed: unknown = JSON.parse(raw);
+    if (Array.isArray(parsed)) {
+      return parsed.filter((item): item is string => typeof item === 'string');
+    }
+  } catch {
+    // ignore
+  }
+  return [];
+}
+
+function loadStoredSizing(): ColumnSizingState {
+  try {
+    const raw = localStorage.getItem('sessions-column-sizing');
+    if (!raw) return {};
+    const parsed: unknown = JSON.parse(raw);
+    if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
+      const result: ColumnSizingState = {};
+      for (const [k, v] of Object.entries(parsed)) {
+        if (typeof v === 'number') {
+          result[k] = v;
+        }
+      }
+      return result;
+    }
+  } catch {
+    // ignore
+  }
+  return {};
+}
+
+interface StoredColumnFilter {
+  id: string;
+  value: unknown;
+}
+
+function isStoredColumnFilter(item: unknown): item is StoredColumnFilter {
+  return (
+    typeof item === 'object' &&
+    item !== null &&
+    'id' in item &&
+    typeof item.id === 'string' &&
+    'value' in item
+  );
+}
+
+function loadStoredFilters(): ColumnFiltersState {
+  try {
+    const raw = localStorage.getItem('sessions-column-filters');
+    if (!raw) return [];
+    const parsed: unknown = JSON.parse(raw);
+    if (Array.isArray(parsed)) {
+      const items: readonly unknown[] = parsed;
+      const result: ColumnFiltersState = [];
+      for (const item of items) {
+        if (isStoredColumnFilter(item)) {
+          result.push({ id: item.id, value: item.value });
+        }
+      }
+      return result;
+    }
+  } catch {
+    // ignore
+  }
+  return [];
+}
+
+const sessionGlobalFilterFn: FilterFn<Session> = (row, _columnId, filterValue: unknown) => {
+  if (typeof filterValue !== 'string' || !filterValue.trim()) return true;
+  const needle = filterValue.trim().toLowerCase();
+  const session = row.original;
+  return `${session.label || ''} ${session.id} ${session.cwd || ''} ${session.gitBranch || ''} ${session.summary || ''} ${session.firstPrompt || ''}`
+    .toLowerCase()
+    .includes(needle);
+};
+
 export default function SessionsPage(): ReactElement {
   const app = useApp();
   const [filters, setFilter] = usePersistentPageFilters('sessions', {
     q: '',
     sort: 'lastActivity:desc',
   });
-  const query = filters['q'] || '';
   const sorting = useMemo(
     () => parseSorting(filters['sort'], [{ id: 'lastActivity', desc: true }]),
     [filters],
@@ -161,22 +433,196 @@ export default function SessionsPage(): ReactElement {
     const next = typeof updater === 'function' ? updater(sorting) : updater;
     setFilter('sort', serializeSorting(next));
   };
-  const [pagination, setPagination] = useState<PaginationState>({
+
+  const [pagination, setPagination] = useState<PaginationState>(() => ({
     pageIndex: 0,
-    pageSize: 50,
+    pageSize: loadStoredPageSize(50),
+  }));
+
+  const [globalFilter, setGlobalFilter] = useState<string>(() => {
+    return localStorage.getItem('sessions-global-filter') || filters['q'] || '';
   });
+
+  const [showFilters, setShowFilters] = useState<boolean>(() =>
+    loadStoredBoolean('sessions-show-filters', false),
+  );
+
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(loadStoredVisibility);
+  const [columnOrder, setColumnOrder] = useState<string[]>(loadStoredOrder);
+  const [columnSizing, setColumnSizing] = useState<ColumnSizingState>(loadStoredSizing);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(loadStoredFilters);
+
+  const [columnMenuOpen, setColumnMenuOpen] = useState(false);
+  const columnMenuRef = useRef<HTMLDivElement>(null);
+
+  const [draggingColumnId, setDraggingColumnId] = useState<string | null>(null);
+  const [dragOverColumnId, setDragOverColumnId] = useState<string | null>(null);
+
   const [switching, setSwitching] = useState<string | null>(null);
   const switchingRef = useRef<string | null>(null);
 
-  const data = useMemo(() => {
-    const needle = query.trim().toLowerCase();
-    return (app.sessionsState.sessions || []).filter((session) => {
-      if (!needle) return true;
-      return `${session.label || ''} ${session.id} ${session.cwd || ''} ${session.gitBranch || ''} ${session.summary || ''} ${session.firstPrompt || ''}`
-        .toLowerCase()
-        .includes(needle);
+  useEffect(() => {
+    if (!columnMenuOpen) return;
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        columnMenuRef.current &&
+        event.target instanceof Node &&
+        !columnMenuRef.current.contains(event.target)
+      ) {
+        setColumnMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [columnMenuOpen]);
+
+  const handleGlobalFilterChange = useCallback(
+    (value: string) => {
+      setGlobalFilter(value);
+      setFilter('q', value);
+      try {
+        localStorage.setItem('sessions-global-filter', value);
+      } catch {
+        // ignore
+      }
+    },
+    [setFilter],
+  );
+
+  const handleColumnVisibilityChange: OnChangeFn<VisibilityState> = useCallback((updater) => {
+    setColumnVisibility((prev) => {
+      const next = typeof updater === 'function' ? updater(prev) : updater;
+      try {
+        localStorage.setItem('sessions-column-visibility', JSON.stringify(next));
+      } catch {
+        // ignore
+      }
+      return next;
     });
-  }, [app.sessionsState.sessions, query]);
+  }, []);
+
+  const handleColumnOrderChange: OnChangeFn<string[]> = useCallback((updater) => {
+    setColumnOrder((prev) => {
+      const next = typeof updater === 'function' ? updater(prev) : updater;
+      try {
+        localStorage.setItem('sessions-column-order', JSON.stringify(next));
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  }, []);
+
+  const handleColumnSizingChange: OnChangeFn<ColumnSizingState> = useCallback((updater) => {
+    setColumnSizing((prev) => {
+      const next = typeof updater === 'function' ? updater(prev) : updater;
+      try {
+        localStorage.setItem('sessions-column-sizing', JSON.stringify(next));
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  }, []);
+
+  const handleColumnFiltersChange: OnChangeFn<ColumnFiltersState> = useCallback((updater) => {
+    setColumnFilters((prev) => {
+      const next = typeof updater === 'function' ? updater(prev) : updater;
+      try {
+        localStorage.setItem('sessions-column-filters', JSON.stringify(next));
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  }, []);
+
+  const toggleShowFilters = useCallback(() => {
+    setShowFilters((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('sessions-show-filters', String(next));
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  }, []);
+
+  const handlePageSizeChange = useCallback((newSize: number) => {
+    setPagination((prev) => ({ ...prev, pageSize: newSize, pageIndex: 0 }));
+    try {
+      localStorage.setItem('sessions-pagination-page-size', String(newSize));
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const resetColumns = useCallback(() => {
+    setColumnVisibility({});
+    setColumnOrder([]);
+    setColumnSizing({});
+    try {
+      localStorage.removeItem('sessions-column-visibility');
+      localStorage.removeItem('sessions-column-order');
+      localStorage.removeItem('sessions-column-sizing');
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const resetAllFilters = useCallback(() => {
+    setColumnFilters([]);
+    handleGlobalFilterChange('');
+    try {
+      localStorage.removeItem('sessions-column-filters');
+      localStorage.removeItem('sessions-global-filter');
+    } catch {
+      // ignore
+    }
+  }, [handleGlobalFilterChange]);
+
+  const reorder = useCallback((fromId: string, toId: string) => {
+    setColumnOrder((prev) => {
+      const currentOrder =
+        prev.length > 0
+          ? [...prev]
+          : [
+              'watched',
+              'current',
+              'action',
+              'language',
+              'label',
+              'id',
+              'cwd',
+              'gitBranch',
+              'createdAt',
+              'lastActivity',
+              'messageCount',
+              'fileSize',
+              'taskCount',
+              'deletedTaskCount',
+              'translationCount',
+            ];
+      const fromIndex = currentOrder.indexOf(fromId);
+      const toIndex = currentOrder.indexOf(toId);
+      if (fromIndex !== -1 && toIndex !== -1 && fromIndex !== toIndex) {
+        const [moved] = currentOrder.splice(fromIndex, 1);
+        if (moved) {
+          currentOrder.splice(toIndex, 0, moved);
+          try {
+            localStorage.setItem('sessions-column-order', JSON.stringify(currentOrder));
+          } catch {
+            // ignore
+          }
+          return currentOrder;
+        }
+      }
+      return prev;
+    });
+  }, []);
 
   const switchCurrent = useCallback(
     async (sessionId: string) => {
@@ -198,14 +644,53 @@ export default function SessionsPage(): ReactElement {
     [app, switchCurrent, switching],
   );
 
+  const pinnedTopRowIds = useMemo(() => {
+    const ids: string[] = [];
+    const current = (app.sessionsState.sessions || []).find((s) => s.current);
+    if (current) {
+      ids.push(current.id);
+    }
+    for (const session of app.sessionsState.sessions || []) {
+      if (session.watched && !ids.includes(session.id)) {
+        ids.push(session.id);
+      }
+    }
+    return ids;
+  }, [app.sessionsState.sessions]);
+
+  const data = useMemo(() => {
+    return app.sessionsState.sessions || [];
+  }, [app.sessionsState.sessions]);
+
   const table = useReactTable({
     data,
     columns,
-    state: { sorting, pagination },
+    getRowId: (row) => row.id,
+    enableRowPinning: true,
+    keepPinnedRows: true,
+    enableColumnResizing: true,
+    columnResizeMode: 'onChange',
+    globalFilterFn: sessionGlobalFilterFn,
+    state: {
+      sorting,
+      pagination,
+      columnVisibility,
+      columnOrder,
+      columnSizing,
+      columnFilters,
+      globalFilter,
+      rowPinning: { top: pinnedTopRowIds },
+    },
     onSortingChange: setSorting,
     onPaginationChange: setPagination,
+    onColumnVisibilityChange: handleColumnVisibilityChange,
+    onColumnOrderChange: handleColumnOrderChange,
+    onColumnSizingChange: handleColumnSizingChange,
+    onColumnFiltersChange: handleColumnFiltersChange,
+    onGlobalFilterChange: handleGlobalFilterChange,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
   });
 
@@ -214,8 +699,69 @@ export default function SessionsPage(): ReactElement {
     [app.sessionsState.sessions],
   );
 
-  const pageStart = data.length === 0 ? 0 : pagination.pageIndex * pagination.pageSize + 1;
-  const pageEnd = Math.min((pagination.pageIndex + 1) * pagination.pageSize, data.length);
+  const topRows = table.getTopRows();
+  const centerRows = table.getCenterRows();
+
+  const filteredCount = table.getPrePaginationRowModel().rows.length;
+  const pageStart = filteredCount === 0 ? 0 : pagination.pageIndex * pagination.pageSize + 1;
+  const pageEnd = Math.min((pagination.pageIndex + 1) * pagination.pageSize, filteredCount);
+
+  const activeFiltersCount = columnFilters.length + (globalFilter ? 1 : 0);
+  const columnsChanged =
+    Object.values(columnVisibility).includes(false) ||
+    columnOrder.length > 0 ||
+    Object.keys(columnSizing).length > 0;
+
+  const renderRow = (row: Row<Session>, isPinned: boolean): ReactElement => {
+    const isCurrent = Boolean(row.original.current);
+    return (
+      <div
+        key={row.id}
+        role="row"
+        tabIndex={0}
+        className={`data-table__row ${isCurrent ? 'is-active current-session-row' : ''}${isPinned ? ' data-table__row--pinned' : ''}`}
+        onClick={(event) => {
+          if (
+            event.target instanceof HTMLElement &&
+            event.target.closest('button, a, input, select, .switch')
+          ) {
+            return;
+          }
+          if (!isCurrent) void switchCurrent(row.original.id);
+        }}
+        onKeyDown={(event) => {
+          if (
+            event.target instanceof HTMLElement &&
+            event.target.closest('button, a, input, select, .switch')
+          ) {
+            return;
+          }
+          if ((event.key === 'Enter' || event.key === ' ') && !isCurrent) {
+            event.preventDefault();
+            void switchCurrent(row.original.id);
+          }
+        }}
+      >
+        {row.getVisibleCells().map((cell) => {
+          const isGrow = isGrowMeta(cell.column.columnDef.meta);
+          return (
+            <div
+              key={cell.id}
+              role="cell"
+              className={`data-table__cell ${cellClass(cell.column.id)}`}
+              style={{
+                width: cell.column.getSize(),
+                minWidth: cell.column.getSize(),
+                flex: isGrow ? '1 1 auto' : '0 0 auto',
+              }}
+            >
+              {flexRender(cell.column.columnDef.cell, cell.getContext())}
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
 
   return (
     <div className="page sessions-page">
@@ -236,7 +782,7 @@ export default function SessionsPage(): ReactElement {
           <div className="data-table-toolbar__title">
             <h2>Workspaces</h2>
             <span className="data-table-toolbar__count">
-              {data.length} of {app.sessionsState.sessions?.length || 0}
+              {filteredCount} of {app.sessionsState.sessions?.length || 0}
             </span>
             <span className="data-table-toolbar__engine">TanStack Table</span>
           </div>
@@ -244,25 +790,88 @@ export default function SessionsPage(): ReactElement {
             <div className="input-with-icon data-table-toolbar__search">
               <SearchIcon />
               <input
-                className={`input input--sm ${query ? 'is-filled' : ''}`}
+                className={`input input--sm ${globalFilter ? 'is-filled' : ''}`}
                 id="sessions-search-input"
                 name="sessionsSearch"
                 aria-label="Search sessions"
-                value={query}
-                onChange={(e) => setFilter('q', e.target.value)}
+                value={globalFilter}
+                onChange={(e) => handleGlobalFilterChange(e.target.value)}
                 placeholder="Search name, session id, project, branch, first prompt..."
               />
-              {query ? (
+              {globalFilter ? (
                 <button
                   type="button"
                   className="data-table-search-clear"
                   aria-label="Clear search"
-                  onClick={() => setFilter('q', '')}
+                  onClick={() => handleGlobalFilterChange('')}
                 >
                   <ClearIcon />
                 </button>
               ) : null}
             </div>
+
+            <div className="data-table-column-menu" ref={columnMenuRef}>
+              <button
+                type="button"
+                className={`data-table-tool-button ${columnMenuOpen ? 'is-on' : ''} ${columnsChanged ? 'is-changed' : ''}`}
+                onClick={() => setColumnMenuOpen((prev) => !prev)}
+                aria-label="Toggle columns menu"
+              >
+                <ColumnsIcon /> Columns
+              </button>
+              {columnMenuOpen ? (
+                <div className="data-table-column-menu__popover">
+                  <div className="data-table-column-menu__header">
+                    <span className="data-table-column-menu__title">Columns</span>
+                    {columnsChanged ? (
+                      <button
+                        type="button"
+                        className="data-table-column-menu__reset"
+                        onClick={resetColumns}
+                      >
+                        Reset
+                      </button>
+                    ) : null}
+                  </div>
+                  {table
+                    .getAllLeafColumns()
+                    .filter((col) => col.id !== 'action')
+                    .map((col) => {
+                      const isVisible = col.getIsVisible();
+                      const colHeader =
+                        typeof col.columnDef.header === 'string' ? col.columnDef.header : col.id;
+                      return (
+                        <div key={col.id} className="data-table-column-menu__row">
+                          <label className="data-table-column-menu__visibility">
+                            <input
+                              type="checkbox"
+                              checked={isVisible}
+                              disabled={!col.getCanHide()}
+                              onChange={col.getToggleVisibilityHandler()}
+                              aria-label={`Toggle column ${colHeader}`}
+                            />
+                            <span>{colHeader}</span>
+                          </label>
+                        </div>
+                      );
+                    })}
+                </div>
+              ) : null}
+            </div>
+
+            <button
+              type="button"
+              className={`data-table-tool-button ${showFilters ? 'is-on' : ''} ${activeFiltersCount > 0 ? 'is-changed' : ''}`}
+              onClick={toggleShowFilters}
+              aria-label="Toggle filters"
+            >
+              <FilterIcon /> Filters
+              {activeFiltersCount > 0 ? (
+                <span className="data-table-tool-button__badge">{activeFiltersCount}</span>
+              ) : null}
+            </button>
+            {activeFiltersCount > 0 ? <FilterResetButton onClick={resetAllFilters} /> : null}
+
             <button
               type="button"
               className="btn btn--secondary btn--sm"
@@ -287,6 +896,8 @@ export default function SessionsPage(): ReactElement {
                     const sorted = column.getIsSorted();
                     const canSort = column.getCanSort();
                     const toggleSorting = column.getToggleSortingHandler();
+                    const isFixed = isFixedColumn(column.columnDef.meta);
+                    const isGrow = isGrowMeta(column.columnDef.meta);
                     const handleSortKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
                       if (event.key === 'Enter' || event.key === ' ') {
                         event.preventDefault();
@@ -308,23 +919,54 @@ export default function SessionsPage(): ReactElement {
                         }
                         tabIndex={canSort ? 0 : undefined}
                         onKeyDown={canSort ? handleSortKeyDown : undefined}
-                        onClick={canSort ? toggleSorting : undefined}
+                        onClick={
+                          canSort
+                            ? (event) => {
+                                if (
+                                  event.target instanceof HTMLElement &&
+                                  event.target.closest('.data-table__resizer')
+                                ) {
+                                  return;
+                                }
+                                toggleSorting?.(event);
+                              }
+                            : undefined
+                        }
+                        draggable={!isFixed}
+                        onDragStart={() => !isFixed && setDraggingColumnId(column.id)}
+                        onDragEnter={() => !isFixed && setDragOverColumnId(column.id)}
+                        onDragOver={(event) => event.preventDefault()}
+                        onDrop={() => {
+                          if (draggingColumnId && draggingColumnId !== column.id) {
+                            reorder(draggingColumnId, column.id);
+                          }
+                          setDraggingColumnId(null);
+                          setDragOverColumnId(null);
+                        }}
+                        onDragEnd={() => {
+                          setDraggingColumnId(null);
+                          setDragOverColumnId(null);
+                        }}
                         className={[
                           'data-table__cell',
                           'data-table__cell--header',
                           cellClass(column.id),
                           canSort ? 'is-sortable' : '',
                           sorted ? 'is-sorted' : '',
+                          !isFixed ? 'is-draggable' : '',
+                          dragOverColumnId === column.id &&
+                          draggingColumnId &&
+                          draggingColumnId !== column.id
+                            ? 'is-dragover'
+                            : '',
+                          draggingColumnId === column.id ? 'is-dragging' : '',
                         ]
                           .filter(Boolean)
                           .join(' ')}
                         style={{
                           width: column.getSize(),
                           minWidth: column.getSize(),
-                          flex:
-                            isGrowMeta(column.columnDef.meta) && column.columnDef.meta.grow
-                              ? '1 1 auto'
-                              : '0 0 auto',
+                          flex: isGrow ? '1 1 auto' : '0 0 auto',
                         }}
                       >
                         <span className="data-table__label">
@@ -332,65 +974,66 @@ export default function SessionsPage(): ReactElement {
                             ? null
                             : flexRender(column.columnDef.header, header.getContext())}
                         </span>
-                        {canSort && <SortIcon direction={sorted || null} />}
+                        {canSort ? <SortIcon direction={sorted || null} /> : null}
+                        {!isFixed ? <GripIcon /> : null}
+                        {column.getCanResize() ? (
+                          // eslint-disable-next-line jsx-a11y/no-static-element-interactions
+                          <span
+                            className={`data-table__resizer ${column.getIsResizing() ? 'is-resizing' : ''}`}
+                            onMouseDown={header.getResizeHandler()}
+                            onTouchStart={header.getResizeHandler()}
+                          />
+                        ) : null}
                       </div>
                     );
                   })}
                 </div>
               ))}
             </div>
-            <div className="data-table__body" role="rowgroup">
-              {table.getRowModel().rows.length === 0 ? (
-                <div className="data-table__empty">No sessions match your search.</div>
-              ) : (
-                table.getRowModel().rows.map((row) => (
+
+            {showFilters
+              ? table.getHeaderGroups().map((headerGroup) => (
                   <div
-                    key={row.id}
+                    className="data-table__filter-row"
                     role="row"
-                    tabIndex={0}
-                    className={`data-table__row ${row.original.current ? 'is-active current-session-row' : ''}`}
-                    onClick={(event) => {
-                      if (
-                        event.target instanceof HTMLElement &&
-                        event.target.closest('button, a, input, select, .switch')
-                      ) {
-                        return;
-                      }
-                      if (!row.original.current) void switchCurrent(row.original.id);
-                    }}
-                    onKeyDown={(event) => {
-                      if (
-                        event.target instanceof HTMLElement &&
-                        event.target.closest('button, a, input, select, .switch')
-                      ) {
-                        return;
-                      }
-                      if ((event.key === 'Enter' || event.key === ' ') && !row.original.current) {
-                        event.preventDefault();
-                        void switchCurrent(row.original.id);
-                      }
-                    }}
+                    key={`filter-row-${headerGroup.id}`}
                   >
-                    {row.getVisibleCells().map((cell) => (
-                      <div
-                        key={cell.id}
-                        role="cell"
-                        className={`data-table__cell ${cellClass(cell.column.id)}`}
-                        style={{
-                          width: cell.column.getSize(),
-                          minWidth: cell.column.getSize(),
-                          flex:
-                            isGrowMeta(cell.column.columnDef.meta) &&
-                            cell.column.columnDef.meta.grow
-                              ? '1 1 auto'
-                              : '0 0 auto',
-                        }}
-                      >
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </div>
-                    ))}
+                    {headerGroup.headers.map((header) => {
+                      const column = header.column;
+                      const isGrow = isGrowMeta(column.columnDef.meta);
+                      return (
+                        <div
+                          key={`filter-cell-${header.id}`}
+                          className="data-table__cell data-table__cell--filter"
+                          style={{
+                            width: column.getSize(),
+                            minWidth: column.getSize(),
+                            flex: isGrow ? '1 1 auto' : '0 0 auto',
+                          }}
+                        >
+                          <ColumnFilterInput column={column} />
+                        </div>
+                      );
+                    })}
                   </div>
                 ))
+              : null}
+
+            {topRows.length > 0 ? (
+              <div
+                className="data-table__body data-table__body--pinned"
+                role="rowgroup"
+                style={{ top: showFilters ? 82 : 40 }}
+              >
+                {topRows.map((row) => renderRow(row, true))}
+              </div>
+            ) : null}
+
+            <div className="data-table__body" role="rowgroup">
+              {centerRows.length === 0 && topRows.length === 0 ? (
+                <div className="data-table__empty">No sessions match your search.</div>
+              ) : (
+                centerRows.map((row) => renderRow(row, false))
               )}
             </div>
           </div>
@@ -413,9 +1056,9 @@ export default function SessionsPage(): ReactElement {
                 <select
                   aria-label="Select page size"
                   value={pagination.pageSize}
-                  onChange={(e) => table.setPageSize(Number(e.target.value))}
+                  onChange={(e) => handlePageSizeChange(Number(e.target.value))}
                 >
-                  {[25, 50, 100, 200].map((size) => (
+                  {[10, 25, 50, 100, 200].map((size) => (
                     <option key={size} value={size}>
                       {size}
                     </option>
@@ -425,7 +1068,7 @@ export default function SessionsPage(): ReactElement {
               </div>
             </div>
             <span className="data-table-pager__range">
-              {pageStart} to {pageEnd} of {data.length}
+              {pageStart} to {pageEnd} of {filteredCount}
             </span>
             <div className="data-table-pager__navigation">
               <button
@@ -508,27 +1151,36 @@ function buildSessionColumns(
       id: 'watched',
       header: 'Watch',
       size: 60,
+      minSize: 50,
+      meta: { fixed: true } satisfies ColumnMetaProps,
       accessorFn: (row) => (row.watched ? 1 : 0),
       cell: ({ row }) => (
-        <input
-          type="checkbox"
-          id={`session-watch-${row.original.id}`}
-          name={`session-watch-${row.original.id}`}
-          aria-label={`Watch session ${row.original.label || row.original.id}`}
-          checked={Boolean(row.original.watched)}
+        <button
+          type="button"
+          className={`btn btn--ghost btn--sm btn--icon watch-btn ${row.original.watched ? 'is-watched' : ''}`}
+          title={
+            row.original.current
+              ? 'Current session is always watched'
+              : row.original.watched
+                ? 'Watched (pinned to top)'
+                : 'Watch session (pin to top)'
+          }
           disabled={Boolean(row.original.current)}
-          title={row.original.current ? 'Current session is always watched' : 'Watch session'}
-          onClick={(event) => event.stopPropagation()}
-          onChange={(event) => {
-            void app.setSessionWatched(row.original.id, event.target.checked);
+          onClick={(e) => {
+            e.stopPropagation();
+            void app.setSessionWatched(row.original.id, !row.original.watched);
           }}
-        />
+        >
+          {row.original.watched ? '★' : '☆'}
+        </button>
       ),
     },
     {
       id: 'current',
       header: 'Current',
       size: 60,
+      minSize: 50,
+      meta: { fixed: true } satisfies ColumnMetaProps,
       accessorFn: (row) => (row.current ? 1 : 0),
       cell: ({ row }) =>
         row.original.current ? (
@@ -543,28 +1195,31 @@ function buildSessionColumns(
       id: 'action',
       header: 'Action',
       size: 100,
+      minSize: 90,
       enableSorting: false,
-      cell: ({ row }) => (
-        <button
-          className="btn btn--secondary btn--sm"
-          disabled={Boolean(row.original.current) || switching === row.original.id}
-          onClick={(event) => {
-            event.stopPropagation();
-            void switchCurrent(row.original.id);
-          }}
-        >
-          {row.original.current
-            ? 'Current'
-            : switching === row.original.id
-              ? 'Switching…'
-              : '⇄ Switch'}
-        </button>
-      ),
+      meta: { fixed: true } satisfies ColumnMetaProps,
+      cell: ({ row }) =>
+        row.original.current ? (
+          <span className="badge badge--success">Current</span>
+        ) : (
+          <button
+            type="button"
+            className="btn btn--secondary btn--sm switch-session-btn"
+            disabled={switching === row.original.id}
+            onClick={(event) => {
+              event.stopPropagation();
+              void switchCurrent(row.original.id);
+            }}
+          >
+            {switching === row.original.id ? 'Switching…' : '⇄ Switch'}
+          </button>
+        ),
     },
     {
       id: 'language',
       header: 'Language',
       size: 125,
+      minSize: 110,
       accessorFn: (row) => row.globalLanguage || 'en',
       cell: ({ row }) => <SessionLanguageControl session={row.original} app={app} />,
     },
@@ -573,7 +1228,7 @@ function buildSessionColumns(
       header: 'Name / summary',
       size: 280,
       minSize: 220,
-      meta: { grow: true },
+      meta: { grow: true } satisfies ColumnMetaProps,
       accessorFn: (row) => row.label || row.id,
       cell: ({ row }) => {
         const titleText = row.original.label || row.original.id;
@@ -594,12 +1249,14 @@ function buildSessionColumns(
       accessorKey: 'id',
       header: 'Session ID',
       size: 130,
+      minSize: 100,
       cell: ({ getValue }) => <span className="mono small">{shortId(getValue())}</span>,
     },
     {
       accessorKey: 'cwd',
       header: 'Project',
       size: 180,
+      minSize: 120,
       cell: ({ getValue }) => {
         const text = String(getValue() || '');
         return (
@@ -613,6 +1270,7 @@ function buildSessionColumns(
       accessorKey: 'gitBranch',
       header: 'Branch',
       size: 150,
+      minSize: 100,
       cell: ({ getValue }) => {
         const text = String(getValue() || '');
         return (
@@ -626,39 +1284,46 @@ function buildSessionColumns(
       accessorKey: 'createdAt',
       header: 'Created',
       size: 155,
+      minSize: 120,
       cell: ({ getValue }) => <span className="nowrap-cell">{fmtDate(getValue())}</span>,
     },
     {
       accessorKey: 'lastActivity',
       header: 'Last activity',
       size: 155,
+      minSize: 120,
       cell: ({ getValue }) => <span className="nowrap-cell">{fmtDate(getValue())}</span>,
     },
     {
       accessorKey: 'messageCount',
       header: 'Messages',
       size: 85,
+      minSize: 75,
     },
     {
       accessorKey: 'fileSize',
       header: 'File size',
       size: 90,
+      minSize: 80,
       cell: ({ getValue }) => fmtBytes(getValue()),
     },
     {
       accessorKey: 'taskCount',
       header: 'Tasks',
       size: 80,
+      minSize: 70,
     },
     {
       accessorKey: 'deletedTaskCount',
       header: 'Deleted',
       size: 80,
+      minSize: 70,
     },
     {
       accessorKey: 'translationCount',
       header: 'Translations',
       size: 100,
+      minSize: 85,
     },
   ];
 }
