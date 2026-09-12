@@ -91,7 +91,7 @@ export default function SessionsPage(): ReactElement {
             controlled here; Settings remain global.
           </p>
         </div>
-        <button className="mini" onClick={() => void app.refreshSessions()}>
+        <button className="btn btn--secondary btn--sm" onClick={() => void app.refreshSessions()}>
           ↻ Refresh discovery
         </button>
       </div>
@@ -100,7 +100,7 @@ export default function SessionsPage(): ReactElement {
           id="sessions-search-input"
           name="sessionsSearch"
           aria-label="Search sessions"
-          className="search-input"
+          className="input search-input"
           value={query}
           onChange={(event) => setFilter('q', event.target.value)}
           placeholder="Search name, session id, project, branch, first prompt…"
@@ -140,8 +140,8 @@ export default function SessionsPage(): ReactElement {
           </tbody>
         </table>
       </div>
-      <div className="sessions-pagination">
-        <div className="sessions-pagination__left">
+      <div className="sessions-pagination pagination">
+        <div className="sessions-pagination__left pagination__meta">
           <span className="pagination-range">
             Showing {data.length === 0 ? 0 : pagination.pageIndex * pagination.pageSize + 1} to{' '}
             {Math.min((pagination.pageIndex + 1) * pagination.pageSize, data.length)} of{' '}
@@ -153,6 +153,7 @@ export default function SessionsPage(): ReactElement {
             <span>Rows:</span>
             <select
               aria-label="Select page size"
+              className="select select--sm"
               value={table.getState().pagination.pageSize}
               onChange={(e) => table.setPageSize(Number(e.target.value))}
             >
@@ -165,7 +166,7 @@ export default function SessionsPage(): ReactElement {
           </label>
           <button
             type="button"
-            className="btn btn--secondary btn--sm pagination-btn"
+            className="btn btn--secondary btn--sm pagination__page pagination-btn"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
             aria-label="Previous page"
@@ -177,7 +178,7 @@ export default function SessionsPage(): ReactElement {
           </span>
           <button
             type="button"
-            className="btn btn--secondary btn--sm pagination-btn"
+            className="btn btn--secondary btn--sm pagination__page pagination-btn"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
             aria-label="Next page"
@@ -214,7 +215,10 @@ export function SessionLanguageControl({
       <span>HU</span>
       {pending ? <span className="spinner" title="Session translations in progress" /> : null}
       {pending ? (
-        <button className="mini danger" onClick={() => void app.cancelSessionLanguage(session.id)}>
+        <button
+          className="btn btn--danger btn--sm"
+          onClick={() => void app.cancelSessionLanguage(session.id)}
+        >
           ■
         </button>
       ) : null}
@@ -281,7 +285,7 @@ function buildSessionColumns(
       enableSorting: false,
       cell: ({ row }) => (
         <button
-          className="mini"
+          className="btn btn--secondary btn--sm"
           disabled={Boolean(row.original.current) || switching === row.original.id}
           onClick={() => void switchCurrent(row.original.id)}
         >

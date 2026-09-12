@@ -94,5 +94,32 @@ describe('language-badge module', () => {
 
       expect(container.querySelector('.task-language-badge.en.compact')).not.toBeNull();
     });
+
+    it('renders upgraded EggProject badge classes for all badge variants', () => {
+      const variants = [
+        {
+          task: { viewLanguage: 'hu', effectiveLanguage: 'hu', translationState: 'ready' },
+          expectedClass: 'badge--success',
+        },
+        {
+          task: { desiredLanguage: 'hu', translationState: 'failed' },
+          expectedClass: 'badge--danger',
+        },
+        {
+          task: { viewLanguage: 'hu', translationState: 'translating' },
+          expectedClass: 'badge--warning',
+        },
+        { task: { viewLanguage: 'en', sessionGlobalLanguage: 'hu' }, expectedClass: 'badge--info' },
+        { task: { viewLanguage: 'en', translationState: 'ready' }, expectedClass: 'badge--yolk' },
+        { task: { viewLanguage: 'en' }, expectedClass: 'badge--outline' },
+      ];
+
+      for (const { task, expectedClass } of variants) {
+        const { container } = render(React.createElement(TaskLanguageBadge, { task }));
+        const el = container.querySelector('.task-language-badge');
+        expect(el.classList.contains('badge')).toBe(true);
+        expect(el.classList.contains(expectedClass)).toBe(true);
+      }
+    });
   });
 });

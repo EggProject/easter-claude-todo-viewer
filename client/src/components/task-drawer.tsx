@@ -73,7 +73,7 @@ export function TaskDrawer({
               <TaskLanguageBadge task={task} />
             </div>
           </div>
-          <button className="icon-btn" onClick={close}>
+          <button className="btn btn--secondary btn--sm icon-btn" onClick={close}>
             Close
           </button>
         </div>
@@ -134,7 +134,7 @@ export function TaskDrawer({
                 <div className="lang-progress">
                   <span className="spinner" />
                   <button
-                    className="mini danger"
+                    className="btn btn--danger btn--sm"
                     onClick={() => {
                       void app.cancelTask(task.sessionId, task.uid);
                     }}

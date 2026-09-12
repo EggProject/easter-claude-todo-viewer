@@ -990,7 +990,17 @@ describe('FlowPage', () => {
 
     // Reset layout sets savedLayouts.current = {}
     const resetBtn = screen.getByRole('button', { name: '↺ Reset layout' });
+    expect(resetBtn.classList.contains('btn')).toBe(true);
+    expect(resetBtn.classList.contains('btn--secondary')).toBe(true);
+    expect(resetBtn.classList.contains('btn--sm')).toBe(true);
     fireEvent.click(resetBtn);
+
+    const searchInput = screen.getByPlaceholderText(/Search task id, title/i);
+    expect(searchInput.classList.contains('input')).toBe(true);
+    expect(searchInput.classList.contains('search-input')).toBe(true);
+
+    const sortSelect = screen.getByLabelText('Sort flow tasks');
+    expect(sortSelect.classList.contains('select')).toBe(true);
 
     // Wait for restoringViewport flag to clear after RAF
     await act(async () => {
@@ -1004,6 +1014,9 @@ describe('FlowPage', () => {
 
     // autoArrange when savedLayouts.current[sessionId] is undefined covers line 176
     const arrangeBtn = screen.getByRole('button', { name: 'Auto arrange' });
+    expect(arrangeBtn.classList.contains('btn')).toBe(true);
+    expect(arrangeBtn.classList.contains('btn--secondary')).toBe(true);
+    expect(arrangeBtn.classList.contains('btn--sm')).toBe(true);
     fireEvent.click(arrangeBtn);
 
     await waitFor(() => {

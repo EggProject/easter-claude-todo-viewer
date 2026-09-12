@@ -152,7 +152,7 @@ export function SessionScopeSelect({
         <div className="session-scope-popover" role="menu">
           <div className="session-scope-shortcuts">
             <button
-              className="mini ghost"
+              className="btn btn--ghost btn--sm"
               disabled={!app.currentSessionId}
               onClick={() => {
                 setSelectedSessionIds(app.currentSessionId ? [app.currentSessionId] : []);
@@ -162,7 +162,7 @@ export function SessionScopeSelect({
               ★ Current
             </button>
             <button
-              className="mini ghost"
+              className="btn btn--ghost btn--sm"
               onClick={() => setSelectedSessionIds(watched.map((session) => session.id))}
             >
               ☑ All watched

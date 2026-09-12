@@ -266,6 +266,8 @@ describe('TranslationsPage', () => {
   it('handles search input filtering across translation fields', () => {
     renderPage();
     const searchInput = screen.getByPlaceholderText(/Filter every translation field/i);
+    expect(searchInput.classList.contains('input')).toBe(true);
+    expect(searchInput.classList.contains('search-input')).toBe(true);
 
     fireEvent.change(searchInput, { target: { value: 'Deleted' } });
     expect(screen.getByText(/#2 Deleted Task Demo/)).toBeDefined();
@@ -278,6 +280,17 @@ describe('TranslationsPage', () => {
   it('handles session select dropdown filter', () => {
     renderPage();
     const sessionSelect = screen.getByRole('combobox', { name: /Filter translations by session/i });
+    expect(sessionSelect.classList.contains('select')).toBe(true);
+
+    const stopAllBtn = screen.getByRole('button', { name: '■ Stop all' });
+    expect(stopAllBtn.classList.contains('btn')).toBe(true);
+    expect(stopAllBtn.classList.contains('btn--danger')).toBe(true);
+    expect(stopAllBtn.classList.contains('btn--sm')).toBe(true);
+
+    const retryAllBtn = screen.getByRole('button', { name: '↻ Retry all failed' });
+    expect(retryAllBtn.classList.contains('btn')).toBe(true);
+    expect(retryAllBtn.classList.contains('btn--secondary')).toBe(true);
+    expect(retryAllBtn.classList.contains('btn--sm')).toBe(true);
 
     fireEvent.change(sessionSelect, { target: { value: 'sess-2' } });
     expect(screen.getByText(/#2 Deleted Task Demo/)).toBeDefined();

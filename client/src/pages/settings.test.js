@@ -73,22 +73,32 @@ describe('SettingsPage', () => {
     expect(screen.getByText('Configuration')).toBeDefined();
     expect(screen.getByText('Translation provider')).toBeDefined();
 
+    const settingsCards = document.querySelectorAll('.settings-card');
+    expect(settingsCards[0].classList.contains('card')).toBe(true);
+    expect(settingsCards[1].classList.contains('card')).toBe(true);
+
     // Select provider dropdown
     const providerSelect = screen.getByRole('combobox', { name: /Provider/i });
+    expect(providerSelect.classList.contains('select')).toBe(true);
     expect(providerSelect.value).toBe('agy');
 
     // Agy model select
     const modelSelect = screen.getByRole('combobox', { name: /Model/i });
+    expect(modelSelect.classList.contains('select')).toBe(true);
     expect(modelSelect.value).toBe('omlx-medium');
     fireEvent.change(modelSelect, { target: { value: 'omlx-small' } });
 
     // Concurrency input
     const concurrencyInput = screen.getByRole('spinbutton', { name: /Maximum concurrent jobs/i });
+    expect(concurrencyInput.classList.contains('input')).toBe(true);
     expect(concurrencyInput.value).toBe('2');
     fireEvent.change(concurrencyInput, { target: { value: '4' } });
 
     // Save provider settings
     const saveButtons = screen.getAllByRole('button', { name: /Save provider settings/i });
+    expect(saveButtons[0].classList.contains('btn')).toBe(true);
+    expect(saveButtons[0].classList.contains('btn--primary')).toBe(true);
+    expect(saveButtons[0].classList.contains('btn--sm')).toBe(true);
     fireEvent.click(saveButtons[0]);
 
     await waitFor(() => {

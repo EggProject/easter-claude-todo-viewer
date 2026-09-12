@@ -122,6 +122,9 @@ describe('PromptsPage', () => {
 
     // Migrate button
     const migrateBtn = screen.getByRole('button', { name: '↻ Check / migrate updates' });
+    expect(migrateBtn.classList.contains('btn')).toBe(true);
+    expect(migrateBtn.classList.contains('btn--secondary')).toBe(true);
+    expect(migrateBtn.classList.contains('btn--sm')).toBe(true);
     fireEvent.click(migrateBtn);
 
     await waitFor(() => {
@@ -131,6 +134,8 @@ describe('PromptsPage', () => {
 
     // Card click
     const card = screen.getByText('task-translator').closest('button');
+    expect(card.classList.contains('card')).toBe(true);
+    expect(card.classList.contains('prompt-card')).toBe(true);
     fireEvent.click(card);
   });
 
@@ -141,20 +146,34 @@ describe('PromptsPage', () => {
       expect(screen.getByText('PROMPT EDITOR')).toBeDefined();
     });
 
+    const editorCard = document.querySelector('.prompt-editor');
+    expect(editorCard.classList.contains('card')).toBe(true);
+
     // Check editor details
     expect(screen.getByText(/Required variables:/)).toBeDefined();
     expect(screen.getAllByText(/sourceText/)).toHaveLength(2);
 
     // Check textarea
     const textarea = screen.getByRole('textbox');
+    expect(textarea.classList.contains('textarea')).toBe(true);
+    expect(textarea.classList.contains('prompt-textarea')).toBe(true);
     expect(textarea.value).toBe('Translate {{sourceText}} to {{targetLanguage}}.');
 
     // Edit textarea
     fireEvent.change(textarea, { target: { value: 'Updated prompt content' } });
     expect(textarea.value).toBe('Updated prompt content');
 
-    // Save prompt
+    // Check buttons classes
     const saveBtn = screen.getByRole('button', { name: 'Save' });
+    expect(saveBtn.classList.contains('btn')).toBe(true);
+    expect(saveBtn.classList.contains('btn--primary')).toBe(true);
+    expect(saveBtn.classList.contains('btn--sm')).toBe(true);
+
+    const restoreBtn = screen.getByRole('button', { name: 'Restore builtin' });
+    expect(restoreBtn.classList.contains('btn')).toBe(true);
+    expect(restoreBtn.classList.contains('btn--secondary')).toBe(true);
+    expect(restoreBtn.classList.contains('btn--sm')).toBe(true);
+
     fireEvent.click(saveBtn);
 
     await waitFor(() => {

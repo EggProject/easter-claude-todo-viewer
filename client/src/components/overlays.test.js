@@ -79,16 +79,19 @@ describe('overlays module', () => {
 
       // Filter by session
       const sessionSelect = screen.getByLabelText('Filter history session');
+      expect(sessionSelect.classList.contains('select')).toBe(true);
       fireEvent.change(sessionSelect, { target: { value: 'sess-1' } });
       expect(screen.getByText('2 matching event(s)')).toBeDefined();
 
       // Filter by event type
       const typeSelect = screen.getByLabelText('Filter history event type');
+      expect(typeSelect.classList.contains('select')).toBe(true);
       fireEvent.change(typeSelect, { target: { value: 'lifecycle' } });
       expect(screen.getByText('2 matching event(s)')).toBeDefined();
 
       // Filter by search query
       const queryInput = screen.getByPlaceholderText('Filter history…');
+      expect(queryInput.classList.contains('input')).toBe(true);
       fireEvent.change(queryInput, { target: { value: 'nonexistent' } });
       expect(screen.getByText('0 matching event(s)')).toBeDefined();
       expect(screen.getByText('No history events match the current filters.')).toBeDefined();
@@ -98,10 +101,14 @@ describe('overlays module', () => {
       fireEvent.change(typeSelect, { target: { value: 'all' } });
       fireEvent.change(sessionSelect, { target: { value: 'all' } });
       const sortSelect = screen.getByLabelText('Sort history');
+      expect(sortSelect.classList.contains('select')).toBe(true);
       fireEvent.change(sortSelect, { target: { value: 'oldest' } });
 
       // Close via close button
       const closeBtn = screen.getByRole('button', { name: 'Close' });
+      expect(closeBtn.classList.contains('btn')).toBe(true);
+      expect(closeBtn.classList.contains('btn--secondary')).toBe(true);
+      expect(closeBtn.classList.contains('btn--sm')).toBe(true);
       fireEvent.click(closeBtn);
       expect(mockApp.setSidebar).toHaveBeenCalledWith(false);
 
@@ -186,6 +193,8 @@ describe('overlays module', () => {
       expect(screen.getByText('Primary')).toBeDefined();
 
       const okBtn = screen.getByRole('button', { name: 'OK' });
+      expect(okBtn.classList.contains('btn')).toBe(true);
+      expect(okBtn.classList.contains('btn--primary')).toBe(true);
       fireEvent.click(okBtn);
       expect(mockApp.acknowledge).toHaveBeenCalledTimes(1);
     });

@@ -132,6 +132,11 @@ describe('TasksPage', () => {
     });
 
     const searchInput = screen.getByPlaceholderText(/Search task id, title/i);
+    expect(searchInput.classList.contains('input')).toBe(true);
+    expect(searchInput.classList.contains('search-input')).toBe(true);
+
+    const sortSelect = screen.getByLabelText('Sort tasks');
+    expect(sortSelect.classList.contains('select')).toBe(true);
 
     // Search by owner
     fireEvent.change(searchInput, { target: { value: 'Alice' } });

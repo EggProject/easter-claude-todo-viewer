@@ -22,7 +22,7 @@ export function AppSplash({
         <>
           <h2>Dashboard could not start</h2>
           <pre className="splash-error">{String(error)}</pre>
-          <button className="primary" onClick={onRetry}>
+          <button className="btn btn--primary" onClick={onRetry}>
             ↻ Retry
           </button>
         </>

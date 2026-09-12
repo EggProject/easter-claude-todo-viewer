@@ -39,6 +39,8 @@ describe('AppSplash component', () => {
     expect(container.querySelector('.app-splash.error')).not.toBeNull();
 
     const retryBtn = screen.getByRole('button', { name: '↻ Retry' });
+    expect(retryBtn.classList.contains('btn')).toBe(true);
+    expect(retryBtn.classList.contains('btn--primary')).toBe(true);
     fireEvent.click(retryBtn);
     expect(onRetry).toHaveBeenCalledTimes(1);
   });

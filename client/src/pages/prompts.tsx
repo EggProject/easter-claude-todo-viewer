@@ -24,14 +24,14 @@ export default function PromptsPage(): ReactElement {
           </div>
           <h1>Prompt files</h1>
         </div>
-        <button className="mini" onClick={() => void migrate()}>
+        <button className="btn btn--secondary btn--sm" onClick={() => void migrate()}>
           ↻ Check / migrate updates
         </button>
       </div>
       <div className="prompt-grid">
         {(app.prompts || []).map((prompt) => (
           <button
-            className="prompt-card"
+            className="card prompt-card"
             key={prompt.id}
             onClick={() => void navigate(`/prompts/${prompt.id}`)}
           >
@@ -137,7 +137,7 @@ function PromptEditor({ id, onClose, refresh }: PromptEditorProps): ReactElement
   };
 
   return (
-    <div className="detail-card prompt-editor">
+    <div className="card detail-card prompt-editor">
       <div className="detail-head">
         <div>
           <div className="eyebrow">
@@ -145,7 +145,7 @@ function PromptEditor({ id, onClose, refresh }: PromptEditorProps): ReactElement
           </div>
           <h2>{id}</h2>
         </div>
-        <button className="icon-btn" onClick={onClose}>
+        <button className="btn btn--secondary btn--sm icon-btn" onClick={onClose}>
           Close
         </button>
       </div>
@@ -185,16 +185,16 @@ function PromptEditor({ id, onClose, refresh }: PromptEditorProps): ReactElement
         id="prompt-body-textarea"
         name="promptBody"
         aria-label="Prompt template content"
-        className="prompt-textarea"
+        className="textarea prompt-textarea"
         value={body}
         onChange={(event) => setBody(event.target.value)}
         spellCheck={false}
       />
       <div className="actions">
-        <button className="primary" onClick={() => void save()}>
+        <button className="btn btn--primary btn--sm" onClick={() => void save()}>
           <Save size={16} strokeWidth={1.75} /> Save
         </button>
-        <button className="mini" onClick={() => void restore()}>
+        <button className="btn btn--secondary btn--sm" onClick={() => void restore()}>
           <Undo2 size={16} strokeWidth={1.75} /> Restore builtin
         </button>
       </div>

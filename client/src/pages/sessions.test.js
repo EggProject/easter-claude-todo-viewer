@@ -497,10 +497,32 @@ describe('SessionsPage', () => {
     expect(screen.getByText('Session Number 50')).toBeDefined();
     expect(screen.queryByText('Session Number 51')).toBeNull();
 
+    const paginationContainer = document.querySelector('.sessions-pagination');
+    expect(paginationContainer.classList.contains('pagination')).toBe(true);
+    const paginationLeft = document.querySelector('.sessions-pagination__left');
+    expect(paginationLeft.classList.contains('pagination__meta')).toBe(true);
+
+    const searchInput = screen.getByPlaceholderText(/Search name, session id/i);
+    expect(searchInput.classList.contains('input')).toBe(true);
+
+    const refreshBtn = screen.getByRole('button', { name: '↻ Refresh discovery' });
+    expect(refreshBtn.classList.contains('btn')).toBe(true);
+    expect(refreshBtn.classList.contains('btn--secondary')).toBe(true);
+    expect(refreshBtn.classList.contains('btn--sm')).toBe(true);
+
     const prevBtn = screen.getByRole('button', { name: 'Previous page' });
     const nextBtn = screen.getByRole('button', { name: 'Next page' });
     expect(prevBtn.disabled).toBe(true);
     expect(nextBtn.disabled).toBe(false);
+    expect(prevBtn.classList.contains('btn')).toBe(true);
+    expect(prevBtn.classList.contains('btn--secondary')).toBe(true);
+    expect(prevBtn.classList.contains('btn--sm')).toBe(true);
+    expect(prevBtn.classList.contains('pagination__page')).toBe(true);
+    expect(nextBtn.classList.contains('pagination__page')).toBe(true);
+
+    const sizeSelect = screen.getByRole('combobox', { name: 'Select page size' });
+    expect(sizeSelect.classList.contains('select')).toBe(true);
+    expect(sizeSelect.classList.contains('select--sm')).toBe(true);
 
     fireEvent.click(nextBtn);
 
@@ -519,7 +541,6 @@ describe('SessionsPage', () => {
     expect(screen.getByText('Showing 1 to 50 of 75 sessions')).toBeDefined();
     expect(screen.getByText('Page 1 of 2')).toBeDefined();
 
-    const sizeSelect = screen.getByRole('combobox', { name: 'Select page size' });
     fireEvent.change(sizeSelect, { target: { value: '25' } });
 
     expect(screen.getByText('Showing 1 to 25 of 75 sessions')).toBeDefined();

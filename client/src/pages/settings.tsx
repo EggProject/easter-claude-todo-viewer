@@ -191,7 +191,7 @@ export default function SettingsPage(): ReactElement {
         </div>
       </div>
       <div className="settings-grid">
-        <section className="settings-card provider-card">
+        <section className="card settings-card provider-card">
           <div className="settings-card-head">
             <div>
               <div className="eyebrow">Translation</div>
@@ -207,6 +207,7 @@ export default function SettingsPage(): ReactElement {
               id="provider-select"
               name="provider"
               aria-label="Provider"
+              className="select"
               value={tr.provider || 'agy'}
               onChange={(e) => setProvider(e.target.value)}
             >
@@ -222,6 +223,7 @@ export default function SettingsPage(): ReactElement {
                   id="agy-model-select"
                   name="agyModel"
                   aria-label="Model"
+                  className="select"
                   value={agy.model || ''}
                   onChange={(e) => setAgyModel(e.target.value)}
                 >
@@ -242,6 +244,7 @@ export default function SettingsPage(): ReactElement {
                   id="anthropic-base-url-input"
                   name="anthropicBaseUrl"
                   aria-label="Base URL"
+                  className="input"
                   value={anth.baseUrl || 'http://127.0.0.1:8000'}
                   onChange={(e) => setAnthropicBaseUrl(e.target.value)}
                 />,
@@ -253,6 +256,7 @@ export default function SettingsPage(): ReactElement {
                   name="anthropicApiKey"
                   aria-label="API key"
                   type="password"
+                  className="input"
                   placeholder={
                     anth.apiKeyConfigured ? 'Configured - enter only to replace' : 'Optional'
                   }
@@ -266,6 +270,7 @@ export default function SettingsPage(): ReactElement {
                   id="anthropic-model-select"
                   name="anthropicModel"
                   aria-label="Model"
+                  className="select"
                   value={anth.model || ''}
                   disabled={loadingModels}
                   onChange={(e) => setAnthropicModel(e.target.value)}
@@ -280,22 +285,30 @@ export default function SettingsPage(): ReactElement {
               )}
               {concurrencySetting(anth.maxConcurrency, (value) => setAnthropicConcurrency(value))}
               <div className="actions">
-                <button className="mini" disabled={loadingModels} onClick={refresh}>
+                <button
+                  className="btn btn--secondary btn--sm"
+                  disabled={loadingModels}
+                  onClick={refresh}
+                >
                   {loadingModels ? '⟳ Loading…' : '↻ Refresh models'}
                 </button>
-                <button className="mini" disabled={loadingModels} onClick={() => void test()}>
+                <button
+                  className="btn btn--secondary btn--sm"
+                  disabled={loadingModels}
+                  onClick={() => void test()}
+                >
                   <FlaskConical size={14} className="inline-icon" /> Test connection
                 </button>
               </div>
             </>
           )}
           <div className="card-actions">
-            <button className="primary" onClick={() => void save()}>
+            <button className="btn btn--primary btn--sm" onClick={() => void save()}>
               <Save size={14} className="inline-icon" /> Save provider settings
             </button>
           </div>
         </section>
-        <section className="settings-card prompts-card">
+        <section className="card settings-card prompts-card">
           <div className="settings-card-head">
             <div>
               <div className="eyebrow">
@@ -323,7 +336,7 @@ export default function SettingsPage(): ReactElement {
             prompt.
           </p>
           <div className="card-actions">
-            <button className="primary" onClick={() => void save()}>
+            <button className="btn btn--primary btn--sm" onClick={() => void save()}>
               <Save size={14} className="inline-icon" /> Save prompt settings
             </button>
           </div>
@@ -347,6 +360,7 @@ function concurrencySetting(
           name="concurrency"
           aria-label="Maximum concurrent jobs"
           type="number"
+          className="input"
           min={1}
           max={32}
           step={1}

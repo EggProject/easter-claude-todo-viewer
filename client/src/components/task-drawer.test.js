@@ -164,8 +164,18 @@ describe('TaskDrawer component', () => {
     fireEvent.click(langSwitch);
     expect(mockApp.toggleTaskLanguage).toHaveBeenCalledWith('sess-1', 'task-1', 'hu');
 
+    // Close button
+    const closeBtn = screen.getByRole('button', { name: 'Close' });
+    expect(closeBtn.classList.contains('btn')).toBe(true);
+    expect(closeBtn.classList.contains('btn--secondary')).toBe(true);
+    expect(closeBtn.classList.contains('btn--sm')).toBe(true);
+    expect(closeBtn.classList.contains('icon-btn')).toBe(true);
+
     // Click stop translation button
     const stopBtn = screen.getByRole('button', { name: '■ Stop' });
+    expect(stopBtn.classList.contains('btn')).toBe(true);
+    expect(stopBtn.classList.contains('btn--danger')).toBe(true);
+    expect(stopBtn.classList.contains('btn--sm')).toBe(true);
     fireEvent.click(stopBtn);
     expect(mockApp.cancelTask).toHaveBeenCalledWith('sess-1', 'task-1');
   });

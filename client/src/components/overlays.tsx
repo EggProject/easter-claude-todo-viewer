@@ -130,18 +130,22 @@ export function NotificationSidebar(): ReactElement | null {
             </h3>
             <div className="muted small">{`${events.length.toString()} matching event(s)`}</div>
           </div>
-          <button className="icon-btn" onClick={() => app.setSidebar(false)}>
+          <button
+            className="btn btn--secondary btn--sm icon-btn"
+            onClick={() => app.setSidebar(false)}
+          >
             Close
           </button>
         </div>
         <div className="history-sidebar-controls">
           <input
-            className="history-filter"
+            className="input history-filter"
             value={historyQuery}
             onChange={(event) => setHistoryFilter('q', event.target.value)}
             placeholder="Filter history…"
           />
           <select
+            className="select"
             value={historySessionFilter}
             onChange={(event) => setHistoryFilter('session', event.target.value)}
             aria-label="Filter history session"
@@ -154,6 +158,7 @@ export function NotificationSidebar(): ReactElement | null {
             ))}
           </select>
           <select
+            className="select"
             value={historyTypeFilter}
             onChange={(event) => setHistoryFilter('type', event.target.value)}
             aria-label="Filter history event type"
@@ -168,6 +173,7 @@ export function NotificationSidebar(): ReactElement | null {
             <option value="other">Other</option>
           </select>
           <select
+            className="select"
             value={historySort}
             onChange={(event) => setHistoryFilter('sort', event.target.value)}
             aria-label="Sort history"
@@ -352,7 +358,7 @@ export function RequiredModal(): ReactElement | null {
           </div>
         ) : null}
         <div className="modal-actions">
-          <button className="primary" onClick={app.acknowledge}>
+          <button className="btn btn--primary" onClick={app.acknowledge}>
             OK
           </button>
         </div>

@@ -238,6 +238,9 @@ describe('session-select module', () => {
       expect(screen.getAllByText('session-…')).toHaveLength(2);
 
       const allWatchedBtn = screen.getByRole('button', { name: '☑ All watched' });
+      expect(allWatchedBtn.classList.contains('btn')).toBe(true);
+      expect(allWatchedBtn.classList.contains('btn--ghost')).toBe(true);
+      expect(allWatchedBtn.classList.contains('btn--sm')).toBe(true);
       fireEvent.click(allWatchedBtn);
       expect(setSelectedSessionIds).toHaveBeenCalledWith([
         'session-alpha-long-identifier',
@@ -246,6 +249,9 @@ describe('session-select module', () => {
       ]);
 
       const currentBtn = screen.getByRole('button', { name: '★ Current' });
+      expect(currentBtn.classList.contains('btn')).toBe(true);
+      expect(currentBtn.classList.contains('btn--ghost')).toBe(true);
+      expect(currentBtn.classList.contains('btn--sm')).toBe(true);
       fireEvent.click(currentBtn);
       expect(setSelectedSessionIds).toHaveBeenCalledWith(['session-alpha-long-identifier']);
 

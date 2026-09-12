@@ -42,6 +42,15 @@ export function languageBadgeSpec(task: Partial<Task> = {}): LanguageBadgeSpec {
   return { key: 'en', label: 'EN', title: 'Showing English' };
 }
 
+const EGG_BADGE_CLASSES: Record<string, string> = {
+  'hu-ready': 'badge badge--success',
+  'hu-failed': 'badge badge--danger',
+  'hu-pending': 'badge badge--warning',
+  'en-override': 'badge badge--info',
+  'hu-cached': 'badge badge--yolk',
+  en: 'badge badge--outline',
+};
+
 export interface TaskLanguageBadgeProps {
   task: Partial<Task>;
   compact?: boolean | undefined;
@@ -49,9 +58,10 @@ export interface TaskLanguageBadgeProps {
 
 export function TaskLanguageBadge({ task, compact = false }: TaskLanguageBadgeProps): ReactElement {
   const spec = languageBadgeSpec(task);
+  const eggBadgeClass = EGG_BADGE_CLASSES[spec.key];
   return (
     <span
-      className={`task-language-badge ${spec.key}${compact ? ' compact' : ''}`}
+      className={`task-language-badge ${eggBadgeClass} ${spec.key}${compact ? ' compact' : ''}`}
       title={spec.title}
     >
       {spec.label}

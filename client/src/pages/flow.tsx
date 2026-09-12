@@ -411,7 +411,7 @@ export default function FlowPage(): ReactElement {
         </div>
         <div className="flow-actions">
           <button
-            className="mini"
+            className="btn btn--secondary btn--sm"
             disabled={
               arranging || !nodes.some((node) => isRecord(node.data) && Boolean(node.data['uid']))
             }
@@ -425,7 +425,7 @@ export default function FlowPage(): ReactElement {
               </>
             )}
           </button>
-          <button className="mini" onClick={() => void resetLayout()}>
+          <button className="btn btn--secondary btn--sm" onClick={() => void resetLayout()}>
             ↺ Reset layout
           </button>
         </div>
@@ -435,7 +435,7 @@ export default function FlowPage(): ReactElement {
           id="flow-search-input"
           name="flowSearch"
           aria-label="Search flow tasks"
-          className="search-input"
+          className="input search-input"
           value={query}
           onChange={(event) => setFilter('q', event.target.value)}
           placeholder="Search task id, title, description, owner, session…"
@@ -449,6 +449,7 @@ export default function FlowPage(): ReactElement {
           id="flow-sort-select"
           name="flowSort"
           aria-label="Sort flow tasks"
+          className="select"
           value={sort}
           onChange={(event) => setFilter('sort', event.target.value)}
         >

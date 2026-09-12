@@ -120,7 +120,7 @@ export default function TasksPage(): ReactElement {
           id="task-search-input"
           name="taskSearch"
           aria-label="Search tasks"
-          className="search-input"
+          className="input search-input"
           value={query}
           onChange={(event) => setFilter('q', event.target.value)}
           placeholder="Search task id, title, description, owner, session…"
@@ -134,6 +134,7 @@ export default function TasksPage(): ReactElement {
           id="task-sort-select"
           name="taskSort"
           aria-label="Sort tasks"
+          className="select"
           value={sort}
           onChange={(event) => setFilter('sort', event.target.value)}
         >

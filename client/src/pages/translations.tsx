@@ -223,12 +223,13 @@ export default function TranslationsPage(): ReactElement {
       </div>
       <div className="page-controls">
         <input
-          className="search-input"
+          className="input search-input"
           value={globalFilter}
           onChange={(event) => setFilter('q', event.target.value)}
           placeholder="Filter every translation field…"
         />
         <select
+          className="select"
           value={sessionFilter}
           onChange={(event) => setFilter('session', event.target.value)}
           aria-label="Filter translations by session"
@@ -249,21 +250,21 @@ export default function TranslationsPage(): ReactElement {
         </div>
         <div className="bulk-actions">
           <button
-            className="mini danger"
+            className="btn btn--danger btn--sm"
             disabled={!eligibleSelectedJobs.stop.length || bulkBusy}
             onClick={() => void runBulk('stop', eligibleSelectedJobs.stop, '■ Stop started')}
           >
             ■ Stop
           </button>
           <button
-            className="mini"
+            className="btn btn--secondary btn--sm"
             disabled={!eligibleSelectedJobs.retry.length || bulkBusy}
             onClick={() => void runBulk('retry', eligibleSelectedJobs.retry, '↻ Retry started')}
           >
             ↻ Retry
           </button>
           <button
-            className="mini danger ghost"
+            className="btn btn--danger btn--ghost btn--sm"
             disabled={!eligibleSelectedJobs.delete.length || bulkBusy}
             onClick={() => void runBulk('delete', eligibleSelectedJobs.delete, 'Delete completed')}
           >
@@ -272,14 +273,14 @@ export default function TranslationsPage(): ReactElement {
         </div>
         <div className="bulk-actions global-bulk-actions">
           <button
-            className="mini danger"
+            className="btn btn--danger btn--sm"
             disabled={!activeAll.length || bulkBusy}
             onClick={() => void runBulk('stop_all', activeAll, '■ Stop all started')}
           >
             ■ Stop all
           </button>
           <button
-            className="mini"
+            className="btn btn--secondary btn--sm"
             disabled={!retryAll.length || bulkBusy}
             onClick={() => void runBulk('retry_all_failed', retryAll, '↻ Retry all failed started')}
           >
@@ -565,7 +566,7 @@ function actionButtons(
   if (ACTIVE.has(job.status)) {
     buttons.push(
       <button
-        className="mini danger"
+        className="btn btn--danger btn--sm"
         key="stop"
         onClick={() => void app.cancelJob(job.sessionId, job.id)}
       >
@@ -575,7 +576,11 @@ function actionButtons(
   }
   if (RETRYABLE.has(job.status)) {
     buttons.push(
-      <button className="mini" key="retry" onClick={() => void app.retryJob(job.sessionId, job.id)}>
+      <button
+        className="btn btn--secondary btn--sm"
+        key="retry"
+        onClick={() => void app.retryJob(job.sessionId, job.id)}
+      >
         ↻ Retry
       </button>,
     );
@@ -583,7 +588,7 @@ function actionButtons(
   if (TERMINAL.has(job.status)) {
     buttons.push(
       <button
-        className="mini danger ghost"
+        className="btn btn--danger btn--ghost btn--sm"
         key="del"
         onClick={() => {
           if (confirm('Delete this translation lifecycle and owned cache?')) {
@@ -597,7 +602,7 @@ function actionButtons(
   }
   buttons.push(
     <button
-      className="mini ghost"
+      className="btn btn--ghost btn--sm"
       key="view"
       onClick={() =>
         void navigate(
