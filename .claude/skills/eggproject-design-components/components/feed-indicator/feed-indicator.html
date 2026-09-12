@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>EggProject — FeedIndicator</title>
+  <script src="../../../eggproject-design/preview/_theme.js" defer></script>
+  <meta name="viewport" content="width=920" />
+  <link rel="stylesheet" href="feed-indicator.css" />
+  <link rel="icon" href="../../../eggproject-design/assets/logo-mark.svg" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--ep-bg);
+      color: var(--ep-fg);
+      font-family: var(--ep-font-sans);
+      padding: 48px;
+      display: flex; flex-direction: column; gap: 32px;
+    }
+    .block { display: flex; flex-direction: column; gap: 14px; }
+    .row   { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+    .label {
+      font: var(--ep-text-overline);
+      letter-spacing: var(--ep-track-overline);
+      text-transform: uppercase;
+      color: var(--ep-fg-subtle);
+    }
+    .ink-panel {
+      background: var(--ep-ink-900);
+      border-radius: var(--ep-radius-lg);
+      padding: 16px 20px;
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    .legend { font: var(--ep-text-meta); color: var(--ep-fg-subtle); max-width: 720px; line-height: 1.5; }
+  </style>
+</head>
+<body>
+
+  <!-- States -->
+  <div class="block">
+    <span class="label">Four canonical states + idle</span>
+    <div class="row">
+      <span class="ep-feed ep-feed--connecting" role="status" aria-label="Connecting feed">
+        <span class="ep-dot ep-dot--info ep-dot--halo ep-dot--pulse"></span>
+        <span class="ep-feed__label">Connecting</span>
+      </span>
+      <span class="ep-feed ep-feed--streaming" role="status" aria-label="Live feed">
+        <span class="ep-dot ep-dot--success ep-dot--halo ep-dot--pulse"></span>
+        <span class="ep-feed__label">Live</span>
+        <span class="ep-feed__meta">12 ms</span>
+      </span>
+      <span class="ep-feed ep-feed--stale" role="status" aria-label="Stale feed">
+        <span class="ep-dot ep-dot--warning ep-dot--halo ep-dot--blink"></span>
+        <span class="ep-feed__label">Stale</span>
+        <span class="ep-feed__meta">42 s ago</span>
+      </span>
+      <span class="ep-feed ep-feed--disconnected" role="status" aria-label="Offline feed">
+        <span class="ep-dot ep-dot--danger ep-dot--hollow"></span>
+        <span class="ep-feed__label">Offline</span>
+      </span>
+      <span class="ep-feed ep-feed--idle" role="status" aria-label="Idle feed">
+        <span class="ep-dot ep-dot--muted ep-dot--hollow"></span>
+        <span class="ep-feed__label">Idle</span>
+      </span>
+    </div>
+  </div>
+
+  <!-- Soft pill -->
+  <div class="block">
+    <span class="label">Soft variant — tinted pill</span>
+    <div class="row">
+      <span class="ep-feed ep-feed--soft ep-feed--connecting">
+        <span class="ep-dot ep-dot--info ep-dot--pulse"></span>
+        <span class="ep-feed__label">Connecting…</span>
+      </span>
+      <span class="ep-feed ep-feed--soft ep-feed--streaming">
+        <span class="ep-dot ep-dot--success ep-dot--pulse"></span>
+        <span class="ep-feed__label">Live</span>
+      </span>
+      <span class="ep-feed ep-feed--soft ep-feed--stale">
+        <span class="ep-dot ep-dot--warning ep-dot--blink"></span>
+        <span class="ep-feed__label">Stale · 42 s</span>
+      </span>
+      <span class="ep-feed ep-feed--soft ep-feed--disconnected">
+        <span class="ep-dot ep-dot--danger ep-dot--hollow"></span>
+        <span class="ep-feed__label">Offline</span>
+      </span>
+      <span class="ep-feed ep-feed--soft ep-feed--idle">
+        <span class="ep-dot ep-dot--muted ep-dot--hollow"></span>
+        <span class="ep-feed__label">Idle</span>
+      </span>
+    </div>
+  </div>
+
+  <!-- Outline -->
+  <div class="block">
+    <span class="label">Outline variant</span>
+    <div class="row">
+      <span class="ep-feed ep-feed--outline ep-feed--streaming">
+        <span class="ep-dot ep-dot--success ep-dot--pulse"></span>
+        <span class="ep-feed__label">Live</span>
+      </span>
+      <span class="ep-feed ep-feed--outline ep-feed--stale">
+        <span class="ep-dot ep-dot--warning ep-dot--blink"></span>
+        <span class="ep-feed__label">Stale</span>
+      </span>
+      <span class="ep-feed ep-feed--outline ep-feed--disconnected">
+        <span class="ep-dot ep-dot--danger ep-dot--hollow"></span>
+        <span class="ep-feed__label">Offline</span>
+      </span>
+    </div>
+  </div>
+
+  <!-- Ink surface -->
+  <div class="block">
+    <span class="label">Ink surface — dark chrome / sidebars</span>
+    <div class="ink-panel">
+      <span class="ep-feed ep-feed--ink ep-feed--streaming">
+        <span class="ep-dot ep-dot--success ep-dot--ring ep-dot--pulse"></span>
+        <span class="ep-feed__label">Live</span>
+        <span class="ep-feed__meta">12 ms</span>
+      </span>
+      <span class="ep-feed ep-feed--ink ep-feed--stale">
+        <span class="ep-dot ep-dot--warning ep-dot--ring ep-dot--blink"></span>
+        <span class="ep-feed__label">Stale</span>
+        <span class="ep-feed__meta">42 s</span>
+      </span>
+      <span class="ep-feed ep-feed--ink ep-feed--disconnected">
+        <span class="ep-dot ep-dot--danger ep-dot--ring ep-dot--hollow"></span>
+        <span class="ep-feed__label">Offline</span>
+        <span class="ep-feed__meta">reconnect 3s</span>
+      </span>
+    </div>
+  </div>
+
+  <!-- Compact dot-only -->
+  <div class="block">
+    <span class="label">Compact — dot only (tooltip carries label)</span>
+    <div class="row">
+      <span class="ep-feed ep-feed--compact ep-feed--connecting"   title="Connecting">
+        <span class="ep-dot ep-dot--info ep-dot--halo ep-dot--pulse"></span>
+      </span>
+      <span class="ep-feed ep-feed--compact ep-feed--streaming"    title="Live · 12 ms">
+        <span class="ep-dot ep-dot--success ep-dot--halo ep-dot--pulse"></span>
+      </span>
+      <span class="ep-feed ep-feed--compact ep-feed--stale"        title="Stale · 42 s">
+        <span class="ep-dot ep-dot--warning ep-dot--halo ep-dot--blink"></span>
+      </span>
+      <span class="ep-feed ep-feed--compact ep-feed--disconnected" title="Offline">
+        <span class="ep-dot ep-dot--danger ep-dot--hollow"></span>
+      </span>
+    </div>
+  </div>
+
+  <p class="legend">
+    Four canonical states map the gap between binary online/offline that <code style="font-family:var(--ep-font-mono);font-size:11px;background:var(--ep-blue-50);padding:1px 5px;border-radius:3px;">.badge</code> covers. Use <code style="font-family:var(--ep-font-mono);font-size:11px;background:var(--ep-blue-50);padding:1px 5px;border-radius:3px;">plain</code> in compact chrome, <code style="font-family:var(--ep-font-mono);font-size:11px;background:var(--ep-blue-50);padding:1px 5px;border-radius:3px;">soft</code> for prominent status, <code style="font-family:var(--ep-font-mono);font-size:11px;background:var(--ep-blue-50);padding:1px 5px;border-radius:3px;">compact</code> when a dot is enough.
+  </p>
+
+</body>
+</html>

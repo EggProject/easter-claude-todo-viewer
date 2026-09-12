@@ -1,0 +1,192 @@
+@import url('../../../eggproject-design/colors_and_type.css');
+
+/* ============ Input OTP ============
+   Structure:
+     .input-otp
+       > .input-otp__slot (one per digit, 4-8 slots)
+   JS manages focus/value. Each slot is a styled
+   single-char display driven by a hidden input.
+   Variants: .input-otp--sm · .input-otp--lg
+============================================ */
+.input-otp {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.input-otp__separator {
+  width: 8px; height: 2px;
+  background: var(--ep-border);
+  border-radius: 99px;
+  flex-shrink: 0;
+}
+
+.input-otp__slot {
+  width: 44px; height: 52px;
+  border: 1.5px solid var(--ep-border);
+  border-radius: var(--ep-radius-md);
+  background: var(--ep-bg-elevated);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font: 600 22px/1 var(--ep-font-mono);
+  color: var(--ep-fg);
+  transition: border-color var(--ep-dur-base) var(--ep-ease-out),
+              box-shadow var(--ep-dur-base) var(--ep-ease-out),
+              background var(--ep-dur-fast);
+  position: relative;
+  cursor: text;
+}
+
+/* Focus. The real input is opacity:0, so :focus-visible on it would be invisible;
+   the slot projects the focus instead. :focus-within is the CSS-native half (it
+   matches even if the JS class is missing), .is-focused the JS half. The ring is
+   an `outline` — a property the .is-error / .is-success rules never touch — so a
+   higher-specificity state rule can no longer swallow the focus indicator. */
+.input-otp__slot.is-focused,
+.input-otp__slot:focus-within {
+  border-color: var(--ep-accent);
+  box-shadow: var(--ep-shadow-focus);
+  background: var(--ep-bg-elevated);
+  outline: 2px solid var(--ep-accent);
+  outline-offset: 2px;
+}
+
+.input-otp__slot.is-filled {
+  border-color: var(--ep-border-strong);
+  background: var(--ep-bg-elevated);
+}
+
+/* Caret blink for focused empty slot */
+.input-otp__slot.is-focused:empty::after,
+.input-otp__slot.is-focused.is-caret::after {
+  content: '';
+  display: block;
+  width: 2px;
+  height: 24px;
+  background: var(--ep-accent);
+  border-radius: 1px;
+  animation: input-otp-blink 1s step-end infinite;
+}
+
+@keyframes input-otp-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+/* Error state */
+.input-otp.is-error .input-otp__slot {
+  border-color: var(--ep-danger);
+  box-shadow: 0 0 0 3px var(--ep-danger-bg);
+}
+
+/* Success state */
+.input-otp.is-success .input-otp__slot {
+  border-color: var(--ep-success);
+  box-shadow: 0 0 0 3px var(--ep-success-bg);
+}
+
+/* Error / success draw a 3px halo; push the focus ring clear of it so the
+   focused slot stays readable on top of a state colour. */
+.input-otp.is-error   .input-otp__slot.is-focused,
+.input-otp.is-error   .input-otp__slot:focus-within,
+.input-otp.is-success .input-otp__slot.is-focused,
+.input-otp.is-success .input-otp__slot:focus-within {
+  outline-offset: 4px;
+}
+
+/* Screen-reader-only error description, wired via aria-describedby.
+   position:absolute keeps it out of the root's inline-flex gap rhythm. */
+.input-otp__sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Size variants */
+.input-otp--sm .input-otp__slot { width: 36px; height: 42px; font-size: 18px; }
+.input-otp--lg .input-otp__slot { width: 52px; height: 60px; font-size: 26px; }
+
+/* Hidden real input (managed by JS) */
+.input-otp__input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  width: 1px;
+  height: 1px;
+}
+
+/* ============================================================
+   Reduced motion: the caret is the only animation in this file — a 1s infinite
+   opacity blink that otherwise cannot be stopped. Freeze it fully visible and
+   drop the slot's state transitions. No new motion is introduced; the caret
+   stays a caret, it just no longer blinks.
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  .input-otp__slot { transition: none; }
+  .input-otp__slot.is-focused.is-caret::after {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* ============================================================
+   Forced colors (Windows High Contrast): every slot border, the focus ring and
+   both status states are token colours plus a box-shadow — and box-shadow is
+   forced to `none` in HCM while all border colours collapse to one system
+   colour, so focus, error and success would all become indistinguishable. The
+   real input is `opacity: 0`, so there is no UA focus ring to fall back on.
+   Focus therefore moves onto a real `outline` in Highlight, and the two status
+   states are re-expressed with system colours plus a border-width step (hue
+   alone is not reliable in HCM — the error state is additionally carried by the
+   JSX `aria-invalid` + `aria-describedby` error text, which is not visual at
+   all). Empty slots keep a GrayText edge, filled slots a CanvasText one, so the
+   fill state survives without colour coding. Skipped on purpose, to avoid dead
+   selectors: `.input-otp` (layout-only inline-flex), `.input-otp__input` (an
+   opacity:0 proxy with no visual surface) and `.input-otp__slot.is-caret`
+   (carries no own paint — the caret is its `::after`). System colours only; no
+   token/var/hex/rgb/hsl; no forced-color-adjust. Live emulation not run —
+   source/CSSOM-verified.
+   ============================================================ */
+@media (forced-colors: active) {
+  .input-otp__slot {
+    background: Canvas;
+    color: CanvasText;
+    border: 1px solid GrayText;
+    box-shadow: none;
+  }
+  .input-otp__slot.is-filled { border-color: CanvasText; }
+  /* Visible digit (aria-hidden in the JSX — the value lives on the input). */
+  .input-otp__slot > span { color: CanvasText; }
+  .input-otp__slot.is-focused,
+  .input-otp__slot:focus-within {
+    border-color: Highlight;
+    box-shadow: none;
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+  /* Status states: system colour + a width step, never a shadow. */
+  .input-otp.is-error .input-otp__slot {
+    border: 2px solid Mark;
+    box-shadow: none;
+  }
+  .input-otp.is-success .input-otp__slot {
+    border: 2px solid CanvasText;
+    box-shadow: none;
+  }
+  /* Focus stays legible on top of either status state. */
+  .input-otp.is-error   .input-otp__slot.is-focused,
+  .input-otp.is-error   .input-otp__slot:focus-within,
+  .input-otp.is-success .input-otp__slot.is-focused,
+  .input-otp.is-success .input-otp__slot:focus-within {
+    outline: 2px solid Highlight;
+    outline-offset: 4px;
+  }
+  /* Caret: a pseudo-element background would be flattened away otherwise. */
+  .input-otp__slot.is-focused.is-caret::after { background: CanvasText; }
+  .input-otp__separator { background: CanvasText; }
+}

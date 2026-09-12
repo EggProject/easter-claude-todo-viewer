@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>EggProject — Collapsible</title>
+  <script src="../../../eggproject-design/preview/_theme.js" defer></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="collapsible.css" />
+  <link rel="stylesheet" href="../button/button.css" />
+  <link rel="icon" href="../../../eggproject-design/assets/logo-mark.svg" />
+  <style>
+    /* demo-page chrome only — no .collapsible / .collapsible__* / .is-open / [hidden] rules; the
+       component owns its CSS, its focus-visible, its hidden panel, its motion and its forced-colors. */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--ep-bg); color: var(--ep-fg); font-family: var(--ep-font-sans); padding: 40px; min-height: 100vh; }
+    .page { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 22px; }
+    header { display: flex; flex-direction: column; gap: 8px; }
+    h1 { font: 400 36px/1.1 var(--ep-font-display); letter-spacing: -0.02em; color: var(--ep-fg); }
+    h1 em { font-weight: 700; }
+    .lead { font: var(--ep-text-body); color: var(--ep-fg-muted); max-width: 64ch; }
+    code { font-family: var(--ep-font-mono); font-size: 0.92em; color: var(--ep-fg); }
+
+    .panel { display: flex; flex-direction: column; align-items: stretch; gap: 12px;
+      background: var(--ep-bg-elevated); border: 1px solid var(--ep-border-subtle);
+      border-radius: var(--ep-radius-lg); padding: 20px 22px; }
+    .panel h2 { font: 600 15px var(--ep-font-sans); color: var(--ep-fg); }
+
+    .stack { display: flex; flex-direction: column; gap: 10px; }
+
+    .field { display: flex; flex-direction: column; gap: 6px; max-width: 360px; }
+    .field-label { font: 500 12px var(--ep-font-sans); letter-spacing: 0.04em; text-transform: uppercase; color: var(--ep-fg-muted); }
+    .field input { width: 100%; background: var(--ep-bg); color: var(--ep-fg);
+      border: 1px solid var(--ep-border); border-radius: var(--ep-radius-sm);
+      padding: 7px 10px; font: var(--ep-text-small); font-family: inherit; }
+    .field input:focus-visible { outline: none; box-shadow: var(--ep-shadow-focus); }
+
+    .panel-body { display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
+
+    .link { color: var(--ep-accent); font: 500 13px var(--ep-font-sans); width: fit-content; }
+    .link:focus-visible { outline: none; box-shadow: var(--ep-shadow-focus); border-radius: var(--ep-radius-sm); }
+
+    .demo-form { display: flex; flex-direction: column; gap: 14px; align-items: flex-start; width: 100%; }
+
+    .status { font: var(--ep-text-small); color: var(--ep-fg-muted);
+      border-top: 1px solid var(--ep-divider); padding-top: 10px; }
+    .status strong { color: var(--ep-fg); font-weight: 600; }
+
+    .hint { font: var(--ep-text-small); color: var(--ep-fg-muted); max-width: 70ch; }
+    .hint code, .hint strong { color: var(--ep-fg); }
+
+    .keys { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 5px; }
+    .keys li { font: var(--ep-text-small); color: var(--ep-fg-muted); max-width: 72ch; }
+
+    kbd { font: 600 11px var(--ep-font-mono); background: var(--ep-bg-hover);
+      border: 1px solid var(--ep-border-subtle); border-radius: var(--ep-radius-sm); padding: 1px 5px; color: var(--ep-fg); }
+  </style>
+  <script src="../../assets/vendor/react.production.min.js"></script>
+  <script src="../../assets/vendor/react-dom.production.min.js"></script>
+  <script src="../../assets/vendor/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel" src="Collapsible.jsx"></script>
+  <script type="text/babel">
+    const { useState } = React;
+
+    // Demo-only: this page never touches the collapsible lifecycle. The exported Collapsible owns the
+    // open state, the trigger ARIA (aria-expanded) and the panel `hidden` contract. Here we only
+    // render real <Collapsible>, pass real props, and keep a single shared demo-status line plus
+    // panel-local child state. No own open state, no toggle, no timers, no listeners, no DOM access.
+
+    // A panel-local React-state control. It demonstrates that child state survives close/reopen
+    // (the panel is hidden, not unmounted) — it does NOT control the collapsible's openness.
+    function Counter() {
+      const [count, setCount] = useState(0);
+      return (
+        <button type="button" className="btn btn--secondary btn--sm" onClick={() => setCount((value) => value + 1)}>
+          Count: {count}
+        </button>
+      );
+    }
+
+    // Demo-only panel-local state: appending rows shows the real panel grow to its natural height
+    // (no cap, no measurement). Like Counter, it does NOT control collapsible openness.
+    function GrowingList() {
+      const [items, setItems] = useState(['First note', 'Second note', 'Third note']);
+      return (
+        <>
+          <ul className="keys">
+            {items.map((label, i) => <li key={i}>{label}</li>)}
+          </ul>
+          <button type="button" className="btn btn--secondary btn--sm" onClick={() => setItems((list) => [...list, `Note ${list.length + 1}`])}>
+            Add a row
+          </button>
+        </>
+      );
+    }
+
+    function App() {
+      const [status, setStatus] = useState('No action yet.');
+
+      return (
+        <main className="page">
+          <header>
+            <h1>Collapsible · <em>expand / collapse</em></h1>
+            <p className="lead">A single-trigger disclosure. State is uncontrolled — the component owns open/closed — with an optional <code>onOpenChange(next)</code> notification on each toggle. A closed panel is hidden by the native <code>hidden</code> attribute; an open panel takes its natural height with no panel-layout animation, and the trigger-background and chevron motion are instant under reduced-motion. A stable ARIA relationship wires each trigger to its panel. This is a single disclosure, not an Accordion or a multi-item component.</p>
+          </header>
+
+          <p className="status" role="status" aria-live="polite">Last action: <strong>{status}</strong></p>
+
+          <section className="panel" aria-labelledby="basic-h">
+            <h2 id="basic-h">Basic · starts closed</h2>
+            <Collapsible trigger="More details">
+              <p>A single disclosure. The trigger is a native button; activating it with the mouse, <kbd>Enter</kbd> or <kbd>Space</kbd> toggles the panel.</p>
+            </Collapsible>
+            <p className="hint">The component owns the open state. Its native <code>&lt;button type="button"&gt;</code> flips <code>aria-expanded</code> and the panel's <code>hidden</code> follows; the trigger's <code>aria-controls</code> points at the panel <code>id</code>, and the panel is a <code>role="region"</code> labelled by the trigger. The demo adds no ARIA of its own.</p>
+          </section>
+
+          <section className="panel" aria-labelledby="default-h">
+            <h2 id="default-h">Starts open · <code>defaultOpen</code></h2>
+            <Collapsible trigger="Initially open" defaultOpen>
+              <p>Rendered open because <code>defaultOpen</code> is set. It stays uncontrolled — the component owns the state from here, so it can be closed and reopened freely.</p>
+            </Collapsible>
+            <p className="hint"><code>defaultOpen</code> is an initial boolean only, not a controlled <code>open</code> prop — the demo never drives the later state.</p>
+          </section>
+
+          <section className="panel" aria-labelledby="callback-h">
+            <h2 id="callback-h">Open notifications · <code>onOpenChange</code></h2>
+            <Collapsible trigger="Status example" onOpenChange={(nextOpen) => setStatus(nextOpen ? 'Collapsible opened.' : 'Collapsible closed.')}>
+              <p>Toggle me and watch the status line near the top. The callback receives the next boolean state on every toggle.</p>
+            </Collapsible>
+            <p className="hint"><code>onOpenChange(next)</code> only updates the shared demo status; it never feeds state back into the component, keeps no open state of its own, and touches no DOM attribute.</p>
+          </section>
+
+          <section className="panel" aria-labelledby="interactive-h">
+            <h2 id="interactive-h">Interactive content · hidden when closed</h2>
+            <Collapsible trigger="Controls inside a panel" defaultOpen>
+              <div className="panel-body">
+                <label className="field">
+                  <span className="field-label">Note (uncontrolled — value survives close/reopen)</span>
+                  <input type="text" defaultValue="Type, then close and reopen" />
+                </label>
+                <a className="link" href="#keyboard-h">A real in-panel link → jumps to “Keyboard &amp; focus”</a>
+                <button type="button" className="btn btn--ghost btn--sm" onClick={() => setStatus('In-panel action button activated.')}>An in-panel action</button>
+                <Counter />
+              </div>
+            </Collapsible>
+            <ol className="keys">
+              <li>Focus the <strong>Note</strong> field and type; click the counter a few times.</li>
+              <li>Close the panel via its trigger.</li>
+              <li><kbd>Tab</kbd> through the page — the closed panel's input, link and button are <strong>not</strong> reachable.</li>
+              <li>Reopen: the typed note and the counter value are <strong>still there</strong> (the panel is hidden, not unmounted).</li>
+            </ol>
+          </section>
+
+          <section className="panel" aria-labelledby="tall-h">
+            <h2 id="tall-h">Long &amp; growing content · natural panel height</h2>
+            <Collapsible trigger="A deliberately tall panel" defaultOpen>
+              <div className="panel-body">
+                <p>An open panel takes its block height entirely from its content, so however long the content runs, all of it is shown and the last line stays reachable. There is no height cap to truncate it and no inner scrollbar.</p>
+                <p>Real disclosure content needs this: a policy section can carry a long list, a changelog entry grows over time, and a help answer can run to several paragraphs. None of it should be clipped or hidden behind a fixed height.</p>
+                <p>The panel is a plain content region while open and is removed from layout entirely (<code>display:none</code> via the native <code>hidden</code> attribute) while closed — there is no half-open, measured, or animated intermediate height.</p>
+                <ul className="keys">
+                  <li>Discovery call and a short scoping sprint to agree the brief.</li>
+                  <li>Two-week build iterations with a working demo at the end of each.</li>
+                  <li>Weekly written check-ins so priorities never drift silently.</li>
+                  <li>Design tokens and component library handed over as source.</li>
+                  <li>A soft-launch window before the tagged release.</li>
+                  <li>Post-launch support folded into the final iteration.</li>
+                </ul>
+                <p>Because nothing caps the height, this panel keeps extending downward as content is added rather than scrolling within a fixed box. On a narrow viewport it is comfortably taller than the screen.</p>
+                <p><strong>Check:</strong> read all the way down — the last line below is fully visible because the panel grew to fit it.</p>
+                <p>This is the last line of the tall panel. If you can read it in full, the panel's height is driven only by its content; nothing is cut off.</p>
+              </div>
+            </Collapsible>
+            <Collapsible trigger="Grows on demand · panel-local state">
+              <div className="panel-body">
+                <GrowingList />
+              </div>
+            </Collapsible>
+            <p className="hint">Height is owned entirely by the real panel: no fixed pixel height, no inline <code>maxHeight</code>, no demo overflow box, no “show more” logic. Each <strong>Add a row</strong> click grows the panel immediately — no measurement, no <code>scrollHeight</code>, no clipping — and the list is panel-local state that survives close/reopen.</p>
+          </section>
+
+          <section className="panel" aria-labelledby="form-h">
+            <h2 id="form-h">Inside a form</h2>
+            <form className="demo-form" onSubmit={(event) => { event.preventDefault(); setStatus('Form submitted (explicit submit only).'); }}>
+              <Collapsible trigger="Optional fields">
+                <div className="panel-body">
+                  <label className="field">
+                    <span className="field-label">Notes</span>
+                    <input type="text" name="notes" placeholder="A form field inside a panel" />
+                  </label>
+                  <button type="submit" className="btn btn--secondary btn--sm">Submit section</button>
+                </div>
+              </Collapsible>
+              <button type="submit" className="btn btn--primary btn--sm">Submit form</button>
+            </form>
+            <p className="hint">The trigger is a component-owned <code>type="button"</code>, so toggling never submits. A real <code>type="submit"</code> in an open panel submits normally; a closed panel's submit is <code>hidden</code> and unreachable. The form handler only updates the demo status — it never touches the Collapsible's open state.</p>
+          </section>
+
+          <section className="panel" aria-labelledby="nested-h">
+            <h2 id="nested-h">Nested</h2>
+            <Collapsible trigger="Outer disclosure" defaultOpen>
+              <div className="panel-body">
+                <p>This panel holds a second, independent Collapsible:</p>
+                <Collapsible trigger="Inner disclosure">
+                  <p>Toggling me never toggles the outer one. Closing the outer hides this whole inner subtree; reopening the outer preserves the inner state (no unmount).</p>
+                </Collapsible>
+              </div>
+            </Collapsible>
+            <p className="hint">Inner and outer each own their state and their <code>useId</code>-based trigger/panel ids; there is no global state and no event-propagation hack.</p>
+          </section>
+
+          <section className="panel" aria-labelledby="multi-h">
+            <h2 id="multi-h">Two independent instances</h2>
+            <div className="stack">
+              <Collapsible trigger="Collapsible A" onOpenChange={(nextOpen) => setStatus(nextOpen ? 'A opened.' : 'A closed.')}>
+                <p>My open state and my callback are mine alone.</p>
+              </Collapsible>
+              <Collapsible trigger="Collapsible B" defaultOpen onOpenChange={(nextOpen) => setStatus(nextOpen ? 'B opened.' : 'B closed.')}>
+                <p>Separate state, separate <code>useId</code> ids. Toggling A never fires my callback.</p>
+              </Collapsible>
+            </div>
+            <p className="hint">Each instance has its own open state and its own <code>React.useId()</code> trigger/panel pair; one trigger never points at the other's panel, and there are no hand-written static ids.</p>
+          </section>
+
+          <section className="panel" aria-labelledby="keyboard-h">
+            <h2 id="keyboard-h">Keyboard &amp; focus</h2>
+            <ul className="keys">
+              <li><kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd> move through triggers and open-panel controls in natural document order — <strong>no focus trap</strong>.</li>
+              <li><kbd>Enter</kbd> / <kbd>Space</kbd> toggle the focused trigger via native button activation.</li>
+              <li>A closed panel's controls are <strong>not</strong> tabbable; an open panel's controls are reachable in DOM order.</li>
+              <li>There is <strong>no</strong> arrow / <kbd>Home</kbd> / <kbd>End</kbd> navigation — a single disclosure, not a roving widget.</li>
+              <li>The trigger keeps focus on open and on close; there is no programmatic panel focus.</li>
+              <li>Tab onto a trigger to see its <code>--ep-shadow-focus</code> ring; hover only changes the background, and a pointer click alone may not show the ring.</li>
+            </ul>
+          </section>
+
+          <section className="panel" aria-labelledby="notes-h">
+            <h2 id="notes-h">Behaviour &amp; known limitations</h2>
+
+            <h3>Trigger &amp; panel semantics</h3>
+            <p className="hint">The trigger is a native <code>&lt;button type="button"&gt;</code>. A stable <code>React.useId()</code> pairs trigger and panel: the trigger carries <code>aria-controls</code> and <code>aria-expanded</code>; the panel carries the matching <code>id</code>, <code>role="region"</code>, <code>aria-labelledby</code> (back at the trigger) and <code>hidden</code> while closed. The chevron is decorative (<code>aria-hidden="true"</code>, <code>focusable="false"</code>). There is no heading wrapper, no heading-level API, no Accordion-style item structure and no multiple mode.</p>
+
+            <h3>Panel layout &amp; motion</h3>
+            <p className="hint">A closed panel is removed from layout, the Tab order and the accessibility tree purely by the native <code>hidden</code> attribute (<code>display:none</code>); an open panel takes its natural, content-driven block height with no cap, so tall or growing content is never clipped. The panel height is <strong>not</strong> animated. In normal mode the trigger background and the chevron <code>transform</code> rotation may transition; under <code>prefers-reduced-motion: reduce</code> both are switched off and the change is instant, while the chevron's rotated end-state is preserved. There is no exit-state and no transitionend/animationend dependency.</p>
+
+            <h3>Focus</h3>
+            <p className="hint">In normal mode the trigger's <code>:focus-visible</code> ring is the <code>--ep-shadow-focus</code> box-shadow — it is not animated, causes no layout shift, and a pointer click alone may not show it. The focus styling of any consumer control placed inside a panel is that control's own (or the browser's) responsibility.</p>
+
+            <h3>Root overflow (known P2)</h3>
+            <p className="hint">The root uses <code>overflow: hidden</code> to clip its rounded boundary. As a result the normal outset box-shadow focus ring can be partially clipped at the trigger's outer edges, and an overlay or dropdown that extends past the root boundary from inside the content can be clipped too. This is a documented P2 root-geometry limit, not resolved here; in forced-colors mode the focus uses a real outline instead.</p>
+
+            <h3>Forced colors</h3>
+            <p className="hint">A targeted <code>forced-colors</code> block maps the component onto system colours: the root gets a real <code>CanvasText</code> border, the trigger text is <code>CanvasText</code> with a <code>Highlight</code> / <code>HighlightText</code> hover, the chevron stays visible via <code>currentColor</code>, and the panel text is <code>CanvasText</code>. Keyboard focus becomes a real <code>outline: 2px solid Highlight</code> with a <code>2px</code> offset (the box-shadow ring is turned off). No <code>forced-color-adjust: none</code> is used, and consumer panel-child controls keep their own forced-colors styling.</p>
+
+            <h3>Still-true known limitations</h3>
+            <ul className="keys">
+              <li>No controlled <code>open</code> prop — the state is uncontrolled.</li>
+              <li>No <code>disabled</code> API and no heading wrapper.</li>
+              <li>No multiple mode and no item-value API — it is a single disclosure.</li>
+              <li>No panel enter/exit animation — a deterministic, accessible contract.</li>
+              <li>The root's <code>overflow: hidden</code> clipping described above.</li>
+              <li>The export attaches to the browser <code>window</code> (browser-only, no module build).</li>
+            </ul>
+            <p className="hint">These are documented design limits, not runtime errors or P1 accessibility bugs.</p>
+          </section>
+        </main>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>

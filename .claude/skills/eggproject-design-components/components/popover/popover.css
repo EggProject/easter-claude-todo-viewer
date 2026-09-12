@@ -1,0 +1,193 @@
+@import url('../../../eggproject-design/colors_and_type.css');
+
+/* ============ Popover ============
+   Like a tooltip, but bigger and click-triggered. Holds real content
+   (text, buttons, lists). Pure CSS positioning + arrow.
+
+   .popover-anchor        — wrapper around target, sets reference frame
+   .popover               — floating panel (positioned absolutely)
+   .popover.is-open       — visible
+   .po--<placement>  — top | bottom | left | right
+   .popover__body         — padding + radius + shadow
+   .popover__header, .popover__title, .popover__subtitle, .popover__footer
+============================================ */
+.popover-anchor {
+  position: relative;
+  display: inline-flex;
+}
+
+.popover {
+  position: absolute;
+  z-index: 900;
+  display: none;
+  pointer-events: none;
+}
+.popover.is-open {
+  display: block;
+  pointer-events: auto;
+}
+/* Closed-state invariant: the panel carries the `hidden` attribute while closed, so it leaves
+   layout and the a11y tree (no Tab stop, no pointer surface) — never an opacity-only hide. */
+.popover[hidden] {
+  display: none;
+}
+
+
+
+.popover__body {
+  display: block;
+  min-width: 260px;
+  max-width: 320px;
+  background: var(--ep-bg-elevated);
+  border: 1px solid var(--ep-border-subtle);
+  border-radius: var(--ep-radius-lg);
+  box-shadow: var(--ep-shadow-lg);
+  padding: 14px 16px;
+  color: var(--ep-fg);
+  font: var(--ep-text-small);
+}
+
+.popover__arrow {
+  position: absolute;
+  width: 10px; height: 10px;
+  background: var(--ep-bg-elevated);
+  border: 1px solid var(--ep-border-subtle);
+  transform: rotate(45deg);
+}
+/* Internal content patterns */
+.popover__header {
+  display: flex; align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.popover__title {
+  font: 600 14px var(--ep-font-sans);
+  color: var(--ep-fg);
+  flex: 1;
+}
+.popover__subtitle {
+  font: 400 12px var(--ep-font-sans);
+  color: var(--ep-fg-subtle);
+}
+.popover__close {
+  width: 22px; height: 22px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: transparent; border: 0;
+  border-radius: var(--ep-radius-sm);
+  color: var(--ep-fg-subtle); cursor: pointer; flex-shrink: 0;
+}
+.popover__close:hover { background: var(--ep-bg-hover); color: var(--ep-fg); }
+.popover__close svg { width: 12px; height: 12px; }
+
+/* Keyboard focus — system focus token, instant (not transitioned), no layout shift. The close
+   button is the only interactive control the popover styles; the trigger and footer buttons are
+   consumer-owned and carry their own focus rings. */
+.popover__close:focus-visible {
+  outline: none;
+  box-shadow: var(--ep-shadow-focus);
+}
+
+.popover__message {
+  font: 400 13px/1.5 var(--ep-font-sans);
+  color: var(--ep-fg-muted);
+}
+.popover__footer {
+  display: flex; gap: 8px; justify-content: flex-end;
+  margin-top: 12px;
+}
+
+/* Placements */
+.popover--top {
+  bottom: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%) translate(var(--po-nudge-x, 0), var(--po-nudge-y, 0));
+}
+.popover--top .popover__arrow {
+  bottom: -6px; left: 50%; margin-left: -5px;
+  border-top: 0; border-left: 0;
+}
+
+.popover--bottom {
+  top: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%) translate(var(--po-nudge-x, 0), var(--po-nudge-y, 0));
+}
+.popover--bottom .popover__arrow {
+  top: -6px; left: 50%; margin-left: -5px;
+  border-bottom: 0; border-right: 0;
+}
+
+.popover--left {
+  right: calc(100% + 12px);
+  top: 50%;
+  transform: translateY(-50%) translate(var(--po-nudge-x, 0), var(--po-nudge-y, 0));
+}
+.popover--left .popover__arrow {
+  right: -6px; top: 50%; margin-top: -5px;
+  border-bottom: 0; border-left: 0;
+}
+
+.popover--right {
+  left: calc(100% + 12px);
+  top: 50%;
+  transform: translateY(-50%) translate(var(--po-nudge-x, 0), var(--po-nudge-y, 0));
+}
+.popover--right .popover__arrow {
+  left: -6px; top: 50%; margin-top: -5px;
+  border-top: 0; border-right: 0;
+}
+
+/* Align: at the start/end of the anchor instead of centered */
+.popover--align-start.popover--top, .popover--align-start.popover--bottom { left: 0; transform: translate(var(--po-nudge-x, 0), var(--po-nudge-y, 0)); }
+.popover--align-end.popover--top,   .popover--align-end.popover--bottom   { left: auto; right: 0; transform: translate(var(--po-nudge-x, 0), var(--po-nudge-y, 0)); }
+
+/* Arrow stays pointing at the anchor when the panel is nudged sideways:
+   counter-translate by the nudge amount so the arrow tracks the trigger. */
+.popover--top .popover__arrow,
+.popover--bottom .popover__arrow {
+  transform: translateX(calc(-1 * var(--po-nudge-x, 0px))) rotate(45deg);
+}
+.popover--left .popover__arrow,
+.popover--right .popover__arrow {
+  transform: translateY(calc(-1 * var(--po-nudge-y, 0px))) rotate(45deg);
+}
+
+/* ---- Forced colors — system colors only; a real border replaces the shadow/tint separation ---- */
+@media (forced-colors: active) {
+  .popover__body {
+    background: Canvas;
+    color: CanvasText;
+    border: 1px solid CanvasText;
+    box-shadow: none;
+  }
+  /* The arrow is decorative (aria-hidden) but should still read as the panel's pointer. */
+  .popover__arrow {
+    background: Canvas;
+    border-color: CanvasText;
+  }
+  .popover__title,
+  .popover__message { color: CanvasText; }
+  .popover__subtitle { color: GrayText; }
+
+  .popover__close {
+    background: Canvas;
+    color: CanvasText;
+    border: 1px solid CanvasText;
+  }
+  .popover__close:hover { background: Highlight; color: HighlightText; }
+  .popover__close:focus-visible { outline: 2px solid Highlight; outline-offset: 2px; }
+}
+
+/* ---- Reduced motion — the popover appears via an instant display toggle and ships no entrance/
+   exit animation; this keeps the panel and its control motion-free even if a transition is added
+   later. The positioning transforms (the viewport nudge) are intentionally left untouched. ---- */
+@media (prefers-reduced-motion: reduce) {
+  .popover,
+  .popover__body,
+  .popover__close {
+    transition: none;
+    animation: none;
+  }
+}
+
+

@@ -1,0 +1,260 @@
+@import url('../../../eggproject-design/colors_and_type.css');
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: var(--ep-bg-sunken); color: var(--ep-fg); font-family: var(--ep-font-sans); -webkit-font-smoothing: antialiased; }
+button { font-family: inherit; cursor: pointer; border: 0; background: transparent; color: inherit; }
+h2 { font-weight: inherit; }
+
+#root { padding: 32px; min-height: 100vh; display: flex; align-items: flex-start; justify-content: center; }
+
+/* ===== Wrapper ===== */
+.trade-table-wrapper {
+  width: 100%;
+  max-width: 1320px;
+  background: var(--ep-bg-elevated);
+  border: 1px solid var(--ep-border-subtle);
+  border-radius: var(--ep-radius-lg);
+  overflow: hidden;
+  box-shadow: var(--ep-shadow-sm);
+}
+
+/* ===== Toolbar (with embedded stats) ===== */
+.trade-table-toolbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px;
+  background: var(--ep-ink-900);
+  color: var(--ep-paper-100);
+  border-bottom: 1px solid var(--ep-divider);
+  gap: 24px;
+}
+.trade-table-toolbar__title { display: flex; flex-direction: column; gap: 6px; }
+.trade-table-toolbar__title h2 {
+  font: 400 22px var(--ep-font-display);
+  letter-spacing: -0.01em;
+  color: var(--ep-paper-50);
+}
+.trade-table-toolbar__live {
+  display: inline-flex; align-items: center; gap: 6px;
+  font: 500 11px var(--ep-font-sans);
+  letter-spacing: var(--ep-track-overline);
+  text-transform: uppercase;
+  color: var(--ep-blue-300);
+}
+.trade-table-toolbar__live-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--ep-success);
+  box-shadow: 0 0 0 3px rgba(47, 156, 106, 0.22);
+  animation: tt-pulse 1.6s ease-in-out infinite;
+}
+@keyframes tt-pulse {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(47, 156, 106, 0.22); }
+  50%      { box-shadow: 0 0 0 6px rgba(47, 156, 106, 0.05); }
+}
+
+.trade-table-stats { display: flex; align-items: center; gap: 24px; }
+.trade-table-stat { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.trade-table-stat__label {
+  font: 500 10px var(--ep-font-sans);
+  letter-spacing: var(--ep-track-overline);
+  text-transform: uppercase;
+  color: var(--ep-slate-400);
+}
+.trade-table-stat__value {
+  font: 600 18px/1 var(--ep-font-sans);
+  color: var(--ep-paper-50);
+}
+.trade-table-stat__value.trade-table-mono { font-family: var(--ep-font-mono); font-weight: 500; }
+.trade-table-stat__value.is-pos { color: #6FE0A8; }
+.trade-table-stat__value.is-neg { color: #FF7E92; }
+
+.trade-table-stat-actions { display: flex; gap: 6px; align-items: center; }
+.trade-table-button {
+  font: 500 12px var(--ep-font-sans);
+  padding: 8px 14px;
+  border-radius: var(--ep-radius-md);
+  background: rgba(255,255,255,0.08);
+  color: var(--ep-paper-50);
+  border: 1px solid rgba(255,255,255,0.12);
+  transition: all var(--ep-dur-fast) var(--ep-ease-out);
+}
+.trade-table-button:hover { background: rgba(255,255,255,0.16); }
+.trade-table-button--primary {
+  background: var(--ep-accent);
+  border-color: var(--ep-accent);
+  color: var(--ep-accent-on);
+}
+.trade-table-button--primary:hover { background: var(--ep-accent-hover); border-color: var(--ep-accent); }
+.trade-table-button--danger {
+  color: #FF7E92;
+  background: rgba(255, 126, 146, 0.1);
+  border-color: rgba(255, 126, 146, 0.25);
+}
+.trade-table-button--danger:hover { background: rgba(255, 126, 146, 0.2); }
+.trade-table-button--ghost { background: transparent; border-color: transparent; color: var(--ep-slate-300); }
+.trade-table-button--ghost:hover { color: var(--ep-paper-50); }
+
+/* ===== Table ===== */
+.trade-table-scroll { overflow-x: auto; }
+.trade-table-scroll::-webkit-scrollbar { height: 8px; }
+.trade-table-scroll::-webkit-scrollbar-thumb { background: var(--ep-border); border-radius: 4px; }
+.trade-table { display: flex; flex-direction: column; }
+
+.trade-table__header {
+  display: flex; align-items: center;
+  padding: 0 8px;
+  background: var(--ep-bg-sunken);
+  border-bottom: 1px solid var(--ep-divider);
+  height: 36px;
+}
+
+.trade-table__body { display: flex; flex-direction: column; }
+
+.trade-table__row {
+  display: flex; align-items: center;
+  padding: 0 8px;
+  border-bottom: 1px solid var(--ep-divider);
+  cursor: pointer;
+  transition: background var(--ep-dur-fast) var(--ep-ease-out);
+  min-height: 52px;
+  position: relative;
+}
+.trade-table__row:last-child { border-bottom: 0; }
+.trade-table__row:hover { background: var(--ep-bg-sunken); }
+.trade-table__row.is-selected { background: var(--ep-accent-bg); }
+.trade-table__row.is-selected:hover { background: var(--ep-accent-bg); }
+.trade-table__row.is-active::before {
+  content: "";
+  position: absolute; left: 0; top: 6px; bottom: 6px;
+  width: 2px;
+  background: var(--ep-accent);
+  border-radius: 0 2px 2px 0;
+}
+
+/* ===== Cells ===== */
+.trade-table__cell {
+  padding: 0 10px;
+  font: var(--ep-text-body);
+  color: var(--ep-fg);
+  display: flex; align-items: center;
+  min-width: 0;
+}
+.trade-table__cell--checkbox { width: 40px; flex: 0 0 auto; justify-content: center; padding: 0; }
+.trade-table__cell--right { justify-content: flex-end; text-align: right; }
+.trade-table__cell--header {
+  font: 500 11px var(--ep-font-sans);
+  letter-spacing: var(--ep-track-overline);
+  text-transform: uppercase;
+  color: var(--ep-fg-subtle);
+  gap: 6px;
+  user-select: none;
+}
+.trade-table__cell--header.is-sortable { cursor: pointer; transition: color var(--ep-dur-fast) var(--ep-ease-out); }
+.trade-table__cell--header.is-sortable:hover { color: var(--ep-fg); }
+.trade-table__cell--header.is-sorted { color: var(--ep-fg); }
+/* Keyboard focus for now-focusable sortable headers. Inset ring (never an outer glow):
+   the header sits at the top edge of .trade-table-scroll (overflow-x:auto → overflow-y
+   computes to auto), so an outer --ep-shadow-focus would clip. Inset never clips, never
+   shifts layout. Ink band (2–4px) guarantees ≥3:1 (WCAG 1.4.11); gold band carries brand. */
+.trade-table__cell--header.is-sortable:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--ep-accent), inset 0 0 0 4px var(--ep-ink-900);
+}
+@media (forced-colors: active) {
+  .trade-table__cell--header.is-sortable:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+    box-shadow: none;
+  }
+}
+.trade-table__cell--mono { font: 500 12px var(--ep-font-mono); color: var(--ep-fg-muted); font-variant-numeric: tabular-nums; }
+
+/* ===== Cell content types ===== */
+.trade-table-mono { font-family: var(--ep-font-mono); font-variant-numeric: tabular-nums; font-weight: 500; }
+.trade-table-strong { color: var(--ep-fg); font-weight: 600; }
+
+.trade-table-symbol { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.trade-table-symbol__main { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.trade-table-symbol__main strong { font: 600 14px var(--ep-font-sans); letter-spacing: -0.01em; color: var(--ep-fg); font-family: var(--ep-font-mono); }
+.trade-table-symbol__main span  { font: var(--ep-text-meta); color: var(--ep-fg-subtle); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.trade-table-side {
+  display: inline-flex; align-items: center; justify-content: center;
+  font: 600 10px var(--ep-font-mono);
+  letter-spacing: 0.06em;
+  padding: 3px 8px;
+  border-radius: 3px;
+  min-width: 44px;
+}
+.trade-table-side--buy  { background: #E1F4EB; color: #1F6849; }
+.trade-table-side--sell { background: #FADEE2; color: #8A2230; }
+
+.trade-table-change {
+  display: inline-flex; align-items: center;
+  font-size: 12px;
+}
+.trade-table-change.is-pos { color: var(--ep-success); }
+.trade-table-change.is-neg { color: var(--ep-danger); }
+
+.trade-table-pnl { font-size: 14px; font-weight: 600; }
+.trade-table-pnl.is-pos { color: var(--ep-success); }
+.trade-table-pnl.is-neg { color: var(--ep-danger); }
+
+.trade-table-status {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 3px 9px;
+  border-radius: var(--ep-radius-pill);
+  font: 500 11px var(--ep-font-sans);
+}
+.trade-table-status__dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+.trade-table-status--filled   { background: #E1F4EB;            color: #1F6849; }
+.trade-table-status--partial  { background: #FBEED1;            color: #7A4D14; }
+.trade-table-status--pending  { background: var(--ep-accent-bg); color: var(--ep-accent-fg); }
+.trade-table-status--rejected { background: #FADEE2;            color: #8A2230; }
+
+/* ===== Checkbox ===== */
+.data-table-checkbox, .trade-table-checkbox {
+  width: 18px; height: 18px;
+  border-radius: 4px;
+  border: 1.5px solid var(--ep-control-border);
+  background: var(--ep-bg-elevated);
+  display: inline-flex; align-items: center; justify-content: center;
+  color: var(--ep-accent-on);
+  /* not `transition: all`: the added :focus-visible box-shadow must appear instantly (no ring fade),
+     and the gold checked background must apply immediately (the preview freezes all-transitions). */
+  transition: border-color var(--ep-dur-fast) var(--ep-ease-out);
+}
+.data-table-checkbox:hover { border-color: var(--ep-accent); }
+.data-table-checkbox--on, .data-table-checkbox--partial {
+  background: var(--ep-accent);
+  border-color: var(--ep-accent);
+}
+.data-table-checkbox--on:hover, .data-table-checkbox--partial:hover { background: var(--ep-accent-hover); border-color: var(--ep-accent); }
+
+/* Header-strip checkbox sits on dark — adjust */
+.trade-table__header .data-table-checkbox { background: rgba(255,255,255,0.04); border-color: rgba(0,0,0,0.12); }
+/* Keyboard focus for the checkbox controls. Outer --ep-shadow-focus is safe here (unlike the sort
+   headers): the 18px box is centered with ≥9px margin in its 36px header / 40px cell, so the 4px ring
+   never reaches the .trade-table-scroll clip edge. No box-shadow is set by hover/--on/--partial, so
+   the ring shows in every state. */
+.data-table-checkbox:focus-visible { outline: none; box-shadow: var(--ep-shadow-focus); }
+@media (forced-colors: active) {
+  .data-table-checkbox:focus-visible { outline: 2px solid Highlight; outline-offset: 2px; box-shadow: none; }
+}
+
+/* ===== Footer ===== */
+.trade-table-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 20px;
+  border-top: 1px solid var(--ep-divider);
+  background: var(--ep-bg-sunken);
+  font: var(--ep-text-small);
+  color: var(--ep-fg-muted);
+}
+.trade-table-footer code {
+  font: 500 11px var(--ep-font-mono);
+  background: var(--ep-accent-bg);
+  color: var(--ep-accent-fg);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+.trade-table-footer__page { font: var(--ep-text-meta); font-family: var(--ep-font-mono); color: var(--ep-fg-subtle); }

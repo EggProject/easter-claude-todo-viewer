@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>EggProject — File upload</title>
+  <script src="../../../eggproject-design/preview/_theme.js" defer></script>
+  <meta name="viewport" content="width=720" />
+  <link rel="stylesheet" href="file-upload.css" />
+  <link rel="icon" href="../../../eggproject-design/assets/logo-mark.svg" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--ep-bg); color: var(--ep-fg); font-family: var(--ep-font-sans); padding: 40px; }
+    .page { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+    .label { font: var(--ep-text-overline); letter-spacing: var(--ep-track-overline); text-transform: uppercase; color: var(--ep-fg-subtle); margin-bottom: 8px; }
+    h1 { font: 400 36px/1.1 var(--ep-font-display); letter-spacing: -0.02em; color: var(--ep-fg); }
+ h1 em { font-weight: 700; }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1>File upload · <em>drag or browse</em></h1>
+
+    <div>
+      <span class="label">Empty state</span>
+      <label class="dropzone">
+        <input type="file" class="dropzone__input" multiple>
+        <span class="dropzone__icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14V4M6 8l4-4 4 4"/><path d="M3 14v2.5A1.5 1.5 0 0 0 4.5 18h11a1.5 1.5 0 0 0 1.5-1.5V14"/></svg></span>
+        <span class="dropzone__copy">Drop files here or <em>browse</em></span>
+        <span class="dropzone__hint">PDF · PNG · JPG · up to 25 MB each</span>
+      </label>
+    </div>
+
+    <div>
+      <span class="label">With files queued</span>
+      <label class="dropzone dropzone--small">
+        <input type="file" class="dropzone__input" multiple>
+        <span class="dropzone__icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14V4M6 8l4-4 4 4"/><path d="M3 14v2.5A1.5 1.5 0 0 0 4.5 18h11a1.5 1.5 0 0 0 1.5-1.5V14"/></svg></span>
+        <span class="dropzone__copy">Add more files</span>
+      </label>
+      <div class="dropzone-files">
+        <div class="dropzone-file">
+          <span class="dropzone-file__icon"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2.5h6L13 5.5v8a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1z"/><path d="M10 2.5V5h3"/></svg></span>
+          <div class="dropzone-file__body">
+            <span class="dropzone-file__name">lumenwerk-brief-v3.pdf</span>
+            <span class="dropzone-file__meta">1.4 MB</span>
+          </div>
+          <span class="dropzone-file__status">✓ uploaded</span>
+          <button class="dropzone-file__remove" aria-label="Remove"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
+        </div>
+        <div class="dropzone-file">
+          <span class="dropzone-file__icon"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="3.5" width="11" height="9" rx="1"/><circle cx="6" cy="7" r="1"/><path d="m3 11 3-3 4 4"/></svg></span>
+          <div class="dropzone-file__body">
+            <span class="dropzone-file__name">hero-shot.png</span>
+            <span class="dropzone-file__meta">3.2 MB</span>
+          </div>
+          <div class="dropzone-file__bar"><span style="width: 64%;"></span></div>
+          <button class="dropzone-file__remove" aria-label="Remove"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
+        </div>
+        <div class="dropzone-file">
+          <span class="dropzone-file__icon"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2.5h6L13 5.5v8a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1z"/><path d="M10 2.5V5h3"/></svg></span>
+          <div class="dropzone-file__body">
+            <span class="dropzone-file__name">contract-final.docx</span>
+            <span class="dropzone-file__meta">42 KB</span>
+          </div>
+          <span class="dropzone-file__status dropzone-file__status--error">too large</span>
+          <button class="dropzone-file__remove" aria-label="Remove"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

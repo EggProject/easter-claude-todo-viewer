@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>EggProject — Toggle</title>
+  <script src="../../../eggproject-design/preview/_theme.js" defer></script>
+  <meta name="viewport" content="width=720" />
+  <link rel="stylesheet" href="toggle.css" />
+  <link rel="stylesheet" href="../button-group/button-group.css" />
+  <link rel="stylesheet" href="../button/button.css" />
+  <link rel="icon" href="../../../eggproject-design/assets/logo-mark.svg" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--ep-bg); color: var(--ep-fg); font-family: var(--ep-font-sans); padding: 40px; }
+    .page { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+    h1 { font: 400 36px/1.1 var(--ep-font-display); letter-spacing: -0.02em; }
+    h1 em { font-weight: 700; }
+    .lead { font: var(--ep-text-body); color: var(--ep-fg-muted); }
+    .label { font: var(--ep-text-overline); letter-spacing: var(--ep-track-overline); text-transform: uppercase; color: var(--ep-fg-subtle); }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  </style>
+  <script src="../../assets/vendor/react.production.min.js"></script>
+  <script src="../../assets/vendor/react-dom.production.min.js"></script>
+  <script src="../../assets/vendor/babel.min.js"></script>
+</head>
+<body>
+  <div class="page">
+    <h1>Toggle · <em>pressed state</em></h1>
+    <p class="lead">Single-button toggle for on/off pressed state. Toggle.Group for mutually exclusive selection (segmented control).</p>
+    <div id="root"></div>
+  </div>
+  <script type="text/babel" src="Toggle.jsx"></script>
+  <script type="text/babel">
+    const { useState } = React;
+
+    const BoldIcon = () => <svg viewBox="0 0 16 16" fill="currentColor"><text x="3" y="13" fontFamily="serif" fontSize="14" fontWeight="900">B</text></svg>;
+    const ItalicIcon = () => <svg viewBox="0 0 16 16" fill="currentColor"><text x="5" y="13" fontFamily="serif" fontSize="14" fontStyle="italic">I</text></svg>;
+    const UnderlineIcon = () => <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.75"><text x="3" y="11" fontFamily="serif" fontSize="11" fill="currentColor" stroke="none">U</text><line x1="2" y1="15" x2="14" y2="15" strokeLinecap="round"/></svg>;
+
+    function App() {
+      const [bold, setBold] = useState(false);
+      const [italic, setItalic] = useState(false);
+      const [view, setView] = useState('grid');
+
+      return (
+        <div style={{display:'flex',flexDirection:'column',gap:20}}>
+          <div>
+            <span className="label" style={{display:'block',marginBottom:10}}>Standalone toggles</span>
+            <div className="row">
+              <Toggle pressed={bold} onPressedChange={setBold}><BoldIcon />Bold</Toggle>
+              <Toggle pressed={italic} onPressedChange={setItalic} variant="outline"><ItalicIcon />Italic</Toggle>
+              <Toggle defaultPressed><UnderlineIcon />Underline</Toggle>
+              <Toggle disabled>Disabled</Toggle>
+            </div>
+          </div>
+          <div>
+            <span className="label" style={{display:'block',marginBottom:10}}>Toggle group (segmented)</span>
+            <Toggle.Group defaultValue="grid" onValueChange={setView}>
+              <Toggle value="list" className="btn btn--secondary">List</Toggle>
+              <Toggle value="grid" className="btn btn--secondary">Grid</Toggle>
+              <Toggle value="kanban" className="btn btn--secondary">Kanban</Toggle>
+            </Toggle.Group>
+            <p style={{font:'var(--ep-text-meta)',color:'var(--ep-fg-subtle)',marginTop:8}}>Active: {view}</p>
+          </div>
+          <div>
+            <span className="label" style={{display:'block',marginBottom:10}}>Size variants</span>
+            <div className="row">
+              <Toggle size="sm">Small</Toggle>
+              <Toggle>Default</Toggle>
+              <Toggle size="lg">Large</Toggle>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>

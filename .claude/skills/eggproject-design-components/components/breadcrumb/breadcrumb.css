@@ -1,0 +1,89 @@
+@import url('../../../eggproject-design/colors_and_type.css');
+
+/* ============ Breadcrumb ============
+   <nav class="breadcrumb" aria-label="Breadcrumb">
+     <a class="breadcrumb__item" href="…">Home</a>
+     <span class="breadcrumb__separator" aria-hidden="true">/</span>
+     <a class="breadcrumb__item" href="…">Projects</a>
+     <span class="breadcrumb__separator" aria-hidden="true">/</span>
+     <span class="breadcrumb__item breadcrumb__item--current" aria-current="page">Lumenwerk</span>
+   </nav>
+============================================ */
+.breadcrumb {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  font: 500 13px var(--ep-font-sans);
+  color: var(--ep-fg-muted);
+}
+.breadcrumb__item {
+  color: var(--ep-fg-muted);
+  text-decoration: none;
+  padding: 4px 6px;
+  border-radius: var(--ep-radius-sm);
+  transition:
+    color var(--ep-dur-fast) var(--ep-ease-out),
+    background-color var(--ep-dur-fast) var(--ep-ease-out);
+}
+.breadcrumb__item:hover { color: var(--ep-fg); background: var(--ep-bg-hover); }
+/* Keyboard focus only on the navigable links — the current <span> carries no href, so it is
+   never targeted. The token two-layer ring replaces the UA outline in the same rule,
+   radius-matched, no layout shift, not animated. */
+.breadcrumb__item[href]:focus-visible {
+  outline: none;
+  box-shadow: var(--ep-shadow-focus);
+}
+.breadcrumb__item--current {
+  color: var(--ep-fg);
+  font-weight: 600;
+}
+.breadcrumb__item--current:hover { background: transparent; }
+
+.breadcrumb__separator {
+  color: var(--ep-fg-faint);
+  font: 400 13px var(--ep-font-sans);
+  user-select: none;
+}
+.breadcrumb__separator--slash::before { content: '/'; }
+.breadcrumb__separator--chevron {
+  width: 12px; height: 12px;
+  display: inline-flex;
+  color: var(--ep-fg-faint);
+}
+.breadcrumb__separator--chevron svg { width: 100%; height: 100%; }
+.breadcrumb__separator--dot::before { content: '·'; font-size: 18px; line-height: 1; }
+
+.breadcrumb__icon { width: 14px; height: 14px; margin-right: 2px; display: inline-block; vertical-align: -2px; color: var(--ep-fg-muted); }
+
+/* ---- Collapsed pattern: "Home / … / Project / Brief" ---- */
+.breadcrumb__more {
+  background: var(--ep-bg-hover);
+  border: 0;
+  color: var(--ep-fg-muted);
+  font: 500 13px var(--ep-font-sans);
+  padding: 2px 8px;
+  border-radius: var(--ep-radius-pill);
+  cursor: pointer;
+}
+.breadcrumb__more:hover { background: var(--ep-bg-pressed); color: var(--ep-fg); }
+
+/* ---- Forced colors: the UA drops box-shadow rings, so link keyboard focus gets a real system
+        outline. Links (LinkText), the current item (font-weight 600 + CanvasText), the text
+        separators and the ellipsis (CanvasText) stay distinguishable through native system-color
+        mapping — no extra rules and no forced-color-adjust needed. Positive offset: breadcrumb
+        links sit in no overflow-clipping ancestor. ---- */
+@media (forced-colors: active) {
+  .breadcrumb__item[href]:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+    box-shadow: none;
+  }
+}
+
+/* ---- Reduced motion: drop the hover colour/background transition; the end states are kept. ---- */
+@media (prefers-reduced-motion: reduce) {
+  .breadcrumb__item {
+    transition: none;
+  }
+}

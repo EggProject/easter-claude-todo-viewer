@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>EggProject — Skeleton</title>
+  <script src="../../../eggproject-design/preview/_theme.js" defer></script>
+  <meta name="viewport" content="width=860" />
+  <link rel="stylesheet" href="skeleton.css" />
+  <link rel="icon" href="../../../eggproject-design/assets/logo-mark.svg" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--ep-bg); color: var(--ep-fg); font-family: var(--ep-font-sans); padding: 40px; }
+    .page { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+    .label { font: var(--ep-text-overline); letter-spacing: var(--ep-track-overline); text-transform: uppercase; color: var(--ep-fg-subtle); }
+    h1 { font: 400 36px/1.1 var(--ep-font-display); letter-spacing: -0.02em; color: var(--ep-fg); }
+ h1 em { font-weight: 700; }
+    .frame { background: var(--ep-bg-elevated); border: 1px solid var(--ep-border-subtle); border-radius: 12px; padding: 24px; }
+    .frame--ink { background: var(--ep-ink-900); border-color: transparent; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1>Skeleton · <em>loading shape</em></h1>
+
+    <div class="frame">
+      <span class="label">Card placeholder</span>
+      <div style="display:flex; gap:14px; align-items:flex-start; margin-top:14px;">
+        <span class="skel skel--avatar-lg"></span>
+        <div class="skel-stack" style="flex:1;">
+          <span class="skel skel--title" style="width: 40%;"></span>
+          <span class="skel skel--text" style="width: 90%;"></span>
+          <span class="skel skel--text" style="width: 70%;"></span>
+          <div style="display:flex; gap:8px; margin-top:8px;">
+            <span class="skel skel--btn"></span>
+            <span class="skel skel--btn" style="width: 72px;"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="frame">
+      <span class="label">Table / list</span>
+      <div class="skel-list" style="margin-top: 12px;">
+        <div class="skel-list__row">
+          <span class="skel skel--avatar"></span>
+          <div class="skel-list__main">
+            <span class="skel skel--title" style="width: 50%;"></span>
+            <span class="skel skel--text" style="width: 80%;"></span>
+          </div>
+          <span class="skel skel--text" style="width: 60px;"></span>
+        </div>
+        <div class="skel-list__row">
+          <span class="skel skel--avatar"></span>
+          <div class="skel-list__main">
+            <span class="skel skel--title" style="width: 35%;"></span>
+            <span class="skel skel--text" style="width: 60%;"></span>
+          </div>
+          <span class="skel skel--text" style="width: 60px;"></span>
+        </div>
+        <div class="skel-list__row">
+          <span class="skel skel--avatar"></span>
+          <div class="skel-list__main">
+            <span class="skel skel--title" style="width: 60%;"></span>
+            <span class="skel skel--text" style="width: 75%;"></span>
+          </div>
+          <span class="skel skel--text" style="width: 60px;"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="frame">
+        <span class="label">Image card</span>
+        <span class="skel skel--card" style="width: 100%; height: 140px; margin-top: 12px;"></span>
+        <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 8px;">
+          <span class="skel skel--text" style="width: 80%;"></span>
+          <span class="skel skel--text" style="width: 50%;"></span>
+        </div>
+      </div>
+      <div class="frame frame--ink">
+        <span class="label" style="color: var(--ep-slate-400);">On dark</span>
+        <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 8px;">
+          <span class="skel skel--ink skel--title" style="width: 50%;"></span>
+          <span class="skel skel--ink skel--text"></span>
+          <span class="skel skel--ink skel--text" style="width: 90%;"></span>
+          <span class="skel skel--ink skel--text" style="width: 60%;"></span>
+          <div style="display:flex; gap:8px; margin-top:6px;">
+            <span class="skel skel--ink skel--btn"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

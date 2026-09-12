@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>EggProject — Hover Card</title>
+  <script src="../../../eggproject-design/preview/_theme.js" defer></script>
+  <meta name="viewport" content="width=720" />
+  <link rel="stylesheet" href="hover-card.css" />
+  <link rel="icon" href="../../../eggproject-design/assets/logo-mark.svg" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--ep-bg); color: var(--ep-fg); font-family: var(--ep-font-sans); padding: 80px 40px 40px; }
+    .page { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+    h1 { font: 400 36px/1.1 var(--ep-font-display); letter-spacing: -0.02em; }
+    h1 em { font-weight: 700; }
+    .lead { font: var(--ep-text-body); color: var(--ep-fg-muted); }
+    .label { font: var(--ep-text-overline); letter-spacing: var(--ep-track-overline); text-transform: uppercase; color: var(--ep-fg-subtle); }
+    .prose { font: var(--ep-text-body); line-height: 1.7; color: var(--ep-fg-muted); }
+  </style>
+  <script src="../../assets/vendor/react.production.min.js"></script>
+  <script src="../../assets/vendor/react-dom.production.min.js"></script>
+  <script src="../../assets/vendor/babel.min.js"></script>
+</head>
+<body>
+  <div class="page">
+    <h1>Hover Card · <em>rich tooltip</em></h1>
+    <p class="lead">Reveals rich profile or entity information on hover. Delayed open/close prevents flicker.</p>
+    <div id="root"></div>
+  </div>
+  <script type="text/babel" src="HoverCard.jsx"></script>
+  <script type="text/babel">
+    const AvatarPlaceholder = ({ initials, color }) => (
+      <div style={{ width: 38, height: 38, borderRadius: '50%', background: color, display: 'flex', alignItems: 'center', justifyContent: 'center', font: '600 13px var(--ep-font-sans)', color: 'var(--ep-accent-on)' }}>
+        {initials}
+      </div>
+    );
+
+    function App() {
+      return (
+        <p className="prose">
+          The Lumenwerk project is led by{' '}
+          <HoverCard trigger="Eszter Kovács">
+            <HoverCard.Head
+              avatar={<AvatarPlaceholder initials="EK" color="var(--ep-accent)" />}
+              name="Eszter Kovács"
+              sub="Lead Engineer · Budapest"
+            />
+            <HoverCard.Body>
+              8 years shipping product. Focused on design systems, performance, and type-safe APIs.
+            </HoverCard.Body>
+            <HoverCard.Tags tags={['React', 'TypeScript', 'Figma']} />
+          </HoverCard>
+          {' '}in partnership with{' '}
+          <HoverCard trigger="Lili Bauer">
+            <HoverCard.Head
+              avatar={<AvatarPlaceholder initials="LB" color="var(--ep-second)" />}
+              name="Lili Bauer"
+              sub="Product Designer · Vienna"
+            />
+            <HoverCard.Body>
+              Specialises in component-driven UI and accessible design patterns.
+            </HoverCard.Body>
+            <HoverCard.Tags tags={['Figma', 'Framer', 'CSS']} />
+          </HoverCard>.
+        </p>
+      );
+    }
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>

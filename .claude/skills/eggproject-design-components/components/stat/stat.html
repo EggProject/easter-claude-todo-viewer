@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>EggProject — Stat</title>
+  <script src="../../../eggproject-design/preview/_theme.js" defer></script>
+  <meta name="viewport" content="width=900" />
+  <link rel="stylesheet" href="stat.css" />
+  <link rel="icon" href="../../../eggproject-design/assets/logo-mark.svg" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--ep-bg); color: var(--ep-fg); font-family: var(--ep-font-sans); padding: 40px; }
+    .page { max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+    .label { font: var(--ep-text-overline); letter-spacing: var(--ep-track-overline); text-transform: uppercase; color: var(--ep-fg-subtle); }
+    h1 { font: 400 36px/1.1 var(--ep-font-display); letter-spacing: -0.02em; color: var(--ep-fg); }
+ h1 em { font-weight: 700; }
+    .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    @media (max-width: 700px) { .grid4, .grid3 { grid-template-columns: 1fr 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1>Stat · <em>metric display</em></h1>
+
+    <span class="label">Card stats — dashboard row</span>
+    <div class="grid4">
+      <div class="stat stat--card">
+        <span class="stat__label">Active projects</span>
+        <div class="stat__value-row">
+          <span class="stat__value">12</span>
+          <span class="stat__delta"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8 6 3l4 5"/></svg>+2</span>
+        </div>
+        <span class="stat__subtitle">vs. last quarter</span>
+      </div>
+      <div class="stat stat--card">
+        <span class="stat__label">Hours billed</span>
+        <div class="stat__value-row">
+          <span class="stat__value">2,062</span>
+          <span class="stat__unit">h</span>
+        </div>
+        <span class="stat__subtitle stat__subtitle--mono">Q1 26</span>
+      </div>
+      <div class="stat stat--card">
+        <span class="stat__label">On-time delivery</span>
+        <div class="stat__value-row">
+          <span class="stat__value">96</span>
+          <span class="stat__unit">%</span>
+          <span class="stat__delta stat__delta--down"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4 6 9l4-5"/></svg>−2%</span>
+        </div>
+        <span class="stat__subtitle">3 missed in March</span>
+      </div>
+      <div class="stat stat--card stat--featured">
+        <span class="stat__label">MRR</span>
+        <div class="stat__value-row">
+          <span class="stat__value">€48,200</span>
+          <span class="stat__delta"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8 6 3l4 5"/></svg>+11%</span>
+        </div>
+        <span class="stat__subtitle">3 new retainers</span>
+      </div>
+    </div>
+
+    <span class="label">Plain — no card chrome, with sparkline</span>
+    <div class="grid3">
+      <div class="stat">
+        <span class="stat__label">Throughput</span>
+        <div class="stat__value-row"><span class="stat__value">28</span><span class="stat__unit">pts/sprint</span></div>
+        <svg class="stat__spark" viewBox="0 0 100 28" preserveAspectRatio="none">
+          <path class="area" d="M 0 22 L 14 18 L 28 20 L 42 14 L 56 16 L 70 10 L 84 12 L 100 6 L 100 28 L 0 28 Z"/>
+          <path d="M 0 22 L 14 18 L 28 20 L 42 14 L 56 16 L 70 10 L 84 12 L 100 6"/>
+        </svg>
+      </div>
+      <div class="stat">
+        <span class="stat__label">Open PRs</span>
+        <div class="stat__value-row"><span class="stat__value"><em>3</em></span></div>
+        <span class="stat__subtitle">2 ready for review</span>
+      </div>
+      <div class="stat">
+        <span class="stat__label">Customer NPS</span>
+        <div class="stat__value-row"><span class="stat__value">71</span><span class="stat__delta stat__delta--flat"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h8"/></svg>0</span></div>
+        <span class="stat__subtitle">8 responses · Q1</span>
+      </div>
+    </div>
+
+    <span class="label">Ink — dark surface</span>
+    <div class="grid3">
+      <div class="stat stat--ink">
+        <span class="stat__label">Production deploys</span>
+        <div class="stat__value-row"><span class="stat__value">142</span><span class="stat__delta"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8 6 3l4 5"/></svg>+18</span></div>
+        <span class="stat__subtitle">last 30 days</span>
+      </div>
+      <div class="stat stat--ink">
+        <span class="stat__label">Uptime</span>
+        <div class="stat__value-row"><span class="stat__value">99.98</span><span class="stat__unit">%</span></div>
+        <span class="stat__subtitle stat__subtitle--mono">90d rolling</span>
+      </div>
+      <div class="stat stat--ink">
+        <span class="stat__label">Build duration</span>
+        <div class="stat__value-row"><span class="stat__value">2.41</span><span class="stat__unit">s</span><span class="stat__delta"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4 6 9l4-5"/></svg>−18%</span></div>
+        <svg class="stat__spark" viewBox="0 0 100 28" preserveAspectRatio="none">
+          <path class="area" d="M 0 6 L 14 10 L 28 8 L 42 14 L 56 12 L 70 18 L 84 16 L 100 22 L 100 28 L 0 28 Z"/>
+          <path d="M 0 6 L 14 10 L 28 8 L 42 14 L 56 12 L 70 18 L 84 16 L 100 22"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,115 @@
+@import url('../../../eggproject-design/colors_and_type.css');
+
+/* ============ Avatar ============
+   Sizes:   xs (20) · sm (24) · md (32, default) · lg (40) · xl (56) · 2xl (80)
+   Shapes:  circle (default) · square
+   Status:  optional .avatar__status dot — online / away / offline / busy
+============================================ */
+.avatar {
+  position: relative;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  overflow: visible;
+  font: 600 13px var(--ep-font-sans);
+  color: #fff;
+  background: linear-gradient(135deg, var(--ep-blue-600), var(--ep-blue-400));
+  user-select: none;
+  flex-shrink: 0;
+}
+.avatar__image,
+.avatar__initials {
+  width: 100%; height: 100%;
+  border-radius: inherit;
+  display: flex; align-items: center; justify-content: center;
+  object-fit: cover;
+}
+.avatar__image { object-position: center; }
+
+/* ---- Sizes ---- */
+.avatar--xs  { width: 20px; height: 20px; font-size: 10px; }
+.avatar--sm  { width: 24px; height: 24px; font-size: 11px; }
+.avatar--md  { width: 32px; height: 32px; font-size: 13px; }
+.avatar--lg  { width: 40px; height: 40px; font-size: 14px; }
+.avatar--xl  { width: 56px; height: 56px; font-size: 20px; }
+.avatar--2xl { width: 80px; height: 80px; font-size: 28px; font-family: var(--ep-font-display); font-weight: 400; }
+
+/* ---- Shape ---- */
+.avatar--square { border-radius: var(--ep-radius-md); }
+.avatar--square.avatar--2xl { border-radius: var(--ep-radius-lg); }
+
+/* ---- Color tones (hash to brand-friendly palette) ---- */
+.avatar--blue   { background: linear-gradient(135deg, var(--ep-accent),  var(--ep-blue-400)); }
+.avatar--ink    { background: linear-gradient(135deg, var(--ep-ink-900),   var(--ep-ink-700)); }
+.avatar--yolk   { background: linear-gradient(135deg, var(--ep-yolk-600),  var(--ep-yolk-400)); }
+.avatar--slate  { background: linear-gradient(135deg, var(--ep-slate-600), var(--ep-slate-400)); }
+.avatar--violet { background: linear-gradient(135deg, #5A3FB8, #8B6EE0); }
+.avatar--teal   { background: linear-gradient(135deg, #1F7A6B, #4FB1A0); }
+
+/* ---- Status dot ---- */
+.avatar__status {
+  position: absolute;
+  bottom: 0; right: 0;
+  width: 30%; height: 30%;
+  min-width: 8px; min-height: 8px;
+  border-radius: 50%;
+  background: var(--ep-success);
+  box-shadow: 0 0 0 2px var(--ep-bg-elevated);
+}
+.avatar__status--online  { background: var(--ep-success); }
+.avatar__status--away    { background: var(--ep-warning-fg); }
+.avatar__status--busy    { background: var(--ep-danger); }
+.avatar__status--offline { background: var(--ep-slate-400); }
+
+/* ============ AvatarGroup — overlapping stack ============ */
+.avatar-group { display: inline-flex; align-items: center; }
+.avatar-group > .avatar {
+  box-shadow: 0 0 0 2px var(--ep-bg);
+  margin-left: -8px;
+}
+.avatar-group > .avatar:first-child { margin-left: 0; }
+.avatar-group--sm > .avatar { margin-left: -6px; }
+.avatar-group--lg > .avatar { margin-left: -12px; }
+
+.avatar-group__more {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--ep-bg-hover);
+  color: var(--ep-fg-muted);
+  font: 500 11px var(--ep-font-sans);
+  margin-left: -8px;
+  box-shadow: 0 0 0 2px var(--ep-bg);
+}
+
+/* ============================================================
+   Forced colors (Windows High Contrast): the tone gradients and status colours
+   are stripped, so pin every surface to a system colour with a CanvasText
+   outline — the avatar, initials text (was #fff), overlap rings and the "+N"
+   chip stay visible; the image is outlined by the .avatar container border.
+   The status dot stays a visible marker (offline dimmed to GrayText), but its
+   authoritative meaning now lives in the root aria-label, so colour is never the
+   sole carrier. System colours only; no token/hex/rgb/hsl; no forced-color-adjust.
+   Live emulation not run — source/CSSOM-verified.
+   ============================================================ */
+@media (forced-colors: active) {
+  .avatar {
+    background: ButtonFace;
+    color: CanvasText;
+    border: 1px solid CanvasText;
+  }
+  .avatar__initials { color: CanvasText; }
+  .avatar__status {
+    background: Highlight;
+    border: 1px solid CanvasText;
+    box-shadow: 0 0 0 2px Canvas;
+  }
+  .avatar__status--offline { background: GrayText; }
+  .avatar-group > .avatar { box-shadow: 0 0 0 2px Canvas; }
+  .avatar-group__more {
+    background: ButtonFace;
+    color: CanvasText;
+    border: 1px solid CanvasText;
+    box-shadow: 0 0 0 2px Canvas;
+  }
+}
