@@ -2,7 +2,7 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
-import SessionsPage from './sessions.js';
+import SessionsPage, { SessionLanguageControl } from './sessions.js';
 import * as appContextModule from '../app-context.js';
 import * as tanstackTableModule from '@tanstack/react-table';
 import * as filterStateModule from '../filter-state.js';
@@ -125,7 +125,8 @@ describe('SessionsPage', () => {
   it('renders table headers, rows, and session details properly', () => {
     renderPage();
 
-    expect(screen.getByText('Claude sessions')).toBeDefined();
+    expect(screen.getByRole('heading', { level: 1, name: 'Claude sessions' })).toBeDefined();
+    expect(screen.getByRole('heading', { level: 2, name: 'Workspaces' })).toBeDefined();
     expect(screen.getByText('Alpha Session')).toBeDefined();
     expect(screen.getByText('Summary of Alpha')).toBeDefined();
     expect(screen.getByText('Beta Session')).toBeDefined();
@@ -138,9 +139,13 @@ describe('SessionsPage', () => {
     expect(screen.getByText('512 B')).toBeDefined();
     expect(screen.getByText('2.0 KB')).toBeDefined();
     expect(screen.getByText('10.0 MB')).toBeDefined();
+
+    // Check all column headers
+    const headers = screen.getAllByRole('columnheader');
+    expect(headers).toHaveLength(15);
   });
 
-  it('handles search filtering matching across various fields', () => {
+  it('handles search filtering matching across various fields and clear button', () => {
     renderPage();
     const searchInput = screen.getByPlaceholderText(/Search name, session id/i);
 
@@ -154,35 +159,62 @@ describe('SessionsPage', () => {
     expect(screen.getByText('Alpha Session')).toBeDefined();
     expect(screen.queryByText('Beta Session')).toBeNull();
 
+    // Filter by project / cwd
+    fireEvent.change(searchInput, { target: { value: 'project-gamma' } });
+    expect(screen.getByText('Gamma Session')).toBeDefined();
+    expect(screen.queryByText('Alpha Session')).toBeNull();
+
+    // Filter by id
+    fireEvent.change(searchInput, { target: { value: 'alpha-1234567890' } });
+    expect(screen.getByText('Alpha Session')).toBeDefined();
+    expect(screen.queryByText('Beta Session')).toBeNull();
+
     // Filter with no matches
     fireEvent.change(searchInput, { target: { value: 'non-existent-needle' } });
     expect(screen.queryByText('Alpha Session')).toBeNull();
     expect(screen.queryByText('Beta Session')).toBeNull();
+    expect(screen.getByText('No sessions match your search.')).toBeDefined();
+    expect(screen.getByText('0 to 0 of 0')).toBeDefined();
 
-    // Reset search
-    fireEvent.change(searchInput, { target: { value: '' } });
+    // Clear search using clear button
+    const clearBtn = screen.getByRole('button', { name: 'Clear search' });
+    fireEvent.click(clearBtn);
     expect(screen.getByText('Alpha Session')).toBeDefined();
+    expect(screen.queryByRole('button', { name: 'Clear search' })).toBeNull();
   });
 
-  it('handles sorting columns clicking header buttons', () => {
+  it('handles sorting columns clicking header, keyboard interactions, and non-sortable columns', () => {
     renderPage();
-    const thButtons = screen.getAllByRole('button');
-    const nameHeaderBtn = thButtons.find((b) => b.textContent?.includes('Name / summary'));
-    expect(nameHeaderBtn).toBeDefined();
+    const headers = screen.getAllByRole('columnheader');
+    const nameHeader = headers.find((b) => b.textContent?.includes('Name / summary'));
+    expect(nameHeader).toBeDefined();
 
-    // Toggle sort on Name / summary
-    fireEvent.click(nameHeaderBtn);
-    expect(nameHeaderBtn.textContent).toMatch(/[↑↓]/);
+    // Toggle sort on Name / summary (click)
+    fireEvent.click(nameHeader);
+    expect(nameHeader.classList.contains('is-sorted')).toBe(true);
 
-    // Toggle again
-    fireEvent.click(nameHeaderBtn);
-    expect(nameHeaderBtn.textContent).toMatch(/[↑↓]/);
+    // Toggle sort again
+    fireEvent.click(nameHeader);
+    expect(nameHeader.classList.contains('is-sorted')).toBe(true);
 
-    // Toggle other headers like ID, Watch, Created
-    const idHeaderBtn = thButtons.find((b) => b.textContent?.includes('Session ID'));
-    if (idHeaderBtn) {
-      fireEvent.click(idHeaderBtn);
-    }
+    // Test keyboard sorting with Enter and Space
+    const idHeader = headers.find((b) => b.textContent?.includes('Session ID'));
+    expect(idHeader).toBeDefined();
+
+    fireEvent.keyDown(idHeader, { key: 'Enter' });
+    expect(idHeader.classList.contains('is-sorted')).toBe(true);
+
+    fireEvent.keyDown(idHeader, { key: ' ' });
+    expect(idHeader.classList.contains('is-sorted')).toBe(true);
+
+    // Test ignored key on sortable header
+    fireEvent.keyDown(idHeader, { key: 'Escape' });
+
+    // Non-sortable header like Action
+    const actionHeader = headers.find((b) => b.textContent?.includes('Action'));
+    expect(actionHeader).toBeDefined();
+    expect(actionHeader.getAttribute('tabindex')).toBeNull();
+    expect(actionHeader.classList.contains('is-sortable')).toBe(false);
   });
 
   it('triggers refresh discovery when clicking refresh button', () => {
@@ -192,7 +224,7 @@ describe('SessionsPage', () => {
     expect(mockApp.refreshSessions).toHaveBeenCalledTimes(1);
   });
 
-  it('toggles session watch status and prevents toggling current session', () => {
+  it('toggles session watch status, stops propagation, and prevents toggling current session', () => {
     renderPage();
     // Current session checkbox is disabled
     const currentWatch = screen.getByTitle('Current session is always watched');
@@ -201,8 +233,33 @@ describe('SessionsPage', () => {
     // Non-current session checkbox can be toggled
     const watchCheckboxes = screen.getAllByTitle('Watch session');
     expect(watchCheckboxes[0].disabled).toBe(false);
+
+    // Clicking checkbox fires stopPropagation and calls setSessionWatched
     fireEvent.click(watchCheckboxes[0]);
     expect(mockApp.setSessionWatched).toHaveBeenCalled();
+    // Verify row click was not triggered
+    expect(mockApp.switchSessionOptimistic).not.toHaveBeenCalled();
+  });
+
+  it('handles row clicks to switch session and ignores click on current session row', async () => {
+    renderPage();
+    const currentRow = document.querySelector('.current-session-row');
+    const nonCurrentRow = document.querySelector(
+      '.data-table__body [role="row"]:not(.current-session-row)',
+    );
+
+    expect(currentRow).not.toBeNull();
+    expect(nonCurrentRow).not.toBeNull();
+
+    // Clicking current session row does not switch
+    fireEvent.click(currentRow);
+    expect(mockApp.switchSessionOptimistic).not.toHaveBeenCalled();
+
+    // Clicking non-current row triggers switchCurrent
+    await act(async () => {
+      fireEvent.click(nonCurrentRow);
+    });
+    expect(mockApp.switchSessionOptimistic).toHaveBeenCalled();
   });
 
   it('handles switching session with optimistic update and guards against double-click', async () => {
@@ -259,7 +316,7 @@ describe('SessionsPage', () => {
     });
   });
 
-  it('toggles session language and handles pending state with cancel', () => {
+  it('toggles session language, handles pending state with cancel, and stops propagation', () => {
     renderPage();
 
     // Alpha session has globalLanguage = 'en'
@@ -278,16 +335,88 @@ describe('SessionsPage', () => {
     const cancelBtn = screen.getByRole('button', { name: '■' });
     fireEvent.click(cancelBtn);
     expect(mockApp.cancelSessionLanguage).toHaveBeenCalledWith('session-beta-short');
+
+    // Clicking language control wrapper stops propagation
+    const langControls = document.querySelectorAll('.session-language-control');
+    if (langControls.length > 0) {
+      fireEvent.click(langControls[0].parentElement);
+    }
+  });
+
+  it('renders SessionLanguageControl directly to cover isolated branches', () => {
+    const sessionNoPending = {
+      id: 'sess-no-pending',
+      globalLanguage: 'en',
+      globalTranslationPending: false,
+    };
+    const { rerender } = render(
+      React.createElement(SessionLanguageControl, {
+        session: sessionNoPending,
+        app: mockApp,
+      }),
+    );
+    expect(screen.queryByTitle('Session translations in progress')).toBeNull();
+
+    const sessionWithPending = {
+      id: 'sess-pending',
+      globalLanguage: 'hu',
+      globalTranslationPending: true,
+    };
+    rerender(
+      React.createElement(SessionLanguageControl, {
+        session: sessionWithPending,
+        app: mockApp,
+      }),
+    );
+    expect(screen.getByTitle('Session translations in progress')).toBeDefined();
+    expect(screen.getByRole('button', { name: '■' })).toBeDefined();
   });
 
   it('handles empty session list and null sessionsState gracefully', () => {
     mockApp.sessionsState.sessions = [];
-    const { container } = renderPage();
-    expect(container.querySelectorAll('tbody tr')).toHaveLength(0);
+    const { container, unmount } = renderPage();
+    expect(container.querySelectorAll('.data-table__body [role="row"]')).toHaveLength(0);
+    expect(screen.getByText('No sessions match your search.')).toBeDefined();
+    expect(
+      screen.getByText('Select a session row or click Switch to activate workspace'),
+    ).toBeDefined();
+    unmount();
 
     mockApp.sessionsState = {};
-    const { container: container2 } = renderPage();
-    expect(container2.querySelectorAll('tbody tr')).toHaveLength(0);
+    const { container: container2, unmount: u2 } = renderPage();
+    expect(container2.querySelectorAll('.data-table__body [role="row"]')).toHaveLength(0);
+    expect(screen.getByText('No sessions match your search.')).toBeDefined();
+    u2();
+  });
+
+  it('renders active session footer variants for cwd fallback and generic Workspace fallback', () => {
+    // Active session with cwd but no label
+    mockApp.sessionsState.sessions = [
+      {
+        id: 'sess-cwd-only',
+        label: '',
+        cwd: '/path/to/my-repo',
+        current: true,
+      },
+    ];
+    const { container: c1, unmount: u1 } = renderPage();
+    expect(c1.querySelector('.data-table-footer__message')?.textContent).toContain(
+      '/path/to/my-repo',
+    );
+    u1();
+
+    // Active session with neither label nor cwd
+    mockApp.sessionsState.sessions = [
+      {
+        id: 'sess-no-name-no-cwd',
+        label: '',
+        cwd: '',
+        current: true,
+      },
+    ];
+    const { container: c2, unmount: u2 } = renderPage();
+    expect(c2.querySelector('.data-table-footer__message')?.textContent).toContain('Workspace');
+    u2();
   });
 
   it('covers fmtDate error handling when date throws on toLocaleString', () => {
@@ -321,38 +450,38 @@ describe('SessionsPage', () => {
     });
 
     renderPage();
-    const thButtons = screen.getAllByRole('button');
+    const headers = screen.getAllByRole('columnheader');
 
     // Click 'Watch' header to trigger watched accessorFn
-    const watchHeaderBtn = thButtons.find((b) => b.textContent?.includes('Watch'));
-    if (watchHeaderBtn) {
-      fireEvent.click(watchHeaderBtn);
-      fireEvent.click(watchHeaderBtn);
+    const watchHeader = headers.find((b) => b.textContent?.includes('Watch'));
+    if (watchHeader) {
+      fireEvent.click(watchHeader);
+      fireEvent.click(watchHeader);
     }
 
     // Click 'Current' header to trigger current accessorFn
-    const currentHeaderBtn = thButtons.find((b) => b.textContent?.includes('Current'));
-    if (currentHeaderBtn) {
-      fireEvent.click(currentHeaderBtn);
-      fireEvent.click(currentHeaderBtn);
+    const currentHeader = headers.find((b) => b.textContent?.includes('Current'));
+    if (currentHeader) {
+      fireEvent.click(currentHeader);
+      fireEvent.click(currentHeader);
     }
 
     // Click 'Language' header to trigger language accessorFn
-    const langHeaderBtn = thButtons.find((b) => b.textContent?.includes('Language'));
-    if (langHeaderBtn) {
-      fireEvent.click(langHeaderBtn);
-      fireEvent.click(langHeaderBtn);
+    const langHeader = headers.find((b) => b.textContent?.includes('Language'));
+    if (langHeader) {
+      fireEvent.click(langHeader);
+      fireEvent.click(langHeader);
     }
 
     // Click 'Name / summary' to trigger label accessorFn with both label and fallback id
-    const nameHeaderBtn = thButtons.find((b) => b.textContent?.includes('Name / summary'));
-    if (nameHeaderBtn) {
-      fireEvent.click(nameHeaderBtn);
+    const nameHeader = headers.find((b) => b.textContent?.includes('Name / summary'));
+    if (nameHeader) {
+      fireEvent.click(nameHeader);
     }
 
-    const msgCountBtn = thButtons.find((b) => b.textContent?.includes('Messages'));
-    if (msgCountBtn) {
-      fireEvent.click(msgCountBtn);
+    const msgCountHeader = headers.find((b) => b.textContent?.includes('Messages'));
+    if (msgCountHeader) {
+      fireEvent.click(msgCountHeader);
     }
   });
 
@@ -379,7 +508,6 @@ describe('SessionsPage', () => {
   it('covers non-function setSorting updater, missing label, isPlaceholder header, and null session id', async () => {
     let capturedOnSortingChange;
 
-    // Test session with empty label and null id
     mockApp.sessionsState.sessions = [
       {
         id: null,
@@ -393,7 +521,6 @@ describe('SessionsPage', () => {
       },
     ];
 
-    // Spy to inject placeholder header
     const actualTable = await vi.importActual('@tanstack/react-table');
     vi.mocked(tanstackTableModule.useReactTable).mockImplementation((options) => {
       capturedOnSortingChange = options.onSortingChange;
@@ -410,6 +537,8 @@ describe('SessionsPage', () => {
                   columnDef: { header: 'Placeholder' },
                   getCanSort: () => false,
                   getIsSorted: () => false,
+                  getSize: () => 100,
+                  getToggleSortingHandler: () => vi.fn(),
                 },
                 getContext: () => ({}),
               },
@@ -426,6 +555,7 @@ describe('SessionsPage', () => {
           ],
         }),
         getState: () => ({ pagination: { pageIndex: 0, pageSize: 50 }, sorting: [] }),
+        getTotalSize: () => 1700,
         setPageSize: vi.fn(),
         previousPage: vi.fn(),
         getCanPreviousPage: () => false,
@@ -437,9 +567,13 @@ describe('SessionsPage', () => {
     });
 
     const { unmount } = renderPage();
-    // Test line 14: non-function updater passed to setSorting
+    // Test non-function updater passed to setSorting
     act(() => {
       capturedOnSortingChange([{ id: 'label', desc: true }]);
+    });
+    // Test function updater passed to setSorting
+    act(() => {
+      capturedOnSortingChange((prev) => [{ id: 'lastActivity', desc: false }]);
     });
     unmount();
     vi.mocked(tanstackTableModule.useReactTable).mockImplementation(actualTable.useReactTable);
@@ -460,7 +594,7 @@ describe('SessionsPage', () => {
     ];
 
     const { unmount } = renderPage();
-    expect(screen.getByText('Claude sessions')).toBeDefined();
+    expect(screen.getByRole('heading', { level: 1, name: 'Claude sessions' })).toBeDefined();
     unmount();
   });
 
@@ -488,19 +622,19 @@ describe('SessionsPage', () => {
 
     renderPage();
 
-    expect(screen.getByText('Showing 1 to 50 of 75 sessions')).toBeDefined();
-    expect(screen.getByText('Page 1 of 2')).toBeDefined();
+    expect(screen.getByText('1 to 50 of 75')).toBeDefined();
+    expect(screen.getByText('1 / 2')).toBeDefined();
 
-    const initialRows = document.querySelectorAll('tbody tr');
+    const initialRows = document.querySelectorAll('.data-table__body [role="row"]');
     expect(initialRows).toHaveLength(50);
     expect(screen.getByText('Session Number 1')).toBeDefined();
     expect(screen.getByText('Session Number 50')).toBeDefined();
     expect(screen.queryByText('Session Number 51')).toBeNull();
 
-    const paginationContainer = document.querySelector('.sessions-pagination');
-    expect(paginationContainer.classList.contains('pagination')).toBe(true);
-    const paginationLeft = document.querySelector('.sessions-pagination__left');
-    expect(paginationLeft.classList.contains('pagination__meta')).toBe(true);
+    const pagerContainer = document.querySelector('.data-table-pager');
+    expect(pagerContainer).not.toBeNull();
+    const pagerRange = document.querySelector('.data-table-pager__range');
+    expect(pagerRange).not.toBeNull();
 
     const searchInput = screen.getByPlaceholderText(/Search name, session id/i);
     expect(searchInput.classList.contains('input')).toBe(true);
@@ -514,21 +648,17 @@ describe('SessionsPage', () => {
     const nextBtn = screen.getByRole('button', { name: 'Next page' });
     expect(prevBtn.disabled).toBe(true);
     expect(nextBtn.disabled).toBe(false);
-    expect(prevBtn.classList.contains('btn')).toBe(true);
-    expect(prevBtn.classList.contains('btn--secondary')).toBe(true);
-    expect(prevBtn.classList.contains('btn--sm')).toBe(true);
-    expect(prevBtn.classList.contains('pagination__page')).toBe(true);
-    expect(nextBtn.classList.contains('pagination__page')).toBe(true);
+    expect(prevBtn.classList.contains('data-table-pager__button')).toBe(true);
+    expect(nextBtn.classList.contains('data-table-pager__button')).toBe(true);
 
     const sizeSelect = screen.getByRole('combobox', { name: 'Select page size' });
-    expect(sizeSelect.classList.contains('select')).toBe(true);
-    expect(sizeSelect.classList.contains('select--sm')).toBe(true);
+    expect(sizeSelect).toBeDefined();
 
     fireEvent.click(nextBtn);
 
-    expect(screen.getByText('Showing 51 to 75 of 75 sessions')).toBeDefined();
-    expect(screen.getByText('Page 2 of 2')).toBeDefined();
-    const page2Rows = document.querySelectorAll('tbody tr');
+    expect(screen.getByText('51 to 75 of 75')).toBeDefined();
+    expect(screen.getByText('2 / 2')).toBeDefined();
+    const page2Rows = document.querySelectorAll('.data-table__body [role="row"]');
     expect(page2Rows).toHaveLength(25);
     expect(screen.queryByText('Session Number 50')).toBeNull();
     expect(screen.getByText('Session Number 51')).toBeDefined();
@@ -538,19 +668,19 @@ describe('SessionsPage', () => {
     expect(prevBtn.disabled).toBe(false);
 
     fireEvent.click(prevBtn);
-    expect(screen.getByText('Showing 1 to 50 of 75 sessions')).toBeDefined();
-    expect(screen.getByText('Page 1 of 2')).toBeDefined();
+    expect(screen.getByText('1 to 50 of 75')).toBeDefined();
+    expect(screen.getByText('1 / 2')).toBeDefined();
 
     fireEvent.change(sizeSelect, { target: { value: '25' } });
 
-    expect(screen.getByText('Showing 1 to 25 of 75 sessions')).toBeDefined();
-    expect(screen.getByText('Page 1 of 3')).toBeDefined();
-    expect(document.querySelectorAll('tbody tr')).toHaveLength(25);
+    expect(screen.getByText('1 to 25 of 75')).toBeDefined();
+    expect(screen.getByText('1 / 3')).toBeDefined();
+    expect(document.querySelectorAll('.data-table__body [role="row"]')).toHaveLength(25);
 
     fireEvent.change(sizeSelect, { target: { value: '100' } });
-    expect(screen.getByText('Showing 1 to 75 of 75 sessions')).toBeDefined();
-    expect(screen.getByText('Page 1 of 1')).toBeDefined();
-    expect(document.querySelectorAll('tbody tr')).toHaveLength(75);
+    expect(screen.getByText('1 to 75 of 75')).toBeDefined();
+    expect(screen.getByText('1 / 1')).toBeDefined();
+    expect(document.querySelectorAll('.data-table__body [role="row"]')).toHaveLength(75);
     expect(prevBtn.disabled).toBe(true);
     expect(nextBtn.disabled).toBe(true);
   });

@@ -584,18 +584,18 @@ code {
   border: 1px solid var(--border);
   border-radius: var(--ep-radius-md);
 }
-.data-table {
+table.data-table {
   width: 100%;
   border-collapse: collapse;
   min-width: 1150px;
 }
-.data-table th,
-.data-table td {
+table.data-table th,
+table.data-table td {
   padding: 11px 12px;
   border-bottom: 1px solid var(--border);
   text-align: left;
 }
-.data-table th {
+table.data-table th {
   position: sticky;
   top: 0;
   background: var(--surface2);
@@ -610,8 +610,8 @@ code {
   font-weight: 900;
   cursor: pointer;
 }
-.data-table tr:hover td,
-.data-table tr.selected td {
+table.data-table tr:hover td,
+table.data-table tr.selected td {
   background: rgba(180, 190, 254, 0.04);
 }
 .status.success {
@@ -1611,6 +1611,7 @@ code {
 .sessions-table th {
   white-space: nowrap;
 }
+.sessions-table .current-session-row,
 .current-session-row > td {
   background: rgba(203, 166, 247, 0.055) !important;
 }
@@ -2305,4 +2306,73 @@ code {
 .sessions-pagination .pagination-btn {
   padding: 4px 10px;
   font-size: 13px;
+}
+
+/* Sessions Page DataTable integration */
+.sessions-page .data-table-wrapper {
+  max-width: 100%;
+  height: auto;
+  min-height: 480px;
+  max-height: calc(100vh - 140px);
+}
+.sessions-page .data-table-toolbar__search {
+  width: 380px;
+  flex: 0 1 380px;
+  min-width: 200px;
+}
+.sessions-table .current-session-row {
+  background: rgba(203, 166, 247, 0.055);
+}
+.sessions-table .current-session-row:hover {
+  background: rgba(203, 166, 247, 0.08);
+}
+
+.truncate-cell {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.nowrap-cell {
+  white-space: nowrap;
+}
+.data-table-pager__range {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.data-table-pager {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+}
+.data-table-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-width: 0;
+}
+.data-table-footer__message {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1 1 auto;
+}
+.data-table-main.session-name-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  width: 100%;
+}
+.data-table-main.session-name-cell strong,
+.data-table-main.session-name-cell small {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  width: 100%;
 }

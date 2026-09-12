@@ -15,6 +15,137 @@ import { useApp } from '../app-context.js';
 import { parseSorting, serializeSorting, usePersistentPageFilters } from '../filter-state.js';
 import { AppContextValue, Session } from '../types.js';
 
+interface ColumnMetaWithGrow {
+  grow?: boolean;
+}
+
+function isGrowMeta(meta: unknown): meta is ColumnMetaWithGrow {
+  return typeof meta === 'object' && meta !== null && 'grow' in meta;
+}
+
+function SortIcon({ direction }: { direction: false | 'asc' | 'desc' | null }): ReactElement {
+  return (
+    <svg
+      className="data-table-sort"
+      width="12"
+      height="12"
+      viewBox="0 0 12 12"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M3 5 L6 2 L9 5" opacity={direction === 'asc' ? 1 : 0.3} />
+      <path d="M3 7 L6 10 L9 7" opacity={direction === 'desc' ? 1 : 0.3} />
+    </svg>
+  );
+}
+
+function SearchIcon(): ReactElement {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="7" cy="7" r="4.5" />
+      <path d="m14 14-3-3" />
+    </svg>
+  );
+}
+
+function ClearIcon(): ReactElement {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 12 12"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      aria-hidden="true"
+    >
+      <path d="M3 3 9 9M9 3 3 9" />
+    </svg>
+  );
+}
+
+function ChevronIcon(): ReactElement {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 12 12"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="m3 5 3 3 3-3" />
+    </svg>
+  );
+}
+
+function PageIcon({ direction }: { direction: 'prev' | 'next' }): ReactElement {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 12 12"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      {direction === 'prev' ? (
+        <path d="M7.5 2.5 4 6l3.5 3.5" />
+      ) : (
+        <path d="M4.5 2.5 8 6l-3.5 3.5" />
+      )}
+    </svg>
+  );
+}
+
+function cellClass(id: string): string {
+  switch (id) {
+    case 'watched': {
+      return 'sessions-watch-cell data-table__cell--checkbox';
+    }
+    case 'current': {
+      return 'sessions-current-cell data-table__cell--center';
+    }
+    case 'action': {
+      return 'sessions-action-cell';
+    }
+    case 'id': {
+      return 'data-table__cell--mono';
+    }
+    case 'messageCount':
+    case 'fileSize':
+    case 'taskCount':
+    case 'deletedTaskCount':
+    case 'translationCount': {
+      return 'data-table__cell--right data-table__cell--mono';
+    }
+    default: {
+      return '';
+    }
+  }
+}
+
 export default function SessionsPage(): ReactElement {
   const app = useApp();
   const [filters, setFilter] = usePersistentPageFilters('sessions', {
@@ -78,6 +209,14 @@ export default function SessionsPage(): ReactElement {
     getPaginationRowModel: getPaginationRowModel(),
   });
 
+  const activeSession = useMemo(
+    () => (app.sessionsState.sessions || []).find((s) => s.current) || null,
+    [app.sessionsState.sessions],
+  );
+
+  const pageStart = data.length === 0 ? 0 : pagination.pageIndex * pagination.pageSize + 1;
+  const pageEnd = Math.min((pagination.pageIndex + 1) * pagination.pageSize, data.length);
+
   return (
     <div className="page sessions-page">
       <div className="page-heading">
@@ -91,100 +230,227 @@ export default function SessionsPage(): ReactElement {
             controlled here; Settings remain global.
           </p>
         </div>
-        <button className="btn btn--secondary btn--sm" onClick={() => void app.refreshSessions()}>
-          ↻ Refresh discovery
-        </button>
       </div>
-      <div className="page-controls">
-        <input
-          id="sessions-search-input"
-          name="sessionsSearch"
-          aria-label="Search sessions"
-          className="input search-input"
-          value={query}
-          onChange={(event) => setFilter('q', event.target.value)}
-          placeholder="Search name, session id, project, branch, first prompt…"
-        />
-      </div>
-      <div className="table-wrap sessions-table-wrap">
-        <table className="data-table sessions-table">
-          <thead>
-            {table.getHeaderGroups().map((group) => (
-              <tr key={group.id}>
-                {group.headers.map((header) => (
-                  <th key={header.id} className={columnClass(header.column.id)}>
-                    {header.isPlaceholder ? null : (
-                      <button
-                        className={`th-btn${header.column.getCanSort() ? ' sortable' : ''}`}
-                        onClick={header.column.getToggleSortingHandler()}
-                      >
-                        {flexRender(header.column.columnDef.header, header.getContext())}
-                        {sortMark(header.column)}
-                      </button>
-                    )}
-                  </th>
-                ))}
-              </tr>
-            ))}
-          </thead>
-          <tbody>
-            {table.getRowModel().rows.map((row) => (
-              <tr key={row.id} className={row.original.current ? 'current-session-row' : ''}>
-                {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id} className={columnClass(cell.column.id)}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <div className="sessions-pagination pagination">
-        <div className="sessions-pagination__left pagination__meta">
-          <span className="pagination-range">
-            Showing {data.length === 0 ? 0 : pagination.pageIndex * pagination.pageSize + 1} to{' '}
-            {Math.min((pagination.pageIndex + 1) * pagination.pageSize, data.length)} of{' '}
-            {data.length} sessions
-          </span>
-        </div>
-        <div className="sessions-pagination__controls">
-          <label className="sessions-pagination__size">
-            <span>Rows:</span>
-            <select
-              aria-label="Select page size"
-              className="select select--sm"
-              value={table.getState().pagination.pageSize}
-              onChange={(e) => table.setPageSize(Number(e.target.value))}
+      <div className="data-table-wrapper">
+        <div className="data-table-toolbar">
+          <div className="data-table-toolbar__title">
+            <h2>Workspaces</h2>
+            <span className="data-table-toolbar__count">
+              {data.length} of {app.sessionsState.sessions?.length || 0}
+            </span>
+            <span className="data-table-toolbar__engine">TanStack Table</span>
+          </div>
+          <div className="data-table-toolbar__tools">
+            <div className="input-with-icon data-table-toolbar__search">
+              <SearchIcon />
+              <input
+                className={`input input--sm ${query ? 'is-filled' : ''}`}
+                id="sessions-search-input"
+                name="sessionsSearch"
+                aria-label="Search sessions"
+                value={query}
+                onChange={(e) => setFilter('q', e.target.value)}
+                placeholder="Search name, session id, project, branch, first prompt..."
+              />
+              {query ? (
+                <button
+                  type="button"
+                  className="data-table-search-clear"
+                  aria-label="Clear search"
+                  onClick={() => setFilter('q', '')}
+                >
+                  <ClearIcon />
+                </button>
+              ) : null}
+            </div>
+            <button
+              type="button"
+              className="btn btn--secondary btn--sm"
+              onClick={() => void app.refreshSessions()}
             >
-              {[25, 50, 100, 200].map((size) => (
-                <option key={size} value={size}>
-                  {size}
-                </option>
+              ↻ Refresh discovery
+            </button>
+          </div>
+        </div>
+        <div className="data-table-scroll">
+          <div
+            className="data-table sessions-table"
+            role="table"
+            aria-label="Claude sessions"
+            style={{ width: '100%', minWidth: Math.max(1700, table.getTotalSize()) }}
+          >
+            <div role="rowgroup" className="data-table__header-group">
+              {table.getHeaderGroups().map((headerGroup) => (
+                <div className="data-table__header" role="row" key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => {
+                    const column = header.column;
+                    const sorted = column.getIsSorted();
+                    const canSort = column.getCanSort();
+                    const toggleSorting = column.getToggleSortingHandler();
+                    const handleSortKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        toggleSorting?.(event);
+                      }
+                    };
+                    return (
+                      <div
+                        key={header.id}
+                        role="columnheader"
+                        aria-sort={
+                          canSort
+                            ? sorted === 'asc'
+                              ? 'ascending'
+                              : sorted === 'desc'
+                                ? 'descending'
+                                : 'none'
+                            : undefined
+                        }
+                        tabIndex={canSort ? 0 : undefined}
+                        onKeyDown={canSort ? handleSortKeyDown : undefined}
+                        onClick={canSort ? toggleSorting : undefined}
+                        className={[
+                          'data-table__cell',
+                          'data-table__cell--header',
+                          cellClass(column.id),
+                          canSort ? 'is-sortable' : '',
+                          sorted ? 'is-sorted' : '',
+                        ]
+                          .filter(Boolean)
+                          .join(' ')}
+                        style={{
+                          width: column.getSize(),
+                          minWidth: column.getSize(),
+                          flex:
+                            isGrowMeta(column.columnDef.meta) && column.columnDef.meta.grow
+                              ? '1 1 auto'
+                              : '0 0 auto',
+                        }}
+                      >
+                        <span className="data-table__label">
+                          {header.isPlaceholder
+                            ? null
+                            : flexRender(column.columnDef.header, header.getContext())}
+                        </span>
+                        {canSort && <SortIcon direction={sorted || null} />}
+                      </div>
+                    );
+                  })}
+                </div>
               ))}
-            </select>
-          </label>
-          <button
-            type="button"
-            className="btn btn--secondary btn--sm pagination__page pagination-btn"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-            aria-label="Previous page"
-          >
-            Previous
-          </button>
-          <span className="pagination-page-indicator" aria-live="polite">
-            Page {table.getState().pagination.pageIndex + 1} of {Math.max(1, table.getPageCount())}
+            </div>
+            <div className="data-table__body" role="rowgroup">
+              {table.getRowModel().rows.length === 0 ? (
+                <div className="data-table__empty">No sessions match your search.</div>
+              ) : (
+                table.getRowModel().rows.map((row) => (
+                  <div
+                    key={row.id}
+                    role="row"
+                    tabIndex={0}
+                    className={`data-table__row ${row.original.current ? 'is-active current-session-row' : ''}`}
+                    onClick={(event) => {
+                      if (
+                        event.target instanceof HTMLElement &&
+                        event.target.closest('button, a, input, select, .switch')
+                      ) {
+                        return;
+                      }
+                      if (!row.original.current) void switchCurrent(row.original.id);
+                    }}
+                    onKeyDown={(event) => {
+                      if (
+                        event.target instanceof HTMLElement &&
+                        event.target.closest('button, a, input, select, .switch')
+                      ) {
+                        return;
+                      }
+                      if ((event.key === 'Enter' || event.key === ' ') && !row.original.current) {
+                        event.preventDefault();
+                        void switchCurrent(row.original.id);
+                      }
+                    }}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <div
+                        key={cell.id}
+                        role="cell"
+                        className={`data-table__cell ${cellClass(cell.column.id)}`}
+                        style={{
+                          width: cell.column.getSize(),
+                          minWidth: cell.column.getSize(),
+                          flex:
+                            isGrowMeta(cell.column.columnDef.meta) &&
+                            cell.column.columnDef.meta.grow
+                              ? '1 1 auto'
+                              : '0 0 auto',
+                        }}
+                      >
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </div>
+                    ))}
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+        <div className="data-table-footer">
+          <span className="data-table-footer__message">
+            {activeSession ? (
+              <>
+                Current session: <code>{activeSession.id}</code> -{' '}
+                {activeSession.label || activeSession.cwd || 'Workspace'}
+              </>
+            ) : (
+              <>Select a session row or click Switch to activate workspace</>
+            )}
           </span>
-          <button
-            type="button"
-            className="btn btn--secondary btn--sm pagination__page pagination-btn"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-            aria-label="Next page"
-          >
-            Next
-          </button>
+          <div className="data-table-pager">
+            <div className="data-table-pager__size">
+              <span>Rows</span>
+              <div className="data-table-select data-table-select--small">
+                <select
+                  aria-label="Select page size"
+                  value={pagination.pageSize}
+                  onChange={(e) => table.setPageSize(Number(e.target.value))}
+                >
+                  {[25, 50, 100, 200].map((size) => (
+                    <option key={size} value={size}>
+                      {size}
+                    </option>
+                  ))}
+                </select>
+                <ChevronIcon />
+              </div>
+            </div>
+            <span className="data-table-pager__range">
+              {pageStart} to {pageEnd} of {data.length}
+            </span>
+            <div className="data-table-pager__navigation">
+              <button
+                type="button"
+                className="data-table-pager__button pagination-btn"
+                disabled={!table.getCanPreviousPage()}
+                onClick={() => table.previousPage()}
+                aria-label="Previous page"
+              >
+                <PageIcon direction="prev" />
+              </button>
+              <span className="data-table-pager__page">
+                {pagination.pageIndex + 1} / {Math.max(1, table.getPageCount())}
+              </span>
+              <button
+                type="button"
+                className="data-table-pager__button pagination-btn"
+                disabled={!table.getCanNextPage()}
+                onClick={() => table.nextPage()}
+                aria-label="Next page"
+              >
+                <PageIcon direction="next" />
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -208,7 +474,10 @@ export function SessionLanguageControl({
         role="switch"
         aria-checked={hu}
         title={hu ? 'Set this session to English' : 'Auto-translate this session to Hungarian'}
-        onClick={() => void app.setSessionLanguage(session.id, hu ? 'en' : 'hu')}
+        onClick={(event) => {
+          event.stopPropagation();
+          void app.setSessionLanguage(session.id, hu ? 'en' : 'hu');
+        }}
       >
         <span />
       </button>
@@ -217,28 +486,16 @@ export function SessionLanguageControl({
       {pending ? (
         <button
           className="btn btn--danger btn--sm"
-          onClick={() => void app.cancelSessionLanguage(session.id)}
+          onClick={(event) => {
+            event.stopPropagation();
+            void app.cancelSessionLanguage(session.id);
+          }}
         >
           ■
         </button>
       ) : null}
     </div>
   );
-}
-
-function columnClass(id: string): string {
-  return id === 'action'
-    ? 'sessions-action-cell'
-    : id === 'current'
-      ? 'sessions-current-cell'
-      : id === 'watched'
-        ? 'sessions-watch-cell'
-        : '';
-}
-
-function sortMark(column: { getIsSorted: () => false | 'asc' | 'desc' }): string {
-  const sorted = column.getIsSorted();
-  return sorted === 'asc' ? ' ↑' : sorted === 'desc' ? ' ↓' : '';
 }
 
 function buildSessionColumns(
@@ -250,6 +507,7 @@ function buildSessionColumns(
     {
       id: 'watched',
       header: 'Watch',
+      size: 60,
       accessorFn: (row) => (row.watched ? 1 : 0),
       cell: ({ row }) => (
         <input
@@ -260,6 +518,7 @@ function buildSessionColumns(
           checked={Boolean(row.original.watched)}
           disabled={Boolean(row.original.current)}
           title={row.original.current ? 'Current session is always watched' : 'Watch session'}
+          onClick={(event) => event.stopPropagation()}
           onChange={(event) => {
             void app.setSessionWatched(row.original.id, event.target.checked);
           }}
@@ -269,6 +528,7 @@ function buildSessionColumns(
     {
       id: 'current',
       header: 'Current',
+      size: 60,
       accessorFn: (row) => (row.current ? 1 : 0),
       cell: ({ row }) =>
         row.original.current ? (
@@ -282,12 +542,16 @@ function buildSessionColumns(
     {
       id: 'action',
       header: 'Action',
+      size: 100,
       enableSorting: false,
       cell: ({ row }) => (
         <button
           className="btn btn--secondary btn--sm"
           disabled={Boolean(row.original.current) || switching === row.original.id}
-          onClick={() => void switchCurrent(row.original.id)}
+          onClick={(event) => {
+            event.stopPropagation();
+            void switchCurrent(row.original.id);
+          }}
         >
           {row.original.current
             ? 'Current'
@@ -300,46 +564,102 @@ function buildSessionColumns(
     {
       id: 'language',
       header: 'Language',
+      size: 125,
       accessorFn: (row) => row.globalLanguage || 'en',
       cell: ({ row }) => <SessionLanguageControl session={row.original} app={app} />,
     },
     {
       id: 'label',
       header: 'Name / summary',
+      size: 280,
+      minSize: 220,
+      meta: { grow: true },
       accessorFn: (row) => row.label || row.id,
-      cell: ({ row }) => (
-        <div className="session-name-cell">
-          <strong>{row.original.label || row.original.id}</strong>
-          {row.original.summary ? <small className="muted">{row.original.summary}</small> : null}
-        </div>
-      ),
+      cell: ({ row }) => {
+        const titleText = row.original.label || row.original.id;
+        const summaryText = row.original.summary || '';
+        return (
+          <div className="data-table-main session-name-cell">
+            <strong title={titleText}>{titleText}</strong>
+            {summaryText ? (
+              <small title={summaryText} className="muted">
+                {summaryText}
+              </small>
+            ) : null}
+          </div>
+        );
+      },
     },
     {
       accessorKey: 'id',
       header: 'Session ID',
+      size: 130,
       cell: ({ getValue }) => <span className="mono small">{shortId(getValue())}</span>,
     },
-    { accessorKey: 'cwd', header: 'Project' },
-    { accessorKey: 'gitBranch', header: 'Branch' },
+    {
+      accessorKey: 'cwd',
+      header: 'Project',
+      size: 180,
+      cell: ({ getValue }) => {
+        const text = String(getValue() || '');
+        return (
+          <span title={text} className="truncate-cell">
+            {text}
+          </span>
+        );
+      },
+    },
+    {
+      accessorKey: 'gitBranch',
+      header: 'Branch',
+      size: 150,
+      cell: ({ getValue }) => {
+        const text = String(getValue() || '');
+        return (
+          <span title={text} className="truncate-cell">
+            {text}
+          </span>
+        );
+      },
+    },
     {
       accessorKey: 'createdAt',
       header: 'Created',
-      cell: ({ getValue }) => fmtDate(getValue()),
+      size: 155,
+      cell: ({ getValue }) => <span className="nowrap-cell">{fmtDate(getValue())}</span>,
     },
     {
       accessorKey: 'lastActivity',
       header: 'Last activity',
-      cell: ({ getValue }) => fmtDate(getValue()),
+      size: 155,
+      cell: ({ getValue }) => <span className="nowrap-cell">{fmtDate(getValue())}</span>,
     },
-    { accessorKey: 'messageCount', header: 'Messages' },
+    {
+      accessorKey: 'messageCount',
+      header: 'Messages',
+      size: 85,
+    },
     {
       accessorKey: 'fileSize',
       header: 'File size',
+      size: 90,
       cell: ({ getValue }) => fmtBytes(getValue()),
     },
-    { accessorKey: 'taskCount', header: 'Tasks' },
-    { accessorKey: 'deletedTaskCount', header: 'Deleted' },
-    { accessorKey: 'translationCount', header: 'Translations' },
+    {
+      accessorKey: 'taskCount',
+      header: 'Tasks',
+      size: 80,
+    },
+    {
+      accessorKey: 'deletedTaskCount',
+      header: 'Deleted',
+      size: 80,
+    },
+    {
+      accessorKey: 'translationCount',
+      header: 'Translations',
+      size: 100,
+    },
   ];
 }
 
