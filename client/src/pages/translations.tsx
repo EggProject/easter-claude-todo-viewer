@@ -34,6 +34,7 @@ import {
   TranslationVersionRow,
   errorMessage,
   isRecord,
+  isTranslationJob,
 } from '../types.js';
 
 const TERMINAL = new Set(['success', 'validation_failed', 'error', 'canceled', 'interrupted']);
@@ -138,13 +139,24 @@ export default function TranslationsPage(): ReactElement {
         .filter((task): task is TranslationTaskRow => task.kind === 'task')
         .map((task) => `task:${task.sessionId}:${task.uid}`),
     );
-    setRowSelection((current) =>
-      Object.fromEntries(
-        Object.entries(current).filter(
-          ([id, selected]) => selected && (valid.has(id) || parentIds.has(id)),
-        ),
-      ),
-    );
+    setRowSelection((current) => {
+      const nextEntries = Object.entries(current).filter(
+        ([id, selected]) => Boolean(selected) && (valid.has(id) || parentIds.has(id)),
+      );
+      const currentKeys = Object.entries(current)
+        .filter(([, val]) => val)
+        .map(([k]) => k)
+        .sort((a, b) => a.localeCompare(b))
+        .join(',');
+      const nextKeys = nextEntries
+        .map(([k]) => k)
+        .sort((a, b) => a.localeCompare(b))
+        .join(',');
+      if (currentKeys === nextKeys && Object.keys(current).length === nextEntries.length) {
+        return current;
+      }
+      return Object.fromEntries(nextEntries);
+    });
   }, [app.jobs, data]);
 
   const selectedJobs: TranslationVersionRow[] = table
@@ -662,7 +674,42 @@ function fmtDate(v: unknown): string {
 const formatDate = fmtDate;
 
 function JobDetail({ job, onClose }: { job: TranslationJob; onClose: () => void }): ReactElement {
-  const runs = [...(job.runs || []), job];
+  const [fullJob, setFullJob] = useState<TranslationJob | null>(null);
+
+  useEffect(() => {
+    setFullJob(null);
+    if (!job.attempts || !job.runs) {
+      let active = true;
+      fetch(
+        `/api/sessions/${encodeURIComponent(job.sessionId)}/translations/${encodeURIComponent(job.id)}`,
+      )
+        .then(async (res) => {
+          if (!res.ok) return null;
+          const data: unknown = await res.json();
+          return data;
+        })
+        .then((data: unknown) => {
+          if (!active || !data) return;
+          if (isRecord(data)) {
+            const raw = isRecord(data['job']) ? data['job'] : data;
+            const candidate: unknown =
+              isRecord(raw) && typeof raw['sessionId'] !== 'string'
+                ? { sessionId: job.sessionId, ...raw }
+                : raw;
+            if (isTranslationJob(candidate)) {
+              setFullJob(candidate);
+            }
+          }
+        })
+        .catch(() => {});
+      return () => {
+        active = false;
+      };
+    }
+  }, [job.sessionId, job.id, job.attempts, job.runs]);
+
+  const activeJob = fullJob ?? job;
+  const runs = [...(activeJob.runs || []), activeJob];
   return (
     <div className="detail-card">
       <div className="detail-head">
@@ -671,7 +718,7 @@ function JobDetail({ job, onClose }: { job: TranslationJob; onClose: () => void 
             <Microscope size={14} strokeWidth={1.75} className="inline-icon" /> TRANSLATION DEBUG
           </div>
           <h2>
-            {`Task #${job.taskId} · v${String(job.versionNumber || '?')} · ${statusLabel(job.status)}`}
+            {`Task #${activeJob.taskId ?? ''} · v${String(activeJob.versionNumber || '?')} · ${statusLabel(activeJob.status)}`}
           </h2>
         </div>
         <button className="icon-btn" onClick={onClose}>
@@ -679,15 +726,15 @@ function JobDetail({ job, onClose }: { job: TranslationJob; onClose: () => void 
         </button>
       </div>
       <div className="detail-grid">
-        {metric('Job', job.id)}
-        {metric('Fingerprint', job.textFingerprint)}
-        {metric('Provider', job.provider || 'agy')}
-        {metric('Model', job.model)}
-        {metric('Trigger', job.trigger)}
-        {metric('Run', job.run || 1)}
-        {metric('Duration', duration(job))}
+        {metric('Job', activeJob.id)}
+        {metric('Fingerprint', activeJob.textFingerprint)}
+        {metric('Provider', activeJob.provider || 'agy')}
+        {metric('Model', activeJob.model)}
+        {metric('Trigger', activeJob.trigger)}
+        {metric('Run', activeJob.run || 1)}
+        {metric('Duration', duration(activeJob))}
       </div>
-      {job.error ? section('❌ Error', job.error, 'error-panel') : null}
+      {activeJob.error ? section('❌ Error', activeJob.error, 'error-panel') : null}
       {runs.map((run, runIndex) => (
         <section className="run" key={runIndex}>
           <h3>
@@ -901,6 +948,9 @@ function usage(value: TranslationUsage | undefined): string {
 }
 
 function tokenCount(job: TranslationJob): number {
+  if (typeof job.totalTokens === 'number') {
+    return job.totalTokens;
+  }
   const current = (job.attempts || []).reduce(
     (sum, attempt) =>
       sum +

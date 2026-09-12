@@ -431,6 +431,9 @@ export default function FlowPage(): ReactElement {
       </div>
       <div className="flow-toolbar page-controls">
         <input
+          id="flow-search-input"
+          name="flowSearch"
+          aria-label="Search flow tasks"
           className="search-input"
           value={query}
           onChange={(event) => setFilter('q', event.target.value)}
@@ -441,7 +444,13 @@ export default function FlowPage(): ReactElement {
           setSelectedSessionIds={setSelectedSessionIds}
         />
         <StatusMultiSelect value={statuses} onChange={setStatuses} />
-        <select value={sort} onChange={(event) => setFilter('sort', event.target.value)}>
+        <select
+          id="flow-sort-select"
+          name="flowSort"
+          aria-label="Sort flow tasks"
+          value={sort}
+          onChange={(event) => setFilter('sort', event.target.value)}
+        >
           <option value="dependency">Sort: Dependency</option>
           <option value="id">Sort: ID</option>
           <option value="subject">Sort: Title</option>

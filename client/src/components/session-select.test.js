@@ -144,6 +144,49 @@ describe('session-select module', () => {
 
       expect(result.current.selectedSessionIds).toEqual(['sess-1']);
     });
+
+    it('produces stable array references when the underlying session IDs do not change', () => {
+      let watched = ['sess-1', 'sess-2'];
+      vi.mocked(appContextModule.useApp).mockImplementation(() => ({
+        sessionsState: { watchedSessionIds: watched },
+        currentSessionId: 'sess-1',
+      }));
+
+      const { result, rerender } = renderHook(() => useSessionScope(), {
+        wrapper: createRouterWrapper(['/tasks?sessions=sess-1,sess-2']),
+      });
+
+      const initialRef = result.current.selectedSessionIds;
+      expect(initialRef).toEqual(['sess-1', 'sess-2']);
+
+      // Rerender with the same wrapper and state
+      rerender();
+      expect(result.current.selectedSessionIds).toBe(initialRef);
+
+      // Rerender with a new array instance containing identical session IDs
+      watched = ['sess-1', 'sess-2'];
+      rerender();
+      expect(result.current.selectedSessionIds).toBe(initialRef);
+    });
+
+    it('produces stable array references on fallback selections when IDs do not change', () => {
+      let watched = ['sess-1', 'sess-2'];
+      vi.mocked(appContextModule.useApp).mockImplementation(() => ({
+        sessionsState: { watchedSessionIds: watched },
+        currentSessionId: 'sess-1',
+      }));
+
+      const { result, rerender } = renderHook(() => useSessionScope(), {
+        wrapper: createRouterWrapper(['/tasks']),
+      });
+
+      const initialRef = result.current.selectedSessionIds;
+      expect(initialRef).toEqual(['sess-1']);
+
+      watched = ['sess-1', 'sess-2'];
+      rerender();
+      expect(result.current.selectedSessionIds).toBe(initialRef);
+    });
   });
 
   describe('SessionScopeSelect component', () => {

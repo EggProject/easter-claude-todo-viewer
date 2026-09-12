@@ -1,14 +1,6 @@
 @import url('../../../eggproject-design/colors_and_type.css');
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html, body {
-  background: var(--ep-ink-950);
-  color: var(--ep-paper-100);
-  font-family: var(--ep-font-sans);
-  -webkit-font-smoothing: antialiased;
-  overflow: hidden;
-}
-#root { width: 100vw; height: 100vh; }
 
 /* ============================================================
    STAGE

@@ -605,6 +605,43 @@ def _agy_usage_summary(usage):
     return " ".join(parts)
 
 
+def compute_job_total_tokens(job):
+    job = job or {}
+    raw = job.get("totalTokens") if job.get("totalTokens") is not None else job.get("total_tokens")
+    if raw is not None:
+        return int(raw)
+    total = 0
+    attempts = list(job.get("attempts") or [])
+    for run in job.get("runs") or []:
+        attempts.extend(run.get("attempts") or [])
+    for att in attempts:
+        for phase in ("translator", "validator"):
+            usage = ((att or {}).get(phase) or {}).get("usage") or {}
+            tokens = usage.get("total_tokens") or usage.get("totalTokens")
+            if tokens:
+                total += int(tokens)
+    return total
+
+
+def clean_run_snapshots(runs):
+    strip = {"rawResponse", "exactPrompt", "agentInstructions", "rawStream"}
+    cleaned = []
+    for r in runs or []:
+        cr = {k: v for k, v in (r or {}).items() if k not in strip}
+        if cr.get("attempts"):
+            cr["attempts"] = [
+                {
+                    k: {sk: sv for sk, sv in v.items() if sk not in strip}
+                    if k in ("translator", "validator") and isinstance(v, dict)
+                    else v
+                    for k, v in att.items()
+                }
+                for att in cr["attempts"]
+            ]
+        cleaned.append(cr)
+    return cleaned
+
+
 class TranslationCanceled(RuntimeError):
     pass
 
@@ -1149,16 +1186,22 @@ class TranslationJobManager:
     def update(self, job_id, **changes):
         with self.lock:
             job = self.jobs.get(job_id)
-            if not job: return None
-            if changes.get("status") in {"translating", "validating", "retrying"} and not job.get("startedAt"):
-                job["startedAt"] = now_iso()
-            job.update(copy.deepcopy(changes))
-            job["updatedAt"] = now_iso()
-            if job.get("status") in self.TERMINAL and not job.get("finishedAt"):
-                job["finishedAt"] = now_iso()
-            atomic_write_json(self._path(job_id), job)
-            self._notify(job)
-            return copy.deepcopy(job)
+            if not job:
+                job_found = False
+            else:
+                job_found = True
+                if changes.get("status") in {"translating", "validating", "retrying"} and not job.get("startedAt"):
+                    job["startedAt"] = now_iso()
+                job.update(copy.deepcopy(changes))
+                job["updatedAt"] = now_iso()
+                if job.get("status") in self.TERMINAL and not job.get("finishedAt"):
+                    job["finishedAt"] = now_iso()
+                atomic_write_json(self._path(job_id), job)
+                self._notify(job)
+                result = copy.deepcopy(job)
+        if not job_found:
+            return None
+        return result
 
     def begin_attempt(self, job_id, attempt):
         with self.lock:
@@ -1217,9 +1260,20 @@ class TranslationJobManager:
     def cancel(self, job_id):
         with self.lock:
             job = self.jobs.get(job_id)
-            if not job: raise KeyError(job_id)
-            if job.get("status") in self.TERMINAL: return copy.deepcopy(job)
-            handle = self.handles.get(job_id)
+            if not job:
+                missing = True
+                terminal_copy = None
+            elif job.get("status") in self.TERMINAL:
+                missing = False
+                terminal_copy = copy.deepcopy(job)
+            else:
+                missing = False
+                terminal_copy = None
+                handle = self.handles.get(job_id)
+        if missing:
+            raise KeyError(job_id)
+        if terminal_copy is not None:
+            return terminal_copy
         if handle:
             handle.cancel_event.set()
             if job.get("status") == "queued":
@@ -1246,6 +1300,7 @@ class TranslationJobManager:
 class StateStore:
     def __init__(self, config, logger=None):
         self.config = config
+        self.session_id = config.session_id
         self.logger = logger or AppLogger(config)
         self.lock = threading.RLock()
         self.translation_batch_lock = threading.Lock()
@@ -1671,6 +1726,8 @@ class StateStore:
         finally:
             if acquired:
                 self._release_provider_slot(job_provider)
+            else:
+                pass
         with self.lock:
             rec = self.records.get(uid)
             if not rec:
@@ -2657,17 +2714,45 @@ class DashboardRuntime:
                 current_tfp = (rec.get("current") or {}).get("textFingerprint")
                 children = []
                 for job in jobs_by_uid.get(uid, []):
-                    child = copy.deepcopy(job)
-                    tfp = child.get("textFingerprint")
+                    tfp = job.get("textFingerprint")
                     source = versions.get(tfp) or {}
-                    child.update({
-                        "kind": "version",
+                    total_tokens = compute_job_total_tokens(job)
+                    duration = job.get("durationSeconds")
+                    if duration is None and job.get("startedAt") and job.get("finishedAt"):
+                        try:
+                            s = dt.datetime.fromisoformat(job["startedAt"])
+                            f = dt.datetime.fromisoformat(job["finishedAt"])
+                            duration = max(0.0, (f - s).total_seconds())
+                        except Exception:
+                            duration = None
+                    child = {
+                        "id": job.get("id"),
+                        "uid": job.get("uid"),
+                        "sessionId": job.get("sessionId") or self.config.session_id,
+                        "taskId": str(job.get("taskId") or rec.get("taskId") or ""),
+                        "status": job.get("status"),
                         "versionNumber": version_number.get(tfp),
-                        "current": tfp == current_tfp,
+                        "current": True if job.get("current") is True else (tfp == current_tfp),
+                        "provider": job.get("provider"),
+                        "model": job.get("model"),
+                        "trigger": job.get("trigger"),
+                        "attempt": job.get("attempt"),
+                        "maxAttempts": job.get("maxAttempts"),
+                        "queuedAt": job.get("queuedAt"),
+                        "startedAt": job.get("startedAt"),
+                        "finishedAt": job.get("finishedAt"),
+                        "durationSeconds": duration,
+                        "totalTokens": total_tokens,
+                        "error": job.get("error"),
                         "sourceObservedAt": source.get("firstObservedAt"),
                         "sourceTitle": source.get("subject", ""),
                         "sourceDescription": source.get("description", ""),
-                    })
+                        "kind": "version",
+                        "textFingerprint": tfp,
+                        "phase": job.get("phase"),
+                        "run": job.get("run"),
+                        "runs": clean_run_snapshots(job.get("runs") or []),
+                    }
                     children.append(child)
                 children.sort(
                     key=lambda child: (int(child.get("versionNumber") or 0), child.get("queuedAt") or ""),
@@ -2676,6 +2761,7 @@ class DashboardRuntime:
                 parents.append({
                     "kind": "task",
                     "uid": uid,
+                    "sessionId": self.store.session_id,
                     "taskId": rec.get("taskId"),
                     "title": task.get("subject") or ((rec.get("current") or {}).get("task") or {}).get("subject") or f"Task #{rec.get('taskId')}",
                     "viewLanguage": task.get("viewLanguage", self.store.task_view_language(rec)),
@@ -2885,25 +2971,31 @@ class DashboardRuntime:
         self.logger.warning("🛑", "TRANSLATE", f"translation job cancel requested · job={job_id} · task=#{job.get('taskId')}")
         return out
 
-    def bulk_translation_action(self, action, job_ids=None):
-        action = str(action or "").strip().lower()
+    def bulk_translation_action(self, action, job_refs=None, job_ids=None):
+        raw_action = action.strip().lower() if type(action) is str else action
+        if raw_action not in {"stop", "retry", "delete", "stop_all", "retry_all_failed"}:
+            raise ValueError(f"unsupported bulk translation action: {action}")
         all_jobs = self.store.job_manager.list()
         by_id = {job.get("id"): job for job in all_jobs}
+        raw_items = job_refs if job_refs is not None else job_ids
         requested = []
         seen = set()
-        for job_id in (job_ids or []):
-            job_id = str(job_id)
+        for ref in (raw_items or []):
+            job_id = ref.get("jobId") or ref.get("id") if isinstance(ref, dict) else str(ref)
             if job_id and job_id not in seen:
-                seen.add(job_id); requested.append(job_id)
-        if action == "stop_all":
+                seen.add(job_id)
+                requested.append(job_id)
+        if raw_action == "stop_all":
             requested = [job["id"] for job in all_jobs if job.get("status") in TranslationJobManager.ACTIVE]
-        elif action == "retry_all_failed":
+            action = "stop"
+        elif raw_action == "retry_all_failed":
             requested = [job["id"] for job in all_jobs]
-        elif action not in {"stop", "retry", "delete"}:
-            raise ValueError(f"unsupported bulk translation action: {action}")
+            action = "retry"
+        else:
+            action = raw_action
 
         summary = {
-            "action": action,
+            "action": raw_action,
             "selected": len(requested),
             "stopped": 0,
             "retryStarted": 0,
@@ -2924,13 +3016,13 @@ class DashboardRuntime:
                 continue
             status = job.get("status")
             try:
-                if action in {"stop", "stop_all"}:
+                if action == "stop":
                     if status not in TranslationJobManager.ACTIVE:
                         summary["skippedTerminal"] += 1
                         continue
                     self.cancel_translation_job(job_id)
                     summary["stopped"] += 1
-                elif action in {"retry", "retry_all_failed"}:
+                elif action == "retry":
                     if status == "success":
                         summary["skippedSuccess"] += 1
                         continue
@@ -2949,12 +3041,14 @@ class DashboardRuntime:
                         continue
                     self.delete_translation_job(job_id)
                     summary["deleted"] += 1
+                else:
+                    pass
             except (KeyError, ValueError, RuntimeError) as exc:
                 summary["errors"].append({"jobId": job_id, "message": str(exc)})
         if retry_entries:
             self._queue_translation_item({"kind": "manual-retry-bulk", "entries": retry_entries})
             self.hub.publish("translation-jobs-changed", {"timestamp": now_iso()})
-        self.logger.info("📦", "TRANSLATE", f"bulk action · {action} · selected={summary['selected']} · stopped={summary['stopped']} · retry={summary['retryStarted']} · deleted={summary['deleted']}")
+        self.logger.info("📦", "TRANSLATE", f"bulk action · {raw_action} · selected={summary['selected']} · stopped={summary['stopped']} · retry={summary['retryStarted']} · deleted={summary['deleted']}")
         return summary
 
     def cancel_global_translation(self):

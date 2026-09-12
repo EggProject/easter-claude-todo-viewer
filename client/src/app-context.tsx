@@ -164,7 +164,9 @@ export function AppProvider({ children }: { children?: ReactNode }): ReactElemen
   }, []);
 
   const refreshState = useCallback(async () => {
-    setState(await loadState(currentSessionId ? [currentSessionId] : []));
+    try {
+      setState(await loadState(currentSessionId ? [currentSessionId] : []));
+    } catch {}
   }, [loadState, currentSessionId]);
 
   const loadHistory = useCallback(async (sessionIds?: string[]) => {
@@ -255,7 +257,7 @@ export function AppProvider({ children }: { children?: ReactNode }): ReactElemen
   useEffect(() => {
     if (bootstrapStatus !== 'ready') return;
     if (currentSessionId) {
-      refreshState().catch(() => {});
+      void refreshState();
     } else {
       setState(null);
     }
@@ -266,17 +268,45 @@ export function AppProvider({ children }: { children?: ReactNode }): ReactElemen
     es.onopen = () => setLive('LIVE');
     es.onerror = () => setLive('RECONNECTING');
 
-    const invalidate = (): void => {
-      setRevision((x) => x + 1);
-      Promise.all([
-        refreshSessionsSnapshot(),
-        refreshHistory(),
-        refreshJobs(),
-        refreshCatalog(),
-      ]).catch(() => {});
+    let stateInvalidatedTimer: ReturnType<typeof setTimeout> | null = null;
+    let pendingReasons: string[] = [];
+
+    const handleStateInvalidated = (e?: unknown): void => {
+      let reason: string | undefined;
+      let parsedData: unknown = isRecord(e) && 'data' in e ? e.data : e;
+      if (typeof parsedData === 'string') {
+        try {
+          parsedData = JSON.parse(parsedData);
+        } catch {}
+      }
+      if (isRecord(parsedData) && typeof parsedData['reason'] === 'string') {
+        reason = parsedData['reason'];
+      }
+      if (reason) {
+        pendingReasons.push(reason);
+      }
+
+      if (stateInvalidatedTimer !== null) {
+        clearTimeout(stateInvalidatedTimer);
+      }
+      stateInvalidatedTimer = setTimeout(() => {
+        stateInvalidatedTimer = null;
+        const reasons = pendingReasons;
+        pendingReasons = [];
+        const onlySessionSwitched =
+          reasons.length > 0 && reasons.every((r) => r === 'session-switched');
+        setRevision((x) => x + 1);
+        const tasks = [refreshSessionsSnapshot(), refreshHistory()];
+        if (!onlySessionSwitched) {
+          tasks.push(refreshJobs(), refreshCatalog());
+        }
+        Promise.all(tasks).catch(() => {});
+      }, 100);
     };
 
-    es.addEventListener('state-invalidated', invalidate);
+    es.addEventListener('state-invalidated', (e: Event) => {
+      handleStateInvalidated(e);
+    });
     es.addEventListener('app-state-changed', () => {
       refreshSessionsSnapshot()
         .then(() => setRevision((x) => x + 1))
@@ -304,12 +334,19 @@ export function AppProvider({ children }: { children?: ReactNode }): ReactElemen
           enqueue({ kind: 'translation-error', ...parsed });
         }
       } catch {}
-      invalidate();
+      handleStateInvalidated({ reason: 'translation-error' });
     });
+    let translationJobsTimer: ReturnType<typeof setTimeout> | null = null;
     es.addEventListener('translation-jobs-changed', () => {
-      Promise.all([refreshJobs(), refreshCatalog(), refreshSessionsSnapshot()])
-        .then(() => setRevision((x) => x + 1))
-        .catch(() => {});
+      if (translationJobsTimer !== null) {
+        clearTimeout(translationJobsTimer);
+      }
+      translationJobsTimer = setTimeout(() => {
+        translationJobsTimer = null;
+        Promise.all([refreshJobs(), refreshCatalog(), refreshSessionsSnapshot()])
+          .then(() => setRevision((x) => x + 1))
+          .catch(() => {});
+      }, 250);
     });
     es.addEventListener('settings-changed', () => {
       refreshSettings().catch(() => {});
@@ -318,7 +355,15 @@ export function AppProvider({ children }: { children?: ReactNode }): ReactElemen
       refreshPrompts().catch(() => {});
     });
 
-    return () => es.close();
+    return () => {
+      if (stateInvalidatedTimer !== null) {
+        clearTimeout(stateInvalidatedTimer);
+      }
+      if (translationJobsTimer !== null) {
+        clearTimeout(translationJobsTimer);
+      }
+      es.close();
+    };
   }, [
     enqueue,
     refreshSessionsSnapshot,

@@ -942,6 +942,28 @@ describe('FlowPage', () => {
     });
     unmountSingleEmpty();
 
+    // Single session with automatic nodes and null viewport (line 199)
+    mockRfInstance.fitView.mockClear();
+    mockApp.loadState.mockResolvedValueOnce({
+      tasks: [
+        {
+          uid: 'sess-1:1',
+          sessionId: 'sess-1',
+          id: '1',
+          subject: 'Automatic node task',
+          status: 'pending',
+          blockedBy: [],
+          blocks: [],
+        },
+      ],
+    });
+    vi.mocked(apiModule.getJSON).mockResolvedValueOnce({ nodes: {}, viewport: null });
+    const { unmount: unmountSingleWithNodes } = renderPage(['/flow?sessions=sess-1']);
+    await waitFor(() => {
+      expect(mockRfInstance.fitView).toHaveBeenCalledWith({ padding: 0.18, duration: 0 });
+    });
+    unmountSingleWithNodes();
+
     // Multi session empty fitView (line 104)
     mockApp.sessionsState.watchedSessionIds = ['sess-empty-1', 'sess-empty-2'];
     mockApp.loadState.mockResolvedValueOnce({ tasks: [] });

@@ -182,6 +182,9 @@ function PromptEditor({ id, onClose, refresh }: PromptEditorProps): ReactElement
         </div>
       ) : null}
       <textarea
+        id="prompt-body-textarea"
+        name="promptBody"
+        aria-label="Prompt template content"
         className="prompt-textarea"
         value={body}
         onChange={(event) => setBody(event.target.value)}

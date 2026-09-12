@@ -369,6 +369,81 @@ describe('TasksPage', () => {
     resolveLoad({ tasks: [] });
   });
 
+  it('does not trigger repeated redundant loadState calls on rapid re-renders or stable session selections', async () => {
+    let currentScope = ['sess-alpha'];
+    const scopeSpy = vi.spyOn(sessionSelectModule, 'useSessionScope').mockImplementation(() => ({
+      selectedSessionIds: currentScope,
+      setSelectedSessionIds: vi.fn(),
+    }));
+
+    const { rerender } = renderPage();
+
+    await waitFor(() => {
+      expect(mockApp.loadState).toHaveBeenCalledTimes(1);
+    });
+    expect(mockApp.loadState).toHaveBeenLastCalledWith(['sess-alpha']);
+
+    const searchInput = screen.getByPlaceholderText(/Search task id, title/i);
+    fireEvent.change(searchInput, { target: { value: 'test1' } });
+    fireEvent.change(searchInput, { target: { value: 'test2' } });
+    fireEvent.change(searchInput, { target: { value: 'test3' } });
+
+    currentScope = ['sess-alpha'];
+    rerender(
+      React.createElement(MemoryRouter, { initialEntries: ['/tasks'] }, React.createElement(TasksPage, null)),
+    );
+
+    rerender(
+      React.createElement(MemoryRouter, { initialEntries: ['/tasks'] }, React.createElement(TasksPage, null)),
+    );
+
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    expect(mockApp.loadState).toHaveBeenCalledTimes(1);
+    scopeSpy.mockRestore();
+  });
+
+  it('calls loadState only when session selection or revision changes', async () => {
+    let currentScope = ['sess-alpha'];
+    const scopeSpy = vi.spyOn(sessionSelectModule, 'useSessionScope').mockImplementation(() => ({
+      selectedSessionIds: currentScope,
+      setSelectedSessionIds: vi.fn(),
+    }));
+
+    const { rerender } = renderPage();
+
+    await waitFor(() => {
+      expect(mockApp.loadState).toHaveBeenCalledTimes(1);
+    });
+    expect(mockApp.loadState).toHaveBeenLastCalledWith(['sess-alpha']);
+
+    rerender(
+      React.createElement(MemoryRouter, { initialEntries: ['/tasks'] }, React.createElement(TasksPage, null)),
+    );
+    expect(mockApp.loadState).toHaveBeenCalledTimes(1);
+
+    mockApp.revision = 2;
+    rerender(
+      React.createElement(MemoryRouter, { initialEntries: ['/tasks'] }, React.createElement(TasksPage, null)),
+    );
+
+    await waitFor(() => {
+      expect(mockApp.loadState).toHaveBeenCalledTimes(2);
+    });
+
+    currentScope = ['sess-beta'];
+    rerender(
+      React.createElement(MemoryRouter, { initialEntries: ['/tasks'] }, React.createElement(TasksPage, null)),
+    );
+
+    await waitFor(() => {
+      expect(mockApp.loadState).toHaveBeenCalledTimes(3);
+    });
+    expect(mockApp.loadState).toHaveBeenLastCalledWith(['sess-beta']);
+
+    scopeSpy.mockRestore();
+  });
+
   describe('groupTasksBySession helper', () => {
     it('groups tasks properly and handles tasks without sessionId or empty array', () => {
       const groups = groupTasksBySession([

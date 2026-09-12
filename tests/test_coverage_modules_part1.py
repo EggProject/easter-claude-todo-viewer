@@ -388,6 +388,28 @@ class ClientServeTests(unittest.TestCase):
             self.assertIn(b"Content-Type: application/octet-stream", raw_bin)
             self.assertTrue(raw_bin.endswith(b"\x00\x01\x02\x03"))
 
+    def test_client_handler_eggproject_design_css(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = pathlib.Path(td).resolve()
+            design_dir = root / "design"
+            design_dir.mkdir(parents=True)
+            css_content = ":root { --brand-color: #ffaa00; }"
+            (design_dir / "colors_and_type.css").write_text(css_content, encoding="utf-8")
+
+            class FakeServer:
+                def __init__(self, r, api):
+                    self.root = pathlib.Path(r).resolve()
+                    self.api_base = api
+
+            srv = FakeServer(root, "http://127.0.0.1:8765")
+            sock = MockSocket(b"GET /eggproject-design/colors_and_type.css HTTP/1.1\r\nHost: localhost\r\n\r\n")
+            client_serve_mod.ClientHandler(sock, ("127.0.0.1", 12345), srv)
+
+            resp = sock.wfile.getvalue().decode("utf-8")
+            self.assertIn("HTTP/1.0 200 OK", resp)
+            self.assertIn("Content-Type: text/css", resp)
+            self.assertIn(css_content, resp)
+
     def test_client_handler_spa_fallback_to_index(self):
         with tempfile.TemporaryDirectory() as td:
             root = pathlib.Path(td).resolve()

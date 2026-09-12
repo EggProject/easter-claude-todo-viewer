@@ -15,7 +15,10 @@ class ClientHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         path=unquote(urlparse(self.path).path)
         rel=path.lstrip('/')
-        candidate=(self.server.root/rel).resolve() if rel else self.server.root/'index.html'
+        if rel.startswith('eggproject-design/'):
+            candidate = (self.server.root / 'design' / rel[len('eggproject-design/'):]).resolve()
+        else:
+            candidate = (self.server.root / rel).resolve() if rel else self.server.root / 'index.html'
         try: candidate.relative_to(self.server.root)
         except ValueError: self._send(403,'text/plain; charset=utf-8',b'Forbidden'); return
         if candidate.is_file() and candidate.name!='index.html':

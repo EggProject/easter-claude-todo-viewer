@@ -1,10 +1,7 @@
 @import url('../../../eggproject-design/colors_and_type.css');
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { background: var(--ep-bg-sunken); color: var(--ep-fg); font-family: var(--ep-font-sans); -webkit-font-smoothing: antialiased; }
 h1, h2 { font-weight: inherit; }
-
-#root { padding: 40px; min-height: 100vh; display: flex; justify-content: center; }
 
 /* ============ Demo chrome ============ */
 .demo { width: 100%; max-width: 880px; }

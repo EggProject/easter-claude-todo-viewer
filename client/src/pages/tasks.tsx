@@ -22,6 +22,7 @@ const icon = (status: string): string => {
 
 export default function TasksPage(): ReactElement {
   const app = useApp();
+  const { loadState, showModal, revision } = app;
   const navigate = useNavigate();
   const location = useLocation();
   const { selectedSessionIds, setSelectedSessionIds } = useSessionScope();
@@ -32,16 +33,22 @@ export default function TasksPage(): ReactElement {
     sort: scopedState?.initialSort ?? 'dependency',
   });
 
+  const sessionIdsKey = selectedSessionIds.join(',');
+  const memoizedSelectedSessionIds = useMemo(
+    () => selectedSessionIds,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [sessionIdsKey],
+  );
+
   useEffect(() => {
     let alive = true;
-    app
-      .loadState(selectedSessionIds)
+    loadState(memoizedSelectedSessionIds)
       .then((value) => {
         if (alive) setScopedState(value);
       })
       .catch((error: unknown) => {
         const message = error instanceof Error ? error.message : String(error);
-        app.showModal({
+        showModal({
           kind: 'error',
           title: 'Tasks could not be loaded',
           message,
@@ -50,7 +57,7 @@ export default function TasksPage(): ReactElement {
     return () => {
       alive = false;
     };
-  }, [app, selectedSessionIds]);
+  }, [loadState, showModal, memoizedSelectedSessionIds, revision]);
 
   const query = filters['q'] || '';
   const statuses = useMemo(() => normalizeStatusSelection(filters['status']), [filters]);
@@ -110,6 +117,9 @@ export default function TasksPage(): ReactElement {
     <div className="page">
       <div className="page-controls">
         <input
+          id="task-search-input"
+          name="taskSearch"
+          aria-label="Search tasks"
           className="search-input"
           value={query}
           onChange={(event) => setFilter('q', event.target.value)}
@@ -120,7 +130,13 @@ export default function TasksPage(): ReactElement {
           setSelectedSessionIds={setSelectedSessionIds}
         />
         <StatusMultiSelect value={statuses} onChange={setStatus} />
-        <select value={sort} onChange={(event) => setFilter('sort', event.target.value)}>
+        <select
+          id="task-sort-select"
+          name="taskSort"
+          aria-label="Sort tasks"
+          value={sort}
+          onChange={(event) => setFilter('sort', event.target.value)}
+        >
           <option value="dependency">Dependency</option>
           <option value="id">ID</option>
           <option value="subject">Title</option>

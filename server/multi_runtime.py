@@ -1,4 +1,5 @@
 import copy
+import datetime as dt
 import json
 import pathlib
 import queue
@@ -61,6 +62,7 @@ class MultiSessionRuntime:
         }
         self.watch_state={}
         self._stats_cache={}
+        self._catalog_cache={}
         self.next_registry_refresh=time.monotonic()+5.0
         self.translation_thread=None
         self.watcher_thread=None
@@ -128,21 +130,32 @@ class MultiSessionRuntime:
             log_root=pathlib.Path(self.config.log_root).expanduser(),settings_file=pathlib.Path(self.config.settings_file).expanduser(),
         )
 
-    def get_runtime(self,session_id,create=True):
+    def get_runtime(self, session_id, create=True):
+        child = None
         with self.children_lock:
-            if session_id in self.children: return self.children[session_id]
-            if not create: return None
-            info=self.session_info(session_id)
-            if not info: raise KeyError(session_id)
-            child=core.DashboardRuntime(self._child_config(info),shared_translation_queue=self.translation_requests,shared_hub=self.hub,start_translation_worker=False)
-            # Share one provider concurrency budget across all sessions.
-            child.store.provider_gate=self.provider_gate
-            child.store.provider_active_counts=self.provider_active_counts
-            child.store.provider_concurrency_limits=self.provider_concurrency_limits
-            child.store.configure_provider_concurrency(self.provider_concurrency_limits)
-            self.children[session_id]=child
-            self.invalidate_session_stats(session_id)
+            child = self.children.get(session_id)
+        if child is not None:
             return child
+        if not create:
+            return None
+        info = self.session_info(session_id)
+        if not info:
+            raise KeyError(session_id)
+        child = core.DashboardRuntime(
+            self._child_config(info),
+            shared_translation_queue=self.translation_requests,
+            shared_hub=self.hub,
+            start_translation_worker=False,
+        )
+        # Share one provider concurrency budget across all sessions.
+        child.store.provider_gate = self.provider_gate
+        child.store.provider_active_counts = self.provider_active_counts
+        child.store.provider_concurrency_limits = self.provider_concurrency_limits
+        child.store.configure_provider_concurrency(self.provider_concurrency_limits)
+        with self.children_lock:
+            self.children[session_id] = child
+        self.invalidate_session_stats(session_id)
+        return child
 
     def switch_session(self,session_id):
         state=self.app_state_store.switch(session_id,self.sessions)
@@ -173,11 +186,21 @@ class MultiSessionRuntime:
         jobs=list((session_dir/'translation-jobs').glob('*.json')) if (session_dir/'translation-jobs').is_dir() else []
         return {'taskCount':len(tasks),'deletedTaskCount':deleted,'translationCount':len(jobs)}
 
-    def invalidate_session_stats(self,session_id=None):
+    def invalidate_catalog(self, session_id=None):
+        if session_id is None:
+            self._catalog_cache.clear()
+        else:
+            self._catalog_cache.pop(str(session_id), None)
+
+    def invalidate_translation_catalog(self, session_id=None):
+        self.invalidate_catalog(session_id)
+
+    def invalidate_session_stats(self, session_id=None):
         if session_id is None:
             self._stats_cache.clear()
         else:
-            self._stats_cache.pop(str(session_id),None)
+            self._stats_cache.pop(str(session_id), None)
+        self.invalidate_catalog(session_id)
 
     def _cache_stats(self,info):
         key=info['id']; cached=self._stats_cache.get(key)
@@ -303,11 +326,23 @@ class MultiSessionRuntime:
         if child: return child.translation_jobs()
         directory=self._cache_session_dir(info)/'translation-jobs'
         rows=[]
+        strip={'rawResponse','exactPrompt','agentInstructions','rawStream'}
         if directory.is_dir():
             for path in directory.glob('*.json'):
                 try:
                     value=json.loads(path.read_text(encoding='utf-8'))
-                    if isinstance(value,dict): rows.append(value)
+                    if isinstance(value,dict):
+                        if 'totalTokens' not in value:
+                            value['totalTokens']=core.compute_job_total_tokens(value)
+                        if value.get('runs'):
+                            value['runs']=core.clean_run_snapshots(value['runs'])
+                        if value.get('attempts'):
+                            cleaned_attempts=[]
+                            for att in value['attempts']:
+                                cleaned_att={k: ({sk:sv for sk,sv in v.items() if sk not in strip} if k in ('translator','validator') and isinstance(v,dict) else v) for k,v in (att or {}).items() if k not in strip}
+                                cleaned_attempts.append(cleaned_att)
+                            value['attempts']=cleaned_attempts
+                        rows.append(value)
                 except Exception: pass
         rows.sort(key=lambda j:str(j.get('queuedAt') or ''),reverse=True)
         return rows
@@ -317,12 +352,40 @@ class MultiSessionRuntime:
         for info in self.sessions:
             brief=self.session_brief(info['id'])
             for job in self._read_persisted_jobs(info):
-                item=copy.deepcopy(job); item['sessionId']=info['id']; item['session']=brief; rows.append(item)
+                duration=job.get('durationSeconds')
+                item={
+                    'id':job.get('id'),
+                    'sessionId':job.get('sessionId') or info['id'],
+                    'session':brief,
+                    'uid':job.get('uid'),
+                    'taskId':job.get('taskId'),
+                    'textFingerprint':job.get('textFingerprint'),
+                    'status':job.get('status'),
+                    'phase':job.get('phase'),
+                    'versionNumber':job.get('versionNumber'),
+                    'current':job.get('current'),
+                    'provider':job.get('provider'),
+                    'model':job.get('model'),
+                    'trigger':job.get('trigger'),
+                    'attempt':job.get('attempt'),
+                    'maxAttempts':job.get('maxAttempts'),
+                    'queuedAt':job.get('queuedAt'),
+                    'startedAt':job.get('startedAt'),
+                    'finishedAt':job.get('finishedAt'),
+                    'durationSeconds':duration,
+                    'totalTokens':job.get('totalTokens') if job.get('totalTokens') is not None else core.compute_job_total_tokens(job),
+                    'error':job.get('error'),
+                }
+                if 'kind' in job: item['kind']=job['kind']
+                if 'run' in job: item['run']=job['run']
+                if job.get('runs'): item['runs']=core.clean_run_snapshots(job['runs'])
+                rows.append(item)
         rows.sort(key=lambda j:str(j.get('queuedAt') or ''),reverse=True)
         return rows
 
     def _cached_translation_catalog(self,info):
-        child=self.get_runtime(info['id'],create=False)
+        sid=info['id']
+        child=self.get_runtime(sid,create=False)
         if child: return child.translation_catalog().get('tasks') or []
         session_dir=self._cache_session_dir(info); jobs=self._read_persisted_jobs(info); jobs_by_uid={}
         for job in jobs: jobs_by_uid.setdefault(job.get('uid'),[]).append(job)
@@ -339,11 +402,39 @@ class MultiSessionRuntime:
             ordered=sorted(versions.items(), key=lambda item:((item[1] or {}).get('firstObservedAt') or '',item[0]))
             nums={key:i+1 for i,(key,_v) in enumerate(ordered)}
             for job in jobs_by_uid.get(uid,[]):
-                item=copy.deepcopy(job); jfp=item.get('textFingerprint'); src=versions.get(jfp) or {}
-                item.update({'kind':'version','versionNumber':nums.get(jfp),'current':jfp==tfp,'sourceObservedAt':src.get('firstObservedAt'),'sourceTitle':src.get('subject',''),'sourceDescription':src.get('description','')}); children.append(item)
+                jfp=job.get('textFingerprint'); src=versions.get(jfp) or {}
+                child_row={
+                    'id':job.get('id'),
+                    'uid':job.get('uid'),
+                    'sessionId':job.get('sessionId') or sid,
+                    'taskId':str(job.get('taskId') or rec.get('taskId') or ''),
+                    'status':job.get('status'),
+                    'versionNumber':nums.get(jfp),
+                    'current':True if job.get('current') is True else (jfp==tfp),
+                    'provider':job.get('provider'),
+                    'model':job.get('model'),
+                    'trigger':job.get('trigger'),
+                    'attempt':job.get('attempt'),
+                    'maxAttempts':job.get('maxAttempts'),
+                    'queuedAt':job.get('queuedAt'),
+                    'startedAt':job.get('startedAt'),
+                    'finishedAt':job.get('finishedAt'),
+                    'durationSeconds':job.get('durationSeconds'),
+                    'totalTokens':core.compute_job_total_tokens(job),
+                    'error':job.get('error'),
+                    'sourceObservedAt':src.get('firstObservedAt'),
+                    'sourceTitle':src.get('subject',''),
+                    'sourceDescription':src.get('description',''),
+                    'kind':'version',
+                    'textFingerprint':jfp,
+                    'phase':job.get('phase'),
+                    'run':job.get('run'),
+                    'runs':core.clean_run_snapshots(job.get('runs') or []),
+                }
+                children.append(child_row)
             children.sort(key=lambda c:(int(c.get('versionNumber') or 0),c.get('queuedAt') or ''),reverse=True)
             status=children[0].get('status') if children else ('ready' if ready else 'missing')
-            parents.append({'kind':'task','uid':uid,'taskId':rec.get('taskId'),'title':title or f"Task #{rec.get('taskId')}",'viewLanguage':view,'effectiveLanguage':'hu' if view=='hu' and ready else 'en','translationState':'ready' if ready else status,'status':current_task.get('status'),'present':bool(rec.get('present',True)),'currentFingerprint':tfp,'versionCount':len(children),'children':children})
+            parents.append({'kind':'task','uid':uid,'sessionId':sid,'taskId':rec.get('taskId'),'title':title or f"Task #{rec.get('taskId')}",'viewLanguage':view,'effectiveLanguage':'hu' if view=='hu' and ready else 'en','translationState':'ready' if ready else status,'status':current_task.get('status'),'present':bool(rec.get('present',True)),'currentFingerprint':tfp,'versionCount':len(children),'children':children})
         parents.sort(key=lambda item:(int(item.get('taskId')) if str(item.get('taskId','')).isdigit() else 10**12,str(item.get('taskId') or '')))
         return parents
 
@@ -352,9 +443,17 @@ class MultiSessionRuntime:
         session_rows={row['id']:row for row in self.sessions_state().get('sessions') or []}
         for info in self.sessions:
             brief=self.session_brief(info['id']); session_language=(session_rows.get(info['id']) or {}).get('globalLanguage','en')
-            for item in self._cached_translation_catalog(info):
-                rec=copy.deepcopy(item); rec['sessionId']=info['id']; rec['session']=brief; rec['sessionGlobalLanguage']=session_language
-                for child in rec.get('children') or []: child['sessionId']=info['id']; child['session']=brief
+            cached=self._catalog_cache.get(info['id'])
+            if cached is None:
+                cached=self._cached_translation_catalog(info)
+                self._catalog_cache[info['id']]=cached
+            for item in cached:
+                rec=dict(item); rec['sessionId']=info['id']; rec['session']=brief; rec['sessionGlobalLanguage']=session_language
+                children=[]
+                for child_raw in item.get('children') or []:
+                    child=dict(child_raw); child['sessionId']=info['id']; child['session']=brief
+                    children.append(child)
+                rec['children']=children
                 rows.append(rec)
         return {'tasks':rows}
 
@@ -371,9 +470,11 @@ class MultiSessionRuntime:
     def cancel_task_translation(self,session_id,uid): return self.get_runtime(session_id).cancel_task_translation(uid)
 
     def translation_job(self,session_id,job_id): return self.get_runtime(session_id).store.job_manager.get(job_id)
+
     def retry_translation_job(self,session_id,job_id):
         result=self.get_runtime(session_id).retry_translation_job(job_id); self.invalidate_session_stats(session_id); return result
-    def cancel_translation_job(self,session_id,job_id): return self.get_runtime(session_id).cancel_translation_job(job_id)
+    def cancel_translation_job(self,session_id,job_id):
+        result=self.get_runtime(session_id).cancel_translation_job(job_id); self.invalidate_session_stats(session_id); return result
     def delete_translation_job(self,session_id,job_id):
         result=self.get_runtime(session_id).delete_translation_job(job_id); self.invalidate_session_stats(session_id); return result
 
@@ -456,9 +557,9 @@ class MultiSessionRuntime:
             try: item=self.translation_requests.get(timeout=.25)
             except queue.Empty: continue
             try:
-                sid=item.get('sessionId')
-                if not sid: continue
-                self.get_runtime(sid).process_translation_item(item)
+                sid = item.get('sessionId')
+                if sid:
+                    self.get_runtime(sid).process_translation_item(item)
             except Exception as exc:
                 child=self.get_runtime(item.get('sessionId'),create=False) if item.get('sessionId') else None
                 if child: child.logger.error('❌','SERVER',f'global translation worker failure · {exc}')

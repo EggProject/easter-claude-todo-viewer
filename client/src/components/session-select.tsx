@@ -20,6 +20,7 @@ export function useSessionScope(): SessionScopeHookResult {
   const watchedIds = useMemo(() => watchedSessionIds || [], [watchedSessionIds]);
   const current = app.currentSessionId;
   const sessionsParam = searchParams.get('sessions');
+  const lastResultRef = useRef<string[] | null>(null);
 
   const selectedSessionIds = useMemo(() => {
     const fromUrl = String(sessionsParam || '')
@@ -40,9 +41,23 @@ export function useSessionScope(): SessionScopeHookResult {
     }
     const watched = new Set(watchedIds);
     const valid = wanted.filter((id) => watched.has(id));
-    if (valid.length) return [...new Set(valid)];
-    if (current && watched.has(current)) return [current];
-    return watchedIds.slice(0, 1);
+    let resolved: string[];
+    if (valid.length) {
+      resolved = [...new Set(valid)];
+    } else if (current && watched.has(current)) {
+      resolved = [current];
+    } else {
+      resolved = watchedIds.slice(0, 1);
+    }
+    if (
+      lastResultRef.current !== null &&
+      lastResultRef.current.length === resolved.length &&
+      lastResultRef.current.join(',') === resolved.join(',')
+    ) {
+      return lastResultRef.current;
+    }
+    lastResultRef.current = resolved;
+    return resolved;
   }, [sessionsParam, storageKey, watchedIds, current]);
 
   const setSelectedSessionIds = useCallback(
@@ -69,7 +84,7 @@ export function useSessionScope(): SessionScopeHookResult {
     const raw = String(sessionsParam || '')
       .split(',')
       .filter(Boolean);
-    if (raw.length && raw.some((id) => !watchedIds.includes(id))) {
+    if (raw.some((id) => !watchedIds.includes(id))) {
       setSelectedSessionIds(selectedSessionIds);
     }
   }, [sessionsParam, watchedIds, setSelectedSessionIds, selectedSessionIds]);

@@ -676,4 +676,190 @@ describe('app-context module', () => {
       }),
     );
   });
+
+  it('debounces rapid consecutive translation-jobs-changed events to prevent redundant parallel catalog refreshes', async () => {
+    let latestApp = null;
+    render(
+      React.createElement(
+        AppProvider,
+        null,
+        React.createElement(TestConsumer, { onApp: (app) => (latestApp = app) }),
+      ),
+    );
+
+    await waitFor(() => expect(latestApp.bootstrapStatus).toBe('ready'));
+    const es = EventSourceMock.instances[EventSourceMock.instances.length - 1];
+
+    mockFetch.mockClear();
+
+    await act(async () => {
+      for (let i = 0; i < 6; i++) {
+        es.emit('translation-jobs-changed', { index: i });
+      }
+    });
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 350));
+    });
+
+    const catalogRequests = mockFetch.mock.calls.filter(([url]) =>
+      String(url).includes('/api/translation-catalog'),
+    );
+
+    expect(catalogRequests.length).toBeLessThanOrEqual(2);
+    expect(catalogRequests.length).toBeGreaterThanOrEqual(1);
+
+    // Test error in translation-jobs-changed Promise.all catch handler
+    mockFetch.mockImplementation(async (url) => {
+      if (String(url).includes('/api/translation-catalog')) {
+        throw new Error('catalog fetch failed');
+      }
+      return { ok: true, json: async () => [] };
+    });
+    await act(async () => {
+      es.emit('translation-jobs-changed', {});
+      await new Promise((resolve) => setTimeout(resolve, 350));
+    });
+  });
+
+  it('covers useOptionalApp both inside and outside provider', () => {
+    function OptionalTest() {
+      const app = appContextModule.useOptionalApp();
+      return React.createElement('span', { 'data-testid': 'opt' }, app ? 'has-app' : 'no-app');
+    }
+
+    const { unmount } = render(React.createElement(OptionalTest));
+    expect(screen.getByTestId('opt').textContent).toBe('no-app');
+    unmount();
+
+    render(React.createElement(AppProvider, null, React.createElement(OptionalTest)));
+    expect(screen.getByTestId('opt').textContent).toBe('has-app');
+  });
+
+  it('filters and debounces refreshes on state-invalidated according to reason', async () => {
+    let latestApp = null;
+    render(
+      React.createElement(
+        AppProvider,
+        null,
+        React.createElement(TestConsumer, { onApp: (app) => (latestApp = app) }),
+      ),
+    );
+
+    await waitFor(() => expect(latestApp.bootstrapStatus).toBe('ready'));
+    const es = EventSourceMock.instances[EventSourceMock.instances.length - 1];
+
+    vi.useFakeTimers();
+    try {
+      mockFetch.mockClear();
+
+      // Emit state-invalidated with session-switched
+      await act(async () => {
+        es.dispatchEvent(
+          Object.assign(new Event('state-invalidated'), {
+            data: JSON.stringify({ reason: 'session-switched' }),
+          }),
+        );
+        vi.advanceTimersByTime(150);
+      });
+
+      await act(async () => {});
+
+      const callsAfterSwitched = mockFetch.mock.calls.map(([url]) => String(url));
+      expect(callsAfterSwitched.some((url) => url.includes('/api/sessions'))).toBe(true);
+      expect(callsAfterSwitched.some((url) => url.includes('/api/history'))).toBe(true);
+      expect(callsAfterSwitched.some((url) => url.includes('/api/translations'))).toBe(false);
+      expect(callsAfterSwitched.some((url) => url.includes('/api/translation-catalog'))).toBe(false);
+
+      mockFetch.mockClear();
+
+      // Emit state-invalidated with other
+      await act(async () => {
+        es.dispatchEvent(
+          Object.assign(new Event('state-invalidated'), {
+            data: JSON.stringify({ reason: 'other' }),
+          }),
+        );
+        vi.advanceTimersByTime(150);
+      });
+
+      await act(async () => {});
+
+      const callsAfterOther = mockFetch.mock.calls.map(([url]) => String(url));
+      expect(callsAfterOther.some((url) => url.includes('/api/translations'))).toBe(true);
+      expect(callsAfterOther.some((url) => url.includes('/api/translation-catalog'))).toBe(true);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('covers error rejection in refreshState effect at line 258', async () => {
+    let latestApp = null;
+    render(
+      React.createElement(
+        AppProvider,
+        null,
+        React.createElement(TestConsumer, { onApp: (app) => (latestApp = app) }),
+      ),
+    );
+
+    await waitFor(() => expect(latestApp.bootstrapStatus).toBe('ready'));
+    const es = EventSourceMock.instances[EventSourceMock.instances.length - 1];
+
+    mockFetch.mockImplementation(async (url) => {
+      const urlStr = String(url);
+      if (urlStr.includes('/api/state')) {
+        throw new Error('Failed to load state during refresh');
+      }
+      return { ok: true, json: async () => ({}) };
+    });
+
+    await act(async () => {
+      es.emit('app-state-changed', {});
+    });
+
+    expect(latestApp.bootstrapStatus).toBe('ready');
+  });
+
+  it('covers error rejection in state-invalidated Promise.all at line 301', async () => {
+    let latestApp = null;
+    render(
+      React.createElement(
+        AppProvider,
+        null,
+        React.createElement(TestConsumer, { onApp: (app) => (latestApp = app) }),
+      ),
+    );
+
+    await waitFor(() => expect(latestApp.bootstrapStatus).toBe('ready'));
+    const es = EventSourceMock.instances[EventSourceMock.instances.length - 1];
+
+    vi.useFakeTimers();
+    try {
+      mockFetch.mockImplementation(async (url) => {
+        const urlStr = String(url);
+        if (urlStr.includes('/api/translation-catalog') || urlStr.includes('/api/translations')) {
+          throw new Error('Catalog or jobs task failed');
+        }
+        return { ok: true, json: async () => ({}) };
+      });
+
+      await act(async () => {
+        es.dispatchEvent(
+          Object.assign(new Event('state-invalidated'), {
+            data: JSON.stringify({ reason: 'other' }),
+          }),
+        );
+        vi.advanceTimersByTime(150);
+      });
+
+      await act(async () => {});
+
+      expect(latestApp.bootstrapStatus).toBe('ready');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });
+
+

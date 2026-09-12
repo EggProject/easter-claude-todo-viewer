@@ -538,5 +538,27 @@ describe('overlays module', () => {
       render(React.createElement(RequiredModal));
       expect(screen.getByText(/job:/)).toBeInTheDocument();
     });
+
+    it('renders fieldIcon for blocks and activeForm changes in NotificationSidebar', () => {
+      mockApp.sidebar = true;
+      mockApp.history = [
+        {
+          id: 'ev-blocks-form',
+          sessionId: 'sess-1',
+          taskId: '55',
+          kind: 'updated',
+          source: 'source',
+          detectedAt: '2026-01-05T00:00:00Z',
+          changes: [
+            { field: 'blocks', label: 'Blocks', before: [], after: ['56'] },
+            { field: 'activeForm', label: 'Active Form', before: null, after: 'form-x' },
+          ],
+        },
+      ];
+
+      render(React.createElement(NotificationSidebar));
+      expect(screen.getByText(/Blocks/)).toBeDefined();
+      expect(screen.getByText(/Active Form/)).toBeDefined();
+    });
   });
 });

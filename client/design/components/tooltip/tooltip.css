@@ -1,12 +1,9 @@
 @import url('../../../eggproject-design/colors_and_type.css');
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { background: var(--ep-bg-sunken); color: var(--ep-fg); font-family: var(--ep-font-sans); -webkit-font-smoothing: antialiased; }
 button { font-family: inherit; cursor: pointer; border: 0; background: transparent; color: inherit; }
 code { font-family: var(--ep-font-mono); background: var(--ep-accent-bg); color: var(--ep-accent-fg); padding: 1px 6px; border-radius: 4px; font-size: 0.9em; }
 h1, h2 { font-weight: inherit; }
-
-#root { padding: 40px; min-height: 100vh; display: flex; justify-content: center; }
 
 /* ============ Page chrome (demo only) ============ */
 .demo { width: 100%; max-width: 880px; }

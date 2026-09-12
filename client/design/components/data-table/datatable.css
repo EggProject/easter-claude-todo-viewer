@@ -1,4 +1,3 @@
-@import url('../../../eggproject-design/colors_and_type.css');
 /* Reuse the design-system's OWN form components for the filter row + search */
 @import url('../input/input.css');
 @import url('../select/select.css');
@@ -6,11 +5,8 @@
 @import url('../tooltip/tooltip.css');
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { background: var(--ep-bg-sunken); color: var(--ep-fg); font-family: var(--ep-font-sans); -webkit-font-smoothing: antialiased; }
 button { font-family: inherit; cursor: pointer; border: 0; background: transparent; color: inherit; }
 h2 { font-weight: inherit; }
-
-#root { padding: 32px; min-height: 100vh; display: flex; align-items: flex-start; justify-content: center; }
 
 /* ===== Wrapper ===== */
 .data-table-wrapper {

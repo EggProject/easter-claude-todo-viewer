@@ -158,6 +158,7 @@ export interface TranslationJob {
   startedAt?: string | undefined;
   finishedAt?: string | undefined;
   durationSeconds?: number | undefined;
+  totalTokens?: number | undefined;
   run?: number | undefined;
   error?: string | undefined;
   attempts?: TranslationAttempt[] | undefined;

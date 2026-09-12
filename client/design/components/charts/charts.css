@@ -5,8 +5,6 @@ html, body { background: var(--ep-bg-sunken); color: var(--ep-fg); font-family: 
 button { font-family: inherit; cursor: pointer; border: 0; background: transparent; color: inherit; }
 h2 { font-weight: inherit; }
 
-#root { padding: 32px; min-height: 100vh; display: flex; align-items: flex-start; justify-content: center; }
-
 /* ===== Card wrapper ===== */
 .line-chart-wrapper, .bar-chart-wrapper {
   width: 100%;

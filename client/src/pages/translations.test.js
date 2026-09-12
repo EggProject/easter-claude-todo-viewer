@@ -1194,4 +1194,243 @@ describe('TranslationsPage', () => {
     expect(screen.getByText(/Raw provider payload/)).toBeDefined();
     unmount();
   });
+
+  it('fetches full job payload asynchronously in JobDetail when attempts or runs are missing', async () => {
+    const incompleteJob = {
+      kind: 'version',
+      id: 'job-fetch-test',
+      sessionId: 'sess-1',
+      taskId: '42',
+      versionNumber: 1,
+      status: 'success',
+    };
+
+    mockApp.translationCatalog = [
+      {
+        kind: 'task',
+        sessionId: 'sess-1',
+        uid: 'task-fetch',
+        taskId: '42',
+        children: [incompleteJob],
+      },
+    ];
+    mockApp.jobs = [incompleteJob];
+
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        job: {
+          id: 'job-fetch-test',
+          taskId: '42',
+          versionNumber: 1,
+          status: 'success',
+          attempts: [
+            {
+              translator: {
+                agentInstructions: 'Async fetched translator instructions',
+                exactPrompt: 'Async prompt text',
+                rawResponse: '{"title":"Title"}',
+                structuredOutput: { title: 'Title' },
+                usage: { total_tokens: 40 },
+              },
+              validator: null,
+            },
+          ],
+          runs: [],
+        },
+      }),
+    });
+
+    const { unmount } = renderPage(
+      '/translations/sess-1/job-fetch-test',
+      '/translations/:sessionId/:jobId',
+    );
+
+    expect(screen.getByText('TRANSLATION DEBUG')).toBeDefined();
+    await waitFor(() => {
+      expect(screen.getByText(/Async fetched translator instructions/)).toBeDefined();
+    });
+    expect(fetchSpy).toHaveBeenCalledWith('/api/sessions/sess-1/translations/job-fetch-test');
+
+    fetchSpy.mockRestore();
+    unmount();
+  });
+
+  it('handles JobDetail fetch with direct payload, null taskId, and error responses', async () => {
+    const jobDirect = {
+      kind: 'version',
+      id: 'job-direct-payload',
+      sessionId: 'sess-1',
+      taskId: null,
+      versionNumber: 0,
+      status: 'success',
+    };
+
+    mockApp.translationCatalog = [
+      {
+        kind: 'task',
+        sessionId: 'sess-1',
+        uid: 'task-direct',
+        taskId: '1',
+        children: [jobDirect],
+      },
+    ];
+    mockApp.jobs = [jobDirect];
+
+    // Direct job payload (without job wrapper) and with sessionId as string
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        id: 'job-direct-payload',
+        sessionId: 'sess-1',
+        status: 'success',
+        taskId: null,
+        versionNumber: null,
+        attempts: [],
+        runs: [],
+      }),
+    });
+
+    const { unmount: unmountDirect } = renderPage(
+      '/translations/sess-1/job-direct-payload',
+      '/translations/:sessionId/:jobId',
+    );
+
+    expect(screen.getByText('TRANSLATION DEBUG')).toBeDefined();
+    await waitFor(() => {
+      expect(screen.getByText(/Task # · v\?/)).toBeDefined();
+    });
+    unmountDirect();
+    fetchSpy.mockRestore();
+
+    // Fetch returns ok: false
+    const fetchFailSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
+      ok: false,
+    });
+    const { unmount: unmountFail } = renderPage(
+      '/translations/sess-1/job-direct-payload',
+      '/translations/:sessionId/:jobId',
+    );
+    unmountFail();
+    fetchFailSpy.mockRestore();
+
+    // Fetch throws network error
+    const fetchErrSpy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockRejectedValueOnce(new Error('Network error'));
+    const { unmount: unmountErr } = renderPage(
+      '/translations/sess-1/job-direct-payload',
+      '/translations/:sessionId/:jobId',
+    );
+    unmountErr();
+    fetchErrSpy.mockRestore();
+
+    // Fetch returns non-record data
+    const fetchNonRecordSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      json: async () => 'not a record',
+    });
+    const { unmount: unmountNonRecord } = renderPage(
+      '/translations/sess-1/job-direct-payload',
+      '/translations/:sessionId/:jobId',
+    );
+    await waitFor(() => expect(fetchNonRecordSpy).toHaveBeenCalled());
+    await new Promise((r) => setTimeout(r, 10));
+    unmountNonRecord();
+    fetchNonRecordSpy.mockRestore();
+
+    // Fetch returns record that is not a TranslationJob
+    const fetchInvalidJobSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ notAJob: true }),
+    });
+    const { unmount: unmountInvalidJob } = renderPage(
+      '/translations/sess-1/job-direct-payload',
+      '/translations/:sessionId/:jobId',
+    );
+    await waitFor(() => expect(fetchInvalidJobSpy).toHaveBeenCalled());
+    await new Promise((r) => setTimeout(r, 10));
+    unmountInvalidJob();
+    fetchInvalidJobSpy.mockRestore();
+  });
+
+  it('uses precomputed job.totalTokens in tokenCount', () => {
+    const jobWithTokens = {
+      kind: 'version',
+      id: 'job-precomputed-tokens',
+      sessionId: 'sess-1',
+      taskId: '99',
+      versionNumber: 1,
+      status: 'success',
+      totalTokens: 12345,
+      attempts: [],
+    };
+
+    mockApp.translationCatalog = [
+      {
+        kind: 'task',
+        sessionId: 'sess-1',
+        uid: 'task-tokens',
+        taskId: '99',
+        children: [jobWithTokens],
+      },
+    ];
+    mockApp.jobs = [jobWithTokens];
+
+    const { unmount } = renderPage(
+      '/translations/sess-1/job-precomputed-tokens',
+      '/translations/:sessionId/:jobId',
+    );
+
+    expect(screen.getByText('TRANSLATION DEBUG')).toBeDefined();
+    expect(screen.getByText('12345')).toBeDefined();
+    unmount();
+  });
+
+  it('preserves rowSelection state when selected keys do not change', () => {
+    const sampleJob = {
+      kind: 'version',
+      id: 'job-select-preserve',
+      sessionId: 'sess-1',
+      taskId: '1',
+      status: 'success',
+      attempts: [],
+    };
+    mockApp.translationCatalog = [
+      {
+        kind: 'task',
+        sessionId: 'sess-1',
+        uid: 'task-select-preserve',
+        taskId: '1',
+        children: [sampleJob],
+      },
+    ];
+    mockApp.jobs = [sampleJob];
+
+    const { rerender } = renderPage();
+
+    const checkboxes = screen.getAllByRole('checkbox');
+    const rowCheckbox = checkboxes[checkboxes.length - 1];
+    fireEvent.click(rowCheckbox);
+    expect(rowCheckbox.checked).toBe(true);
+
+    mockApp.jobs = [...mockApp.jobs];
+    rerender(
+      React.createElement(
+        MemoryRouter,
+        { initialEntries: ['/translations'] },
+        React.createElement(
+          Routes,
+          null,
+          React.createElement(Route, {
+            path: '/translations',
+            element: React.createElement(TranslationsPage, null),
+          }),
+        ),
+      ),
+    );
+
+    const checkboxesAfter = screen.getAllByRole('checkbox');
+    expect(checkboxesAfter[checkboxesAfter.length - 1].checked).toBe(true);
+  });
 });

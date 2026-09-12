@@ -378,4 +378,15 @@ describe('SettingsPage', () => {
     unmount();
     resolveGet({ models: [] });
   });
+
+  it('asserts that SettingsPage structure places cards inside .settings-grid', () => {
+    const { container } = renderPage();
+    const grid = container.querySelector('.settings-grid');
+    expect(grid).not.toBeNull();
+    const cards = grid?.querySelectorAll('.settings-card') ?? [];
+    expect(cards.length).toBeGreaterThanOrEqual(2);
+    expect(grid?.querySelector('.provider-card')).not.toBeNull();
+    expect(grid?.querySelector('.prompts-card')).not.toBeNull();
+  });
 });
+

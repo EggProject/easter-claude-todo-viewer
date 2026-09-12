@@ -89,6 +89,9 @@ export default function SessionsPage(): ReactElement {
       </div>
       <div className="page-controls">
         <input
+          id="sessions-search-input"
+          name="sessionsSearch"
+          aria-label="Search sessions"
           className="search-input"
           value={query}
           onChange={(event) => setFilter('q', event.target.value)}
@@ -193,6 +196,9 @@ function buildSessionColumns(
       cell: ({ row }) => (
         <input
           type="checkbox"
+          id={`session-watch-${row.original.id}`}
+          name={`session-watch-${row.original.id}`}
+          aria-label={`Watch session ${row.original.label || row.original.id}`}
           checked={Boolean(row.original.watched)}
           disabled={Boolean(row.original.current)}
           title={row.original.current ? 'Current session is always watched' : 'Watch session'}

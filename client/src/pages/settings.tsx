@@ -203,7 +203,13 @@ export default function SettingsPage(): ReactElement {
           </div>
           {label(
             'Provider',
-            <select value={tr.provider || 'agy'} onChange={(e) => setProvider(e.target.value)}>
+            <select
+              id="provider-select"
+              name="provider"
+              aria-label="Provider"
+              value={tr.provider || 'agy'}
+              onChange={(e) => setProvider(e.target.value)}
+            >
               <option value="agy">Antigravity CLI (agy)</option>
               <option value="anthropic">Anthropic-compatible API</option>
             </select>,
@@ -212,7 +218,13 @@ export default function SettingsPage(): ReactElement {
             <>
               {label(
                 'Model',
-                <select value={agy.model || ''} onChange={(e) => setAgyModel(e.target.value)}>
+                <select
+                  id="agy-model-select"
+                  name="agyModel"
+                  aria-label="Model"
+                  value={agy.model || ''}
+                  onChange={(e) => setAgyModel(e.target.value)}
+                >
                   {(form.agyModels || []).map((m) => (
                     <option value={m.slug} key={m.slug}>
                       {m.label}
@@ -227,6 +239,9 @@ export default function SettingsPage(): ReactElement {
               {label(
                 'Base URL',
                 <input
+                  id="anthropic-base-url-input"
+                  name="anthropicBaseUrl"
+                  aria-label="Base URL"
                   value={anth.baseUrl || 'http://127.0.0.1:8000'}
                   onChange={(e) => setAnthropicBaseUrl(e.target.value)}
                 />,
@@ -234,6 +249,9 @@ export default function SettingsPage(): ReactElement {
               {label(
                 'API key',
                 <input
+                  id="anthropic-api-key-input"
+                  name="anthropicApiKey"
+                  aria-label="API key"
                   type="password"
                   placeholder={
                     anth.apiKeyConfigured ? 'Configured - enter only to replace' : 'Optional'
@@ -245,6 +263,9 @@ export default function SettingsPage(): ReactElement {
               {label(
                 'Model',
                 <select
+                  id="anthropic-model-select"
+                  name="anthropicModel"
+                  aria-label="Model"
                   value={anth.model || ''}
                   disabled={loadingModels}
                   onChange={(e) => setAnthropicModel(e.target.value)}
@@ -289,6 +310,9 @@ export default function SettingsPage(): ReactElement {
           {label(
             'Automatically migrate built-in prompt updates',
             <input
+              id="auto-migrate-checkbox"
+              name="autoMigrate"
+              aria-label="Automatically migrate built-in prompt updates"
               type="checkbox"
               checked={form.prompts?.autoMigrate !== false}
               onChange={(e) => setAutoMigrate(e.target.checked)}
@@ -319,6 +343,9 @@ function concurrencySetting(
       {label(
         'Maximum concurrent jobs',
         <input
+          id="concurrency-input"
+          name="concurrency"
+          aria-label="Maximum concurrent jobs"
           type="number"
           min={1}
           max={32}
